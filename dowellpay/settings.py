@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'rest_framework_swagger',
     'drf_yasg',
     
-    #Internam package
+    #Internal package
     'payment',
 ]
 
