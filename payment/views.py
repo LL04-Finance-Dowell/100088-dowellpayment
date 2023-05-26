@@ -1,9 +1,11 @@
 from django.shortcuts import render
 from django.views import View
 from rest_framework.views import APIView
+from rest_framework import status
 from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 from .serializers import PaymentSerializer
+from payment.models import WorkFlowAI
 import os
 import json
 import requests
@@ -54,25 +56,34 @@ class StripePayment(APIView):
     stripe.api_key = stripe_key
     @swagger_auto_schema(request_body=PaymentSerializer,responses={200: 'checkout url'})
     def post(self, request):
-        data = request.data
-        price = data['price']
-        calculated_price = int(price) * 100
-
-        # Stripe checkout to pay directly to our account
-        session = stripe.checkout.Session.create(
-        line_items=[{
-        'price_data': {
-            'currency': 'usd',
-            'product_data': {
-            'name': 'book',
+        try:
+            data = request.data
+            price = data['price']
+            currency_code = data['currency_code']
+            #product = data['product']
+            calculated_price = int(price) * 100
+            
+            code = WorkFlowAI.objects.get(currency_code=currency_code)
+            print("this is code",code)
+            print(code.price)
+            # Stripe checkout to pay directly to our account
+            session = stripe.checkout.Session.create(
+            line_items=[{
+            'price_data': {
+                'currency': 'ngn',
+                'product_data': {
+                'name': 'book',
+                },
+                'unit_amount':f"{calculated_price}",
             },
-            'unit_amount':f"{calculated_price}",
-        },
-        'quantity': 1,
-        }],
-        mode='payment',
-        success_url='https://100088.pythonanywhere.com/test/',
-        cancel_url='https://100088.pythonanywhere.com/test/',
-        )
-        print(session.url)
-        return Response({'checkout_url':f"{session.url}"})
+            'quantity': 1,
+            }],
+            mode='payment',
+            success_url='https://100088.pythonanywhere.com/test/',
+            cancel_url='https://100088.pythonanywhere.com/test/',
+            )
+            print(session.url)
+            return Response({'checkout_url':f"{session.url}"})
+        except Exception as e:
+            print(e)
+            return Response({"message":f"{e}"},status=status.HTTP_400_BAD_REQUEST)
