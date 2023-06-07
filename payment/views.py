@@ -60,7 +60,7 @@ class PaypalPayment(APIView):
             else:
                 return Response({'error': payment.error}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            return Response({'message':f"{e}"},status = status.HTTP_400_BAD_REQUEST)
+            return Response({'message':"something went wrong","error":f"{e}"},status = status.HTTP_400_BAD_REQUEST)
             
 
 
@@ -99,7 +99,7 @@ class StripePayment(APIView):
             print(session.url)
             return Response({'approval_url':f"{session.url}"},status = status.HTTP_200_OK)
         except Exception as e:
-            return Response({'message':f"{e}"},status = status.HTTP_400_BAD_REQUEST)
+            return Response({'message':"something went wrong","error":f"{e}"},status = status.HTTP_400_BAD_REQUEST)
     
 
 
@@ -112,8 +112,15 @@ class PaypalPaymentLink(APIView):
     def post(self, request):
         try:
             data = request.data
+            client_id = data['paypal_client_id']
+            client_secret = data['paypal_secret_key']
             price = data['price']
             product_name = data['product']
+            paypalrestsdk.configure({
+                'mode': 'sandbox',
+                'client_id': client_id,
+                'client_secret': client_secret
+            })
             payment = paypalrestsdk.Payment({
                 'intent': 'sale',
                 'payer': {
@@ -139,11 +146,11 @@ class PaypalPaymentLink(APIView):
             else:
                 return Response({'error': payment.error}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            return Response({'message':f"{e}"},status = status.HTTP_400_BAD_REQUEST)
+            return Response({'message':"something went wrong","error":f"{e}"},status = status.HTTP_400_BAD_REQUEST)
 
   
 class StripePaymentLink(APIView):
-    #permission_classes = [HasAPIKey]
+    permission_classes = [HasAPIKey]
     @swagger_auto_schema(request_body=StripePaymentLinkSerializer,responses={200: 'checkout url'},
                         manual_parameters=[openapi.Parameter('Authorization', openapi.IN_HEADER,
                         description='API Key', type=openapi.TYPE_STRING)])
@@ -177,7 +184,7 @@ class StripePaymentLink(APIView):
             print(session.url)
             return Response({'approval_url':f"{session.url}"},status = status.HTTP_200_OK)
         except Exception as e:
-            return Response({'message':f"{e}"},status = status.HTTP_400_BAD_REQUEST)
+            return Response({'message':"something went wrong","error":f"{e}"},status = status.HTTP_400_BAD_REQUEST)
 
 
 # paypal_client_id = os.getenv("PAYPAL_CLIENT_ID",None)
