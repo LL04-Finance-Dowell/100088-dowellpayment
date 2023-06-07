@@ -1,8 +1,7 @@
 from django.urls import path
-from .views import PaypalPayment,StripePaymentWorkflowAI,StripePaymentOther
+from .views import PaypalPayment,StripePayment
 
 urlpatterns = [
     path('paypal',PaypalPayment.as_view()),
-    path('stripe/workflow',StripePaymentWorkflowAI.as_view()),
-    path('stripe/other',StripePaymentOther.as_view()),
+    path('stripe',StripePayment.as_view()),
 ]
