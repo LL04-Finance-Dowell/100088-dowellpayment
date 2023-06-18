@@ -4,6 +4,8 @@ from rest_framework.views import APIView
 from rest_framework_api_key.permissions import HasAPIKey
 from rest_framework import status
 from rest_framework.response import Response
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from .serializers import PaymentSerializer,PaypalPaymentLinkSerializer,StripePaymentLinkSerializer
@@ -197,6 +199,40 @@ class StripePaymentLink(APIView):
             return Response({'approval_url':f"{session.url}"},status = status.HTTP_200_OK)
         except Exception as e:
             return Response({'message':"something went wrong","error":f"{e}"},status = status.HTTP_400_BAD_REQUEST)
+
+
+
+
+@csrf_exempt
+def stripe_webhook(request):
+    # Retrieve the event data from the request body
+    payload = request.body
+    sig_header = request.META['HTTP_STRIPE_SIGNATURE']
+    endpoint_secret = 'whsec_td6i159Cu8RSG7tFiOKaOliyLzjGuPkT'  # Replace with your own endpoint secret
+
+    # Verify the webhook signature
+    try:
+        event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
+        print("called1")
+    except ValueError as e:
+        # Invalid payload
+        print("called2")
+        return HttpResponse(status=400)
+    except stripe.error.SignatureVerificationError as e:
+        # Invalid signature
+        print("called3")
+        return HttpResponse(status=400)
+
+    # Handle the event based on its type
+    if event['type'] == 'payment_intent.succeeded':
+        # Process the successful payment event
+        payment_intent = event['data']['object']
+        print("called4")
+        print(payment_intent)
+        # ... handle payment success logic ...
+
+    # Return a response to Stripe to acknowledge receipt of the webhook
+    return HttpResponse(status=200)
 
 
 # paypal_client_id = os.getenv("PAYPAL_CLIENT_ID",None)
