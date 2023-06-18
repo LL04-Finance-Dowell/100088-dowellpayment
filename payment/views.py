@@ -64,7 +64,7 @@ class PaypalPayment(APIView):
                     'cancel_url': 'http://127.0.0.1:8000/error'
                 }
             })
-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
+
             # Create the payment
             if payment.create():
                 approval_url = next(link.href for link in payment.links if link.rel == 'approval_url')
