@@ -211,11 +211,11 @@ class StripePaymentLink(APIView):
 
 
 
-class StripeWebhook(APIView):
+class StripeWebhook(View):
     @method_decorator(csrf_exempt)
     def post(self,request):
         # Retrieve the event data from the request body
-        payload = request.data
+        payload = request.body
         sig_header = request.META['HTTP_STRIPE_SIGNATURE']
         endpoint_secret = os.getenv('STRIPE_ENDPOINT_SECRETE_KEY', None)  # Replace with your own endpoint secret
 
@@ -224,10 +224,10 @@ class StripeWebhook(APIView):
             event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
         except ValueError as e:
             # Invalid payload
-            return Response(status=400)
+            return HttpResponse(status=400)
         except stripe.error.SignatureVerificationError as e:
             # Invalid signature
-            return Response(status=400)
+            return HttpResponse(status=400)
 
         # Handle the event based on its type
         if event['type'] == 'payment_intent.succeeded':
@@ -240,17 +240,17 @@ class StripeWebhook(APIView):
             # ... handle payment success logic ...
 
         # Return a response to Stripe to acknowledge receipt of the webhook
-        return Response(status=200)
+        return HttpResponse(status=200)
 
 
 
-class PaypalWebhook(APIView):
+class PaypalWebhook(View):
     @method_decorator(csrf_exempt)
     def post(self,request):
         # Verify the PayPal webhook signature (optional but recommended)
 
         # Retrieve the webhook event data
-        event_body = request.data
+        event_body = json.loads(request.body)
         
         # Process the webhook event based on its type
         event_type = event_body['event_type']
@@ -264,7 +264,8 @@ class PaypalWebhook(APIView):
             pass
         
         # Respond with an HTTP 200 status to acknowledge receipt of the webhook
-        return Response(status=200)
+        return HttpResponse(status=200)
+
 
 def handle_payment_created(event_body):
     # Retrieve necessary data from the event body
