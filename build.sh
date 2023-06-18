@@ -2,7 +2,7 @@
 
 set -o errexit  # exit on error
 
-pip18.1 install -r requirements.txt
+pip18 install -r requirements.txt
 
 python manage.py collectstatic --no-input
 python manage.py migrate
