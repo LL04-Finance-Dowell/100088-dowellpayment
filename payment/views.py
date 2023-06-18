@@ -40,10 +40,13 @@ class Error(View):
         return render(request, self.template_name)
 
 class PaypalPayment(APIView):
-    permission_classes = [HasAPIKey]
-    @swagger_auto_schema(request_body=PaymentSerializer,responses={200: "checkout url"},
-                        manual_parameters=[openapi.Parameter('Authorization', openapi.IN_HEADER,
-                        description='API Key', type=openapi.TYPE_STRING)])
+    #permission_classes = [HasAPIKey]
+    # @swagger_auto_schema(request_body=PaymentSerializer,responses={200: "checkout url"},
+    #                     manual_parameters=[openapi.Parameter('Authorization', openapi.IN_HEADER,
+    #                     description='API Key', type=openapi.TYPE_STRING)])
+
+    @swagger_auto_schema(request_body=PaymentSerializer,responses={200: 'checkout url'})
+
     def post(self, request):
         try:
             data = request.data
@@ -62,8 +65,8 @@ class PaypalPayment(APIView):
                     'description': f"{product_name}"
                 }],
                 'redirect_urls': {
-                    'return_url': 'http://127.0.0.1:8000/success',
-                    'cancel_url': 'http://127.0.0.1:8000/error'
+                    'return_url': 'https://testpayment.onrender.com/success',
+                    'cancel_url': 'https://testpayment.onrender.com/error'
                 }
             })
 
@@ -110,8 +113,8 @@ class StripePayment(APIView):
             'quantity': 1,
             }],
             mode='payment',
-            success_url='http://127.0.0.1:8000/success',
-            cancel_url='http://127.0.0.1:8000/error',
+            success_url='https://testpayment.onrender.com/success',
+            cancel_url='https://testpayment.onrender.com/error',
             )
             print(session.url)
             return Response({'approval_url':f"{session.url}"},status = status.HTTP_200_OK)
@@ -151,8 +154,8 @@ class PaypalPaymentLink(APIView):
                     'description': f"{product_name}"
                 }],
                 'redirect_urls': {
-                    'return_url': 'http://127.0.0.1:8000/success',
-                    'cancel_url': 'http://127.0.0.1:8000/error'
+                    'return_url': 'https://testpayment.onrender.com/success',
+                    'cancel_url': 'https://testpayment.onrender.com/error'
                 }
             })
 
@@ -195,8 +198,8 @@ class StripePaymentLink(APIView):
             'quantity': 1,
             }],
             mode='payment',
-            success_url='http://127.0.0.1:8000/success',
-            cancel_url='http://127.0.0.1:8000/error',
+            success_url='https://testpayment.onrender.com/success',
+            cancel_url='https://testpayment.onrender.com/error',
             )
             print(session.url)
             return Response({'approval_url':f"{session.url}"},status = status.HTTP_200_OK)
