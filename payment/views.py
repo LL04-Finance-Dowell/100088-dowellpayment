@@ -254,6 +254,8 @@ def paypal_webhook(request):
         
         # Process the webhook event based on its type
         event_type = event_body['event_type']
+        print("----ALL EVENT TYPE-------------")
+        print(event_type)
         if event_type == 'PAYMENT.SALE.COMPLETED':
             print("..............PAYMENT.SALE.COMPLETED................")
             # Handle payment completion event
