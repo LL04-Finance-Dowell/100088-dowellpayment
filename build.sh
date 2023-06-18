@@ -9,6 +9,7 @@ export PATH="/opt/render/.local/bin:$PATH"
 /usr/bin/python3 -m pip install -r requirements.txt
 
 
-
+python manage.py collectstatic --no-input
+python3 manage.py migrate
 
 
