@@ -12,6 +12,6 @@ export PATH="/opt/render/.local/bin:$PATH"
 
 
 python manage.py collectstatic --no-input
-/usr/bin/python3 manage.py migrate
+
 
 
