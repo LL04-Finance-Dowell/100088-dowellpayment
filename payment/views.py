@@ -256,14 +256,10 @@ def paypal_webhook(request):
         event_type = event_body['event_type']
         print("----ALL EVENT TYPE-------------")
         print(event_type)
-        if event_type == 'PAYMENT.SALE.COMPLETED':
-            print("..............PAYMENT.SALE.COMPLETED................")
-            # Handle payment completion event
-            handle_payment_completion(event_body)
-        elif event_type == 'PAYMENT.SALE.REFUNDED':
-            print("..............PAYMENT.SALE.REFUNDED.............")
-            # Handle payment refund event
-            handle_payment_refund(event_body)
+        if event_type == 'PAYMENTS.PAYMENT.CREATED':
+            print("..............PAYMENTS.PAYMENT.CREATED................")
+            # Handle payment created event
+            handle_payment_created(event_body)
         else:
             # Handle other event types if needed
             pass
@@ -274,17 +270,14 @@ def paypal_webhook(request):
         # Return an HTTP 405 response for unsupported request methods
         return HttpResponse(status=405)
 
-def handle_payment_completion(event_body):
+def handle_payment_created(event_body):
     print("called1")
     # Retrieve necessary data from the event body
+    print(".....................................")
+    print(event_body)
+    print("........................................")
     payment_id = event_body['resource']['parent_payment']
     # Perform actions based on the completed payment
-    
-def handle_payment_refund(event_body):
-    print("called2")
-    # Retrieve necessary data from the event body
-    refund_id = event_body['resource']['id']
-    # Perform actions based on the refund
 
 
 # paypal_client_id = os.getenv("PAYPAL_CLIENT_ID",None)
