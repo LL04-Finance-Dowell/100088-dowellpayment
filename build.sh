@@ -11,7 +11,4 @@ export PATH="/opt/render/.local/bin:$PATH"
 
 
 
-python manage.py collectstatic --no-input
-
-
 
