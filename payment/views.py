@@ -80,11 +80,14 @@ class PaypalPayment(APIView):
 
 
 class StripePayment(APIView):
-    permission_classes = [HasAPIKey]
+    #permission_classes = [HasAPIKey]
     stripe.api_key = stripe_key
-    @swagger_auto_schema(request_body=PaymentSerializer,responses={200: 'checkout url'},
-                        manual_parameters=[openapi.Parameter('Authorization', openapi.IN_HEADER,
-                        description='API Key', type=openapi.TYPE_STRING)])
+    # @swagger_auto_schema(request_body=PaymentSerializer,responses={200: 'checkout url'},
+    #                     manual_parameters=[openapi.Parameter('Authorization', openapi.IN_HEADER,
+    #                     description='API Key', type=openapi.TYPE_STRING)])
+
+    @swagger_auto_schema(request_body=PaymentSerializer,responses={200: 'checkout url'})
+
     def post(self, request):
         try:
             data = request.data
