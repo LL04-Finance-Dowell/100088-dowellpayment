@@ -219,22 +219,21 @@ def stripe_webhook(request):
     # Verify the webhook signature
     try:
         event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
-        print("called1")
     except ValueError as e:
         # Invalid payload
-        print("called2")
         return HttpResponse(status=400)
     except stripe.error.SignatureVerificationError as e:
         # Invalid signature
-        print("called3")
         return HttpResponse(status=400)
 
     # Handle the event based on its type
     if event['type'] == 'payment_intent.succeeded':
         # Process the successful payment event
-        payment_intent = event['data']['object']
-        print("called4")
-        print(payment_intent)
+        #payment_intent = event['data']['object']
+        payment_info = event['data']['object']['charges']['data']
+        print("..................................")
+        print(payment_info)
+
         # ... handle payment success logic ...
 
     # Return a response to Stripe to acknowledge receipt of the webhook
@@ -245,8 +244,6 @@ def stripe_webhook(request):
 @csrf_exempt
 def paypal_webhook(request):
     if request.method == 'POST':
-        print(".............................")
-        print("............yesssssssssssssssss..........")
         # Verify the PayPal webhook signature (optional but recommended)
 
         # Retrieve the webhook event data
@@ -257,7 +254,6 @@ def paypal_webhook(request):
         print("----ALL EVENT TYPE-------------")
         print(event_type)
         if event_type == 'PAYMENTS.PAYMENT.CREATED':
-            print("..............PAYMENTS.PAYMENT.CREATED................")
             # Handle payment created event
             handle_payment_created(event_body)
         else:
@@ -271,12 +267,12 @@ def paypal_webhook(request):
         return HttpResponse(status=405)
 
 def handle_payment_created(event_body):
-    print("called1")
     # Retrieve necessary data from the event body
+    payer_info = event_body['resource']['payer']
+    print(payer_info)
     print(".....................................")
-    print(event_body)
-    print("........................................")
-    payment_id = event_body['resource']['parent_payment']
+    transaction_info = event_body['resource']['transactions']
+    print(transaction_info)
     # Perform actions based on the completed payment
 
 
