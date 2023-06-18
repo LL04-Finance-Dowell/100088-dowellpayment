@@ -6,7 +6,7 @@ coreapi==2.3.3
 coreschema==0.0.4
 cryptography==40.0.2
 dj-database-url==1.2.0
-Django==3.2.19
+Django==4.2.1
 django-rest-swagger==2.2.0
 djangorestframework==3.14.0
 djangorestframework-api-key==2.3.0
