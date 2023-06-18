@@ -245,6 +245,8 @@ def stripe_webhook(request):
 @csrf_exempt
 def paypal_webhook(request):
     if request.method == 'POST':
+        print(".............................")
+        print("............yesssssssssssssssss..........")
         # Verify the PayPal webhook signature (optional but recommended)
 
         # Retrieve the webhook event data
@@ -253,9 +255,11 @@ def paypal_webhook(request):
         # Process the webhook event based on its type
         event_type = event_body['event_type']
         if event_type == 'PAYMENT.SALE.COMPLETED':
+            print("..............PAYMENT.SALE.COMPLETED................")
             # Handle payment completion event
             handle_payment_completion(event_body)
         elif event_type == 'PAYMENT.SALE.REFUNDED':
+            print("..............PAYMENT.SALE.REFUNDED.............")
             # Handle payment refund event
             handle_payment_refund(event_body)
         else:
