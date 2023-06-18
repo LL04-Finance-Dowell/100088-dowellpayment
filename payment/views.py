@@ -265,9 +265,6 @@ class PaypalWebhook(APIView):
         
         # Respond with an HTTP 200 status to acknowledge receipt of the webhook
         return Response(status=200)
-    else:
-        # Return an HTTP 405 response for unsupported request methods
-        return Response(status=405)
 
 def handle_payment_created(event_body):
     # Retrieve necessary data from the event body
