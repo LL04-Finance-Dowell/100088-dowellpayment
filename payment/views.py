@@ -241,5 +241,45 @@ def stripe_webhook(request):
     return HttpResponse(status=200)
 
 
+
+@csrf_exempt
+def paypal_webhook(request):
+    if request.method == 'POST':
+        # Verify the PayPal webhook signature (optional but recommended)
+
+        # Retrieve the webhook event data
+        event_body = json.loads(request.body)
+        
+        # Process the webhook event based on its type
+        event_type = event_body['event_type']
+        if event_type == 'PAYMENT.SALE.COMPLETED':
+            # Handle payment completion event
+            handle_payment_completion(event_body)
+        elif event_type == 'PAYMENT.SALE.REFUNDED':
+            # Handle payment refund event
+            handle_payment_refund(event_body)
+        else:
+            # Handle other event types if needed
+            pass
+        
+        # Respond with an HTTP 200 status to acknowledge receipt of the webhook
+        return HttpResponse(status=200)
+    else:
+        # Return an HTTP 405 response for unsupported request methods
+        return HttpResponse(status=405)
+
+def handle_payment_completion(event_body):
+    print("called1")
+    # Retrieve necessary data from the event body
+    payment_id = event_body['resource']['parent_payment']
+    # Perform actions based on the completed payment
+    
+def handle_payment_refund(event_body):
+    print("called2")
+    # Retrieve necessary data from the event body
+    refund_id = event_body['resource']['id']
+    # Perform actions based on the refund
+
+
 # paypal_client_id = os.getenv("PAYPAL_CLIENT_ID",None)
 # paypal_secret_key = os.getenv("PAYPAL_SECRET_KEY",None)
