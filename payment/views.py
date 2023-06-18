@@ -25,6 +25,18 @@ paypalrestsdk.configure({
     'client_secret': os.getenv("PAYPAL_SECRET_KEY",None)
 })
 
+class Success(View):
+    template_name = 'payment/success.html'
+
+    def get(self, request):
+        return render(request, self.template_name)
+
+class Error(View):
+    template_name = 'payment/error.html'
+
+    def get(self, request):
+        return render(request, self.template_name)
+
 class PaypalPayment(APIView):
     permission_classes = [HasAPIKey]
     @swagger_auto_schema(request_body=PaymentSerializer,responses={200: "checkout url"},
@@ -48,8 +60,8 @@ class PaypalPayment(APIView):
                     'description': f"{product_name}"
                 }],
                 'redirect_urls': {
-                    'return_url': 'https://100088.pythonanywhere.com/test/',
-                    'cancel_url': 'https://100088.pythonanywhere.com/test/'
+                    'return_url': 'http://127.0.0.1:8000/success',
+                    'cancel_url': 'http://127.0.0.1:8000/error'
                 }
             })
 
@@ -93,8 +105,8 @@ class StripePayment(APIView):
             'quantity': 1,
             }],
             mode='payment',
-            success_url='https://100088.pythonanywhere.com/test/',
-            cancel_url='https://100088.pythonanywhere.com/test/',
+            success_url='http://127.0.0.1:8000/success',
+            cancel_url='http://127.0.0.1:8000/error',
             )
             print(session.url)
             return Response({'approval_url':f"{session.url}"},status = status.HTTP_200_OK)
@@ -134,8 +146,8 @@ class PaypalPaymentLink(APIView):
                     'description': f"{product_name}"
                 }],
                 'redirect_urls': {
-                    'return_url': 'https://100088.pythonanywhere.com/test/',
-                    'cancel_url': 'https://100088.pythonanywhere.com/test/'
+                    'return_url': 'http://127.0.0.1:8000/success',
+                    'cancel_url': 'http://127.0.0.1:8000/error'
                 }
             })
 
@@ -178,8 +190,8 @@ class StripePaymentLink(APIView):
             'quantity': 1,
             }],
             mode='payment',
-            success_url='https://100088.pythonanywhere.com/test/',
-            cancel_url='https://100088.pythonanywhere.com/test/',
+            success_url='http://127.0.0.1:8000/success',
+            cancel_url='http://127.0.0.1:8000/error',
             )
             print(session.url)
             return Response({'approval_url':f"{session.url}"},status = status.HTTP_200_OK)
