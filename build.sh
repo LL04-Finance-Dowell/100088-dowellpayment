@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 set -o errexit  # exit on error
 
 pip3 install --upgrade pip
