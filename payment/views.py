@@ -65,8 +65,8 @@ class PaypalPayment(APIView):
                     'description': f"{product_name}"
                 }],
                 'redirect_urls': {
-                    'return_url': 'http://100088.pythonanywhere.com/api/success',
-                    'cancel_url': 'http://100088.pythonanywhere.com/api/error'
+                    'return_url': 'https://100088.pythonanywhere.com/api/success',
+                    'cancel_url': 'https://100088.pythonanywhere.com/api/error'
                 }
             })
 
@@ -112,8 +112,8 @@ class StripePayment(APIView):
             'quantity': 1,
             }],
             mode='payment',
-            success_url='http://100088.pythonanywhere.com/api/success',
-            cancel_url='http://100088.pythonanywhere.com/api/error',
+            success_url='https://100088.pythonanywhere.com/api/success',
+            cancel_url='https://100088.pythonanywhere.com/api/error',
             )
             print(session.url)
             return Response({'approval_url':f"{session.url}"},status = status.HTTP_200_OK)
@@ -153,8 +153,8 @@ class PaypalPaymentLink(APIView):
                     'description': f"{product_name}"
                 }],
                 'redirect_urls': {
-                    'return_url': 'http://100088.pythonanywhere.com/api/success',
-                    'cancel_url': 'http://100088.pythonanywhere.com/api/error'
+                    'return_url': 'https://100088.pythonanywhere.com/api/success',
+                    'cancel_url': 'https://100088.pythonanywhere.com/api/error'
                 }
             })
 
@@ -197,8 +197,8 @@ class StripePaymentLink(APIView):
             'quantity': 1,
             }],
             mode='payment',
-            success_url='http://100088.pythonanywhere.com/api/success',
-            cancel_url='http://100088.pythonanywhere.com/api/error',
+            success_url='https://100088.pythonanywhere.com/api/success',
+            cancel_url='https://100088.pythonanywhere.com/api/error',
             )
             print(session.url)
             return Response({'approval_url':f"{session.url}"},status = status.HTTP_200_OK)
