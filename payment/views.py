@@ -209,47 +209,46 @@ class StripePaymentLink(APIView):
 
 
 
-class StripeWebhook(View):
-    @method_decorator(csrf_exempt)
-    def post(self,request):
-        # Retrieve the event data from the request body
-        payload = request.body
-        sig_header = request.META['HTTP_STRIPE_SIGNATURE']
-        endpoint_secret = os.getenv('STRIPE_ENDPOINT_SECRETE_KEY', None)  # Replace with your own endpoint secret
+@csrf_exempt
+def stripe_webhook(request):
+    # Retrieve the event data from the request body
+    payload = request.body
+    sig_header = request.META['HTTP_STRIPE_SIGNATURE']
+    endpoint_secret = os.getenv('STRIPE_ENDPOINT_SECRETE_KEY', None)  # Replace with your own endpoint secret
 
-        # Verify the webhook signature
-        try:
-            event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
-        except ValueError as e:
-            # Invalid payload
-            return HttpResponse(status=400)
-        except stripe.error.SignatureVerificationError as e:
-            # Invalid signature
-            return HttpResponse(status=400)
+    # Verify the webhook signature
+    try:
+        event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
+    except ValueError as e:
+        # Invalid payload
+        return HttpResponse(status=400)
+    except stripe.error.SignatureVerificationError as e:
+        # Invalid signature
+        return HttpResponse(status=400)
 
-        # Handle the event based on its type
-        if event['type'] == 'payment_intent.succeeded':
-            # Process the successful payment event
-            #payment_intent = event['data']['object']
-            payment_info = event['data']['object']['charges']['data']
-            print("..................................")
-            print(payment_info)
+    # Handle the event based on its type
+    if event['type'] == 'payment_intent.succeeded':
+        # Process the successful payment event
+        #payment_intent = event['data']['object']
+        payment_info = event['data']['object']['charges']['data']
+        print("..................................")
+        print(payment_info)
 
-            # ... handle payment success logic ...
+        # ... handle payment success logic ...
 
-        # Return a response to Stripe to acknowledge receipt of the webhook
-        return HttpResponse(status=200)
-
+    # Return a response to Stripe to acknowledge receipt of the webhook
+    return HttpResponse(status=200)
 
 
-class PaypalWebhook(View):
-    @method_decorator(csrf_exempt)
-    def post(self,request):
+
+@csrf_exempt
+def paypal_webhook(request):
+    if request.method == 'POST':
         # Verify the PayPal webhook signature (optional but recommended)
 
         # Retrieve the webhook event data
         event_body = json.loads(request.body)
-        
+
         # Process the webhook event based on its type
         event_type = event_body['event_type']
         print("----ALL EVENT TYPE-------------")
@@ -260,9 +259,13 @@ class PaypalWebhook(View):
         else:
             # Handle other event types if needed
             pass
-        
+
         # Respond with an HTTP 200 status to acknowledge receipt of the webhook
         return HttpResponse(status=200)
+    else:
+        # Return an HTTP 405 response for unsupported request methods
+        return HttpResponse(status=405)
+
 
 
 def handle_payment_created(event_body):
