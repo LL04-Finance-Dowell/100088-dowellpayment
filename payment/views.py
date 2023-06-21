@@ -9,8 +9,9 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from .models import ExchangeRate
 from .serializers import PaymentSerializer,PaypalPaymentLinkSerializer,StripePaymentLinkSerializer
-
+from .supported_currency import stripe_supported_currency, paypal_supported_currency
 import os
 import json
 import requests
@@ -52,6 +53,11 @@ class PaypalPayment(APIView):
             data = request.data
             price = data['price']
             product_name = data['product']
+            currency_code = data['currency_code']
+            if price <= 0:
+                return Response({'message':"price cant be zero or less than zero"})
+            
+            # check if the currency is supported by papal
             payment = paypalrestsdk.Payment({
                 'intent': 'sale',
                 'payer': {
@@ -60,7 +66,7 @@ class PaypalPayment(APIView):
                 'transactions': [{
                     'amount': {
                         'total':f"{price}" ,
-                        'currency': 'USD'
+                        'currency': f'{currency_code.upper()}'
                     },
                     'description': f"{product_name}"
                 }],
@@ -70,12 +76,47 @@ class PaypalPayment(APIView):
                 }
             })
 
+
             # Create the payment
             if payment.create():
                 approval_url = next(link.href for link in payment.links if link.rel == 'approval_url')
                 return Response({'approval_url': approval_url},status = status.HTTP_200_OK)
             else:
-                return Response({'error': payment.error}, status=status.HTTP_400_BAD_REQUEST)
+                #If the currency is not supported by paypal, convert it to usd before processing.
+                exchange_rate_obj = ExchangeRate.objects.filter(currency_code__iexact=currency_code)
+
+                try:
+                    usd_rate = exchange_rate_obj[0].usd_exchange_rate
+                except:
+                    return Response({"message":f" {currency_code}, not a valid currency code."})
+                    
+                converted_price = price/usd_rate
+                
+                
+                payment = paypalrestsdk.Payment({
+                    'intent': 'sale',
+                    'payer': {
+                        'payment_method': 'paypal'
+                    },
+                    'transactions': [{
+                        'amount': {
+                            'total':f"{round(converted_price,1)}" ,
+                            'currency': 'USD'
+                        },
+                        'description': f"{product_name}"
+                    }],
+                    'redirect_urls': {
+                        'return_url': 'https://100088.pythonanywhere.com/api/success',
+                        'cancel_url': 'https://100088.pythonanywhere.com/api/error'
+                    }
+                })
+                # Create the payment
+                if payment.create():
+                    approval_url = next(link.href for link in payment.links if link.rel == 'approval_url')
+                    return Response({'approval_url': approval_url},status = status.HTTP_200_OK)
+                else:
+                    return Response({'error': payment.error}, status=status.HTTP_400_BAD_REQUEST)
+
         except Exception as e:
             return Response({'message':"something went wrong","error":f"{e}"},status = status.HTTP_400_BAD_REQUEST)
             
@@ -95,28 +136,63 @@ class StripePayment(APIView):
             data = request.data
             price = data['price']
             product = data['product']
-            if price <= 0:
-                return Response({'message':"price cant be zero or less than zero"})
-            calculated_price = int(price) * 100
+            currency_code = data['currency_code']
+            
+            exchange_rate_obj = ExchangeRate.objects.filter(currency_code__iexact=currency_code)
 
-            # Stripe checkout to pay directly to our account
-            session = stripe.checkout.Session.create(
-            line_items=[{
-            'price_data': {
-                'currency': 'usd',
-                'product_data': {
-                'name': f"{product}",
+            try:
+                usd_rate = exchange_rate_obj[0].usd_exchange_rate
+            except:
+                return Response({"message":f" {currency_code}, not a valid currency code."})
+
+            converted_price = price/usd_rate
+            if int(price) < 1:
+                return Response({"message":f"The price cannot be {price}, the lowest number acceptable is 1."})
+            
+            if converted_price < 0.5:
+                return Response({"message":f"The price must convert to at least 50 cents. {price} {currency_code} converts to approximately ${round(converted_price,3)}"})
+
+            try:
+                
+                # try if the currency is supported by stripe
+                session = stripe.checkout.Session.create(
+                line_items=[{
+                'price_data': {
+                    'currency': f'{currency_code.lower()}',
+                    'product_data': {
+                    'name': f"{product}",
+                    },
+                    'unit_amount':f"{int(price) * 100}",
                 },
-                'unit_amount':f"{calculated_price}",
-            },
-            'quantity': 1,
-            }],
-            mode='payment',
-            success_url='https://100088.pythonanywhere.com/api/success',
-            cancel_url='https://100088.pythonanywhere.com/api/error',
-            )
-            print(session.url)
-            return Response({'approval_url':f"{session.url}"},status = status.HTTP_200_OK)
+                'quantity': 1,
+                }],
+                mode='payment',
+                success_url='https://100088.pythonanywhere.com/api/success',
+                cancel_url='https://100088.pythonanywhere.com/api/error',
+                )
+
+                return Response({'approval_url':f"{session.url}"},status = status.HTTP_200_OK)
+
+            
+            except:
+                #If the currency is not supported by stripe, convert it to usd before processing.
+                session = stripe.checkout.Session.create(
+                line_items=[{
+                'price_data': {
+                    'currency': 'usd',
+                    'product_data': {
+                    'name': f"{product}",
+                    },
+                    'unit_amount':f"{int(converted_price)*100}",
+                },
+                'quantity': 1,
+                }],
+                mode='payment',
+                success_url='https://100088.pythonanywhere.com/api/success',
+                cancel_url='https://100088.pythonanywhere.com/api/error',
+                )
+                return Response({'approval_url':f"{session.url}"},status = status.HTTP_200_OK)
+
         except Exception as e:
             return Response({'message':"something went wrong","error":f"{e}"},status = status.HTTP_400_BAD_REQUEST)
     
@@ -135,11 +211,18 @@ class PaypalPaymentLink(APIView):
             client_secret = data['paypal_secret_key']
             price = data['price']
             product_name = data['product']
+            currency_code = data['currency_code']
+
+            if price <= 0:
+                return Response({'message':"price cant be zero or less than zero"})
+
             paypalrestsdk.configure({
                 'mode': 'sandbox',
                 'client_id': client_id,
                 'client_secret': client_secret
             })
+
+            # check if the currency is supported by papal
             payment = paypalrestsdk.Payment({
                 'intent': 'sale',
                 'payer': {
@@ -148,7 +231,7 @@ class PaypalPaymentLink(APIView):
                 'transactions': [{
                     'amount': {
                         'total':f"{price}" ,
-                        'currency': 'USD'
+                        'currency': f'{currency_code.upper()}'
                     },
                     'description': f"{product_name}"
                 }],
@@ -163,7 +246,39 @@ class PaypalPaymentLink(APIView):
                 approval_url = next(link.href for link in payment.links if link.rel == 'approval_url')
                 return Response({'approval_url': approval_url},status = status.HTTP_200_OK)
             else:
-                return Response({'error': payment.error}, status=status.HTTP_400_BAD_REQUEST)
+                #If the currency is not supported by paypal, convert it to usd before processing.
+                exchange_rate_obj = ExchangeRate.objects.filter(currency_code__iexact=currency_code)
+
+                try:
+                    usd_rate = exchange_rate_obj[0].usd_exchange_rate
+                except:
+                    return Response({"message":f" {currency_code}, not a valid currency code."})
+                    
+                converted_price = price/usd_rate
+                
+                payment = paypalrestsdk.Payment({
+                    'intent': 'sale',
+                    'payer': {
+                        'payment_method': 'paypal'
+                    },
+                    'transactions': [{
+                        'amount': {
+                            'total':f"{round(converted_price)}" ,
+                            'currency': 'USD'
+                        },
+                        'description': f"{product_name}"
+                    }],
+                    'redirect_urls': {
+                        'return_url': 'https://100088.pythonanywhere.com/api/success',
+                        'cancel_url': 'https://100088.pythonanywhere.com/api/error'
+                    }
+                })
+                # Create the payment
+                if payment.create():
+                    approval_url = next(link.href for link in payment.links if link.rel == 'approval_url')
+                    return Response({'approval_url': approval_url},status = status.HTTP_200_OK)
+                else:
+                    return Response({'error': payment.error}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'message':"something went wrong","error":f"{e}"},status = status.HTTP_400_BAD_REQUEST)
 
@@ -180,28 +295,60 @@ class StripePaymentLink(APIView):
             stripe.api_key = stripe_key
             price = data['price']
             product = data['product']
-            if price <= 0:
-                return Response({'message':"price cant be zero or less than zero"})
-            calculated_price = int(price) * 100
+            currency_code = data['currency_code']
 
-            # Stripe checkout to pay directly to our account
-            session = stripe.checkout.Session.create(
-            line_items=[{
-            'price_data': {
-                'currency': 'usd',
-                'product_data': {
-                'name': f"{product}",
+            exchange_rate_obj = ExchangeRate.objects.filter(currency_code__iexact=currency_code)
+
+            try:
+                usd_rate = exchange_rate_obj[0].usd_exchange_rate
+            except:
+                return Response({"message":f" {currency_code}, not a valid currency code."})
+
+            converted_price = price/usd_rate
+            
+            if int(price) < 1:
+                return Response({"message":f"The price cannot be {price}, the lowest number acceptable is 1."})
+            
+            if converted_price < 0.5:
+                return Response({"message":f"The price must convert to at least 50 cents. {price} {currency_code} converts to approximately ${round(converted_price,3)}"})
+            
+            try:
+                # try if the currency is supported by stripe 
+                session = stripe.checkout.Session.create(
+                line_items=[{
+                'price_data': {
+                    'currency': f'{currency_code.lower()}',
+                    'product_data': {
+                    'name': f"{product}",
+                    },
+                    'unit_amount':f"{int(price) * 100}",
                 },
-                'unit_amount':f"{calculated_price}",
-            },
-            'quantity': 1,
-            }],
-            mode='payment',
-            success_url='https://100088.pythonanywhere.com/api/success',
-            cancel_url='https://100088.pythonanywhere.com/api/error',
-            )
-            print(session.url)
-            return Response({'approval_url':f"{session.url}"},status = status.HTTP_200_OK)
+                'quantity': 1,
+                }],
+                mode='payment',
+                success_url='https://100088.pythonanywhere.com/api/success',
+                cancel_url='https://100088.pythonanywhere.com/api/error',
+                )
+                return Response({'approval_url':f"{session.url}"},status = status.HTTP_200_OK)
+
+            except:
+                #If the currency is not supported by stripe, convert it to usd before processing.
+                session = stripe.checkout.Session.create(
+                line_items=[{
+                'price_data': {
+                    'currency': f'usd',
+                    'product_data': {
+                    'name': f"{product}",
+                    },
+                    'unit_amount':f"{int(converted_price)*100}",
+                },
+                'quantity': 1,
+                }],
+                mode='payment',
+                success_url='https://100088.pythonanywhere.com/api/success',
+                cancel_url='https://100088.pythonanywhere.com/api/error',
+                )
+                return Response({'approval_url':f"{session.url}"},status = status.HTTP_200_OK)
         except Exception as e:
             return Response({'message':"something went wrong","error":f"{e}"},status = status.HTTP_400_BAD_REQUEST)
 
