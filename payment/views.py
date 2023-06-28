@@ -33,6 +33,7 @@ paypalrestsdk.configure({
     'client_secret': os.getenv("PAYPAL_SECRET_KEY",None)
 })
 
+#Testing mail endpoint.
 @csrf_exempt
 def sending(request):
     amount = 500
@@ -63,14 +64,36 @@ class Error(View):
     def get(self, request):
         return render(request, self.template_name)
 
+def processApikey(api_key, api_services):
+    url = 'https://100105.pythonanywhere.com/api/v1/process-api-key/'
+    payload = {
+        "api_key" : api_key,
+        "api_services" : api_services
+    }
+
+    response = requests.post(url, json=payload)
+    return response.json()
+
 class PaypalPayment(APIView):
-    permission_classes = [HasAPIKey]
-    @swagger_auto_schema(request_body=PaymentSerializer,responses={200: "checkout url"},
-                        manual_parameters=[openapi.Parameter('Authorization', openapi.IN_HEADER,
-                        description='API Key', type=openapi.TYPE_STRING)])
+    @swagger_auto_schema(request_body=PaymentSerializer,responses={200: "checkout url"})
+    
+
+    def post(self, request,api_key):
+        api_service = self.request.GET.get('service')
+        validate = processApikey(api_key,api_service)
+        try:
+            if validate["success"] == False:
+                return Response({'message':validate["message"]},status = status.HTTP_400_BAD_REQUEST)
 
 
-    def post(self, request):
+            elif validate["message"] == "Limit exceeded":
+                return Response({'message':validate["message"]},status = status.HTTP_400_BAD_REQUEST)
+            
+            elif validate["message"] == "API key is inactive":
+                return Response({'message':validate["message"]},status = status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response({'message':f"user_api_services: {validate['user_api_services']}"},status = status.HTTP_400_BAD_REQUEST)
+
         try:
             data = request.data
             price = data['price']
@@ -146,14 +169,26 @@ class PaypalPayment(APIView):
 
 
 class StripePayment(APIView):
-    permission_classes = [HasAPIKey]
     stripe.api_key = stripe_key
-    @swagger_auto_schema(request_body=PaymentSerializer,responses={200: 'checkout url'},
-                        manual_parameters=[openapi.Parameter('Authorization', openapi.IN_HEADER,
-                        description='API Key', type=openapi.TYPE_STRING)])
+    @swagger_auto_schema(request_body=PaymentSerializer,responses={200: 'checkout url'})
 
 
-    def post(self, request):
+    def post(self, request, api_key):
+        api_service = self.request.GET.get('service')
+        validate = processApikey(api_key,api_service)
+        try:
+            if validate["success"] == False:
+                return Response({'message':validate["message"]},status = status.HTTP_400_BAD_REQUEST)
+
+
+            elif validate["message"] == "Limit exceeded":
+                return Response({'message':validate["message"]},status = status.HTTP_400_BAD_REQUEST)
+            
+            elif validate["message"] == "API key is inactive":
+                return Response({'message':validate["message"]},status = status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response({'message':f"user_api_services: {validate['user_api_services']}"},status = status.HTTP_400_BAD_REQUEST)
+
         try:
             today = date.today()
             data = request.data
@@ -236,11 +271,23 @@ class StripePayment(APIView):
 
 #Generate Payment Link
 class PaypalPaymentLink(APIView):
-    permission_classes = [HasAPIKey]
-    @swagger_auto_schema(request_body=PaypalPaymentLinkSerializer,responses={200: "checkout url"},
-                        manual_parameters=[openapi.Parameter('Authorization', openapi.IN_HEADER,
-                        description='API Key', type=openapi.TYPE_STRING)])
-    def post(self, request):
+    @swagger_auto_schema(request_body=PaypalPaymentLinkSerializer,responses={200: "checkout url"})
+    def post(self, request, api_key):
+        api_service = self.request.GET.get('service')
+        validate = processApikey(api_key,api_service)
+        try:
+            if validate["success"] == False:
+                return Response({'message':validate["message"]},status = status.HTTP_400_BAD_REQUEST)
+
+
+            elif validate["message"] == "Limit exceeded":
+                return Response({'message':validate["message"]},status = status.HTTP_400_BAD_REQUEST)
+            
+            elif validate["message"] == "API key is inactive":
+                return Response({'message':validate["message"]},status = status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response({'message':f"user_api_services: {validate['user_api_services']}"},status = status.HTTP_400_BAD_REQUEST)
+
         try:
             data = request.data
             client_id = data['paypal_client_id']
@@ -320,11 +367,24 @@ class PaypalPaymentLink(APIView):
 
   
 class StripePaymentLink(APIView):
-    permission_classes = [HasAPIKey]
-    @swagger_auto_schema(request_body=StripePaymentLinkSerializer,responses={200: 'checkout url'},
-                        manual_parameters=[openapi.Parameter('Authorization', openapi.IN_HEADER,
-                        description='API Key', type=openapi.TYPE_STRING)])
-    def post(self, request):
+    @swagger_auto_schema(request_body=StripePaymentLinkSerializer,responses={200: 'checkout url'})
+
+    def post(self, request, api_key):
+        api_service = self.request.GET.get('service')
+        validate = processApikey(api_key,api_service)
+        try:
+            if validate["success"] == False:
+                return Response({'message':validate["message"]},status = status.HTTP_400_BAD_REQUEST)
+
+
+            elif validate["message"] == "Limit exceeded":
+                return Response({'message':validate["message"]},status = status.HTTP_400_BAD_REQUEST)
+            
+            elif validate["message"] == "API key is inactive":
+                return Response({'message':validate["message"]},status = status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response({'message':f"user_api_services: {validate['user_api_services']}"},status = status.HTTP_400_BAD_REQUEST)
+
         try:
             today = date.today()
             data = request.data
@@ -498,9 +558,336 @@ def handle_payment_created(event_body):
 
     res = send_mail(amount,currency,name,email,desc,date,city,address,postal_code,order_id,payment_method)
 
- 
+
+
+
+
+#PAYMENT API FOR DOWELL INTERNAL TEAM
+
+class PaypalPaymentForTeam(APIView):
+    @swagger_auto_schema(request_body=PaymentSerializer,responses={200: "checkout url"})
+
+
+    def post(self, request):
+        try:
+            data = request.data
+            price = data['price']
+            product_name = data['product']
+            currency_code = data['currency_code']
+            if price <= 0:
+                return Response({'message':"price cant be zero or less than zero"})
+            
+            # check if the currency is supported by papal
+            payment = paypalrestsdk.Payment({
+                'intent': 'sale',
+                'payer': {
+                    'payment_method': 'paypal'
+                },
+                'transactions': [{
+                    'amount': {
+                        'total':f"{price}" ,
+                        'currency': f'{currency_code.upper()}'
+                    },
+                    'description': f"{product_name}"
+                }],
+                'redirect_urls': {
+                    'return_url': 'https://100088.pythonanywhere.com/api/success',
+                    'cancel_url': 'https://100088.pythonanywhere.com/api/error'
+                }
+            })
+
+
+            # Create the payment
+            if payment.create():
+                approval_url = next(link.href for link in payment.links if link.rel == 'approval_url')
+                return Response({'approval_url': approval_url},status = status.HTTP_200_OK)
+            else:
+                #If the currency is not supported by paypal, convert it to usd before processing.
+                exchange_rate_obj = ExchangeRate.objects.filter(currency_code__iexact=currency_code)
+
+                try:
+                    usd_rate = exchange_rate_obj[0].usd_exchange_rate
+                except:
+                    return Response({"message":f" {currency_code}, not a valid currency code."})
+                    
+                converted_price = price/usd_rate
+                
+                
+                payment = paypalrestsdk.Payment({
+                    'intent': 'sale',
+                    'payer': {
+                        'payment_method': 'paypal'
+                    },
+                    'transactions': [{
+                        'amount': {
+                            'total':f"{round(converted_price,1)}" ,
+                            'currency': 'USD'
+                        },
+                        'description': f"{product_name}"
+                    }],
+                    'redirect_urls': {
+                        'return_url': 'https://100088.pythonanywhere.com/api/success',
+                        'cancel_url': 'https://100088.pythonanywhere.com/api/error'
+                    }
+                })
+                # Create the payment
+                if payment.create():
+                    approval_url = next(link.href for link in payment.links if link.rel == 'approval_url')
+                    return Response({'approval_url': approval_url},status = status.HTTP_200_OK)
+                else:
+                    return Response({'error': payment.error}, status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+            return Response({'message':"something went wrong","error":f"{e}"},status = status.HTTP_400_BAD_REQUEST)
+            
+
+
+
+class StripePaymentForTeam(APIView):
+    stripe.api_key = stripe_key
+    @swagger_auto_schema(request_body=PaymentSerializer,responses={200: 'checkout url'})
+
+
+    def post(self, request):
+        try:
+            today = date.today()
+            data = request.data
+            price = data['price']
+            product = data['product']
+            currency_code = data['currency_code']
+            
+            exchange_rate_obj = ExchangeRate.objects.filter(currency_code__iexact=currency_code)
+
+            try:
+                usd_rate = exchange_rate_obj[0].usd_exchange_rate
+            except:
+                return Response({"message":f" {currency_code}, not a valid currency code."})
+
+            converted_price = price/usd_rate
+            if int(price) < 1:
+                return Response({"message":f"The price cannot be {price}, the lowest number acceptable is 1."})
+            
+            if converted_price < 0.5:
+                return Response({"message":f"The price must convert to at least 50 cents. {price} {currency_code} converts to approximately ${round(converted_price,3)}"})
+
+            try:
+                # try if the currency is supported by stripe
+                session = stripe.checkout.Session.create(
+                line_items=[{
+                'price_data': {
+                    'currency': f'{currency_code.lower()}',
+                    'product_data': {
+                    'name': f"{product}",
+                    },
+                    'unit_amount':f"{int(price) * 100}",
+                },
+                'quantity': 1,
+                }
+                ],
+                mode='payment',
+                success_url='https://100088.pythonanywhere.com/api/success',
+                cancel_url='https://100088.pythonanywhere.com/api/error',
+                billing_address_collection='required',
+                payment_intent_data={
+                        'metadata': {
+                        'description':f"{product}",
+                        'date': today
+                        }
+                    }
+                )
+                return Response({'approval_url':f"{session.url}"},status = status.HTTP_200_OK)
+
+            
+            except:
+                #If the currency is not supported by stripe, convert it to usd before processing.
+                session = stripe.checkout.Session.create(
+                line_items=[{
+                'price_data': {
+                    'currency': 'usd',
+                    'product_data': {
+                    'name': f"{product}",
+                    },
+                    'unit_amount':f"{int(converted_price)*100}",
+                },
+                'quantity': 1,
+                }],
+                mode='payment',
+                success_url='https://100088.pythonanywhere.com/api/success',
+                cancel_url='https://100088.pythonanywhere.com/api/error',
+                billing_address_collection='required',
+                payment_intent_data={
+                        'metadata': {
+                        'description':f"{product}",
+                        'date':today
+                        }
+                    }
+                )
+                return Response({'approval_url':f"{session.url}"},status = status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({'message':"something went wrong","error":f"{e}"},status = status.HTTP_400_BAD_REQUEST)
     
 
 
-# paypal_client_id = os.getenv("PAYPAL_CLIENT_ID",None)
-# paypal_secret_key = os.getenv("PAYPAL_SECRET_KEY",None)
+#Generate Payment Link
+class PaypalPaymentLinkForTeam(APIView):
+    @swagger_auto_schema(request_body=PaypalPaymentLinkSerializer,responses={200: "checkout url"})
+    def post(self, request):
+        try:
+            data = request.data
+            client_id = data['paypal_client_id']
+            client_secret = data['paypal_secret_key']
+            price = data['price']
+            product_name = data['product']
+            currency_code = data['currency_code']
+
+            if price <= 0:
+                return Response({'message':"price cant be zero or less than zero"})
+
+            paypalrestsdk.configure({
+                'mode': 'sandbox',
+                'client_id': client_id,
+                'client_secret': client_secret
+            })
+
+            # check if the currency is supported by papal
+            payment = paypalrestsdk.Payment({
+                'intent': 'sale',
+                'payer': {
+                    'payment_method': 'paypal'
+                },
+                'transactions': [{
+                    'amount': {
+                        'total':f"{price}" ,
+                        'currency': f'{currency_code.upper()}'
+                    },
+                    'description': f"{product_name}"
+                }],
+                'redirect_urls': {
+                    'return_url': 'https://100088.pythonanywhere.com/api/success',
+                    'cancel_url': 'https://100088.pythonanywhere.com/api/error'
+                }
+            })
+
+            # Create the payment
+            if payment.create():
+                approval_url = next(link.href for link in payment.links if link.rel == 'approval_url')
+                return Response({'approval_url': approval_url},status = status.HTTP_200_OK)
+            else:
+                #If the currency is not supported by paypal, convert it to usd before processing.
+                exchange_rate_obj = ExchangeRate.objects.filter(currency_code__iexact=currency_code)
+
+                try:
+                    usd_rate = exchange_rate_obj[0].usd_exchange_rate
+                except:
+                    return Response({"message":f" {currency_code}, not a valid currency code."})
+                    
+                converted_price = price/usd_rate
+                
+                payment = paypalrestsdk.Payment({
+                    'intent': 'sale',
+                    'payer': {
+                        'payment_method': 'paypal'
+                    },
+                    'transactions': [{
+                        'amount': {
+                            'total':f"{round(converted_price)}" ,
+                            'currency': 'USD'
+                        },
+                        'description': f"{product_name}"
+                    }],
+                    'redirect_urls': {
+                        'return_url': 'https://100088.pythonanywhere.com/api/success',
+                        'cancel_url': 'https://100088.pythonanywhere.com/api/error'
+                    }
+                })
+                # Create the payment
+                if payment.create():
+                    approval_url = next(link.href for link in payment.links if link.rel == 'approval_url')
+                    return Response({'approval_url': approval_url},status = status.HTTP_200_OK)
+                else:
+                    return Response({'error': payment.error}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'message':"something went wrong","error":f"{e}"},status = status.HTTP_400_BAD_REQUEST)
+
+  
+class StripePaymentLinkForTeam(APIView):
+    @swagger_auto_schema(request_body=StripePaymentLinkSerializer,responses={200: 'checkout url'})
+    def post(self, request):
+        try:
+            today = date.today()
+            data = request.data
+            stripe_key = data['stripe_key']
+            stripe.api_key = stripe_key
+            price = data['price']
+            product = data['product']
+            currency_code = data['currency_code']
+
+            exchange_rate_obj = ExchangeRate.objects.filter(currency_code__iexact=currency_code)
+
+            try:
+                usd_rate = exchange_rate_obj[0].usd_exchange_rate
+            except:
+                return Response({"message":f" {currency_code}, not a valid currency code."})
+
+            converted_price = price/usd_rate
+            
+            if int(price) < 1:
+                return Response({"message":f"The price cannot be {price}, the lowest number acceptable is 1."})
+            
+            if converted_price < 0.5:
+                return Response({"message":f"The price must convert to at least 50 cents. {price} {currency_code} converts to approximately ${round(converted_price,3)}"})
+            
+            try:
+                # try if the currency is supported by stripe 
+                session = stripe.checkout.Session.create(
+                line_items=[{
+                'price_data': {
+                    'currency': f'{currency_code.lower()}',
+                    'product_data': {
+                    'name': f"{product}",
+                    },
+                    'unit_amount':f"{int(price) * 100}",
+                },
+                'quantity': 1,
+                }],
+                mode='payment',
+                success_url='https://100088.pythonanywhere.com/api/success',
+                cancel_url='https://100088.pythonanywhere.com/api/error',
+                billing_address_collection='required',
+                payment_intent_data={
+                        'metadata': {
+                        'description':f"{product}",
+                        'date':today
+                        }
+                    }
+                )
+                return Response({'approval_url':f"{session.url}"},status = status.HTTP_200_OK)
+
+            except:
+                #If the currency is not supported by stripe, convert it to usd before processing.
+                session = stripe.checkout.Session.create(
+                line_items=[{
+                'price_data': {
+                    'currency': 'usd',
+                    'product_data': {
+                    'name': f"{product}",
+                    },
+                    'unit_amount':f"{int(converted_price)*100}",
+                },
+                'quantity': 1,
+                }],
+                mode='payment',
+                success_url='https://100088.pythonanywhere.com/api/success',
+                cancel_url='https://100088.pythonanywhere.com/api/error',
+                billing_address_collection='required',
+                payment_intent_data={
+                        'metadata': {
+                        'description':f"{product}",
+                        'date':today
+                        }
+                    }
+                )
+                return Response({'approval_url':f"{session.url}"},status = status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'message':"something went wrong","error":f"{e}"},status = status.HTTP_400_BAD_REQUEST)

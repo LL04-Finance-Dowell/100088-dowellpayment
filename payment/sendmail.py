@@ -1,9 +1,9 @@
 import os
 import requests
 from django.template.loader import render_to_string
+from io import BytesIO
 from dotenv import load_dotenv
 load_dotenv()
-mail_api_key = os.getenv("MAIL_API_KEY",None)
 
 
 
@@ -11,7 +11,7 @@ def send_mail(amount,currency,name,email,desc,date,city,address,postal_code,orde
     order_template = 'payment/order.html'
 
     # API endpoint to send the email
-    url = f"https://100085.pythonanywhere.com/api/v1/mail/{mail_api_key}/?type=send-email"
+    url = f"https://100085.pythonanywhere.com/api/payment-status/"
     
     amount = amount if amount else 0
     currency = currency if currency else ""
@@ -41,16 +41,14 @@ def send_mail(amount,currency,name,email,desc,date,city,address,postal_code,orde
     
     # Email data
     email_data = {
-        "email":email,
-        "name":name,
-        "fromName":"Dowell Research",
-        "fromEmail" : "DowellResearch@gmail.com",
-        "subject" : "Your Order Details",
+        "toemail":email,
+        "toname":name,
+        "topic":"memberinvitation",
         }
 
-    html_body = render_to_string(order_template,context)
-    email_data["body"] = html_body
+    html_body = BytesIO(render_to_string(order_template, context).encode('utf-8'))
+    files={'file': html_body}
     
-    response = requests.post(url, data=email_data)
-    response_json = response.json()
-    return (response_json)
+    response = requests.post(url, files=files, data=email_data)
+    return (response)
+   
