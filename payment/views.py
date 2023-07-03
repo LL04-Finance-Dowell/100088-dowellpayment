@@ -33,23 +33,7 @@ paypalrestsdk.configure({
     'client_secret': os.getenv("PAYPAL_SECRET_KEY",None)
 })
 
-#Testing mail endpoint.
-@csrf_exempt
-def sending(request):
-    amount = 500
-    currency = "NGN"
-    name = "John Doe"
-    email = "sodiqb86@gmail.com"
-    desc = "Book"
-    date = "22-06-2022"
-    city = "Alaska"
-    address = "Anchorage"
-    postal_code = "99501"
-    order_id = "1234"
-    payment_method = "stripe"
 
-    res = send_mail(amount,currency,name,email,desc,date,city,address,postal_code,order_id,payment_method)
-    return HttpResponse(res)
 
 
 class Success(View):
@@ -891,3 +875,22 @@ class StripePaymentLinkForTeam(APIView):
                 return Response({'approval_url':f"{session.url}"},status = status.HTTP_200_OK)
         except Exception as e:
             return Response({'message':"something went wrong","error":f"{e}"},status = status.HTTP_400_BAD_REQUEST)
+
+
+#Testing mail endpoint.
+@csrf_exempt
+def sending(request):
+    amount = 500
+    currency = "NGN"
+    name = "John Doe"
+    email = "sodiqb86@gmail.com"
+    desc = "Book"
+    date = "22-06-2022"
+    city = "Alaska"
+    address = "Anchorage"
+    postal_code = "99501"
+    order_id = "1234"
+    payment_method = "stripe"
+
+    res = send_mail(amount,currency,name,email,desc,date,city,address,postal_code,order_id,payment_method)
+    return HttpResponse(res)
