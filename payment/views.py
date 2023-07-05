@@ -129,7 +129,7 @@ class PaypalPayment(APIView):
                     },
                     'transactions': [{
                         'amount': {
-                            'total':f"{round(converted_price,1)}" ,
+                            'total':f"{round(converted_price,2)}" ,
                             'currency': 'USD'
                         },
                         'description': f"{product_name}"
@@ -330,7 +330,7 @@ class PaypalPaymentLink(APIView):
                     },
                     'transactions': [{
                         'amount': {
-                            'total':f"{round(converted_price)}" ,
+                            'total':f"{round(converted_price,2)}" ,
                             'currency': 'USD'
                         },
                         'description': f"{product_name}"
@@ -604,7 +604,7 @@ class PaypalPaymentForTeam(APIView):
                     },
                     'transactions': [{
                         'amount': {
-                            'total':f"{round(converted_price,1)}" ,
+                            'total':f"{round(converted_price,2)}" ,
                             'currency': 'USD'
                         },
                         'description': f"{product_name}"
@@ -775,7 +775,7 @@ class PaypalPaymentLinkForTeam(APIView):
                     },
                     'transactions': [{
                         'amount': {
-                            'total':f"{round(converted_price)}" ,
+                            'total':f"{round(converted_price,2)}" ,
                             'currency': 'USD'
                         },
                         'description': f"{product_name}"
