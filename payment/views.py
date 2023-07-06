@@ -48,14 +48,15 @@ class Error(View):
     def get(self, request):
         return render(request, self.template_name)
 
-def processApikey(api_key, api_services):
+def processApikey(api_key):
     url = 'https://100105.pythonanywhere.com/api/v1/process-api-key/'
     payload = {
         "api_key" : api_key,
-        "api_services" : api_services
+        "api_service_id" : "DOWELL100012"
     }
 
     response = requests.post(url, json=payload)
+    print(response.json())
     return response.json()
 
 class PaypalPayment(APIView):
@@ -63,8 +64,7 @@ class PaypalPayment(APIView):
     
 
     def post(self, request,api_key):
-        api_service = self.request.GET.get('service')
-        validate = processApikey(api_key,api_service)
+        validate = processApikey(api_key)
         try:
             if validate["success"] == False:
                 return Response({'message':validate["message"]},status = status.HTTP_400_BAD_REQUEST)
@@ -76,7 +76,7 @@ class PaypalPayment(APIView):
             elif validate["message"] == "API key is inactive":
                 return Response({'message':validate["message"]},status = status.HTTP_400_BAD_REQUEST)
         except:
-            return Response({'message':f"user_api_services: {validate['user_api_services']}"},status = status.HTTP_400_BAD_REQUEST)
+            return Response({'message':f"api_service_id: {validate['api_service_id']}"},status = status.HTTP_400_BAD_REQUEST)
 
         try:
             data = request.data
@@ -158,8 +158,8 @@ class StripePayment(APIView):
 
 
     def post(self, request, api_key):
-        api_service = self.request.GET.get('service')
-        validate = processApikey(api_key,api_service)
+        validate = processApikey(api_key)
+        print(validate)
         try:
             if validate["success"] == False:
                 return Response({'message':validate["message"]},status = status.HTTP_400_BAD_REQUEST)
@@ -171,7 +171,7 @@ class StripePayment(APIView):
             elif validate["message"] == "API key is inactive":
                 return Response({'message':validate["message"]},status = status.HTTP_400_BAD_REQUEST)
         except:
-            return Response({'message':f"user_api_services: {validate['user_api_services']}"},status = status.HTTP_400_BAD_REQUEST)
+            return Response({'message':f"api_service_id: {validate['api_service_id']}"},status = status.HTTP_400_BAD_REQUEST)
 
         try:
             today = date.today()
@@ -257,8 +257,7 @@ class StripePayment(APIView):
 class PaypalPaymentLink(APIView):
     @swagger_auto_schema(request_body=PaypalPaymentLinkSerializer,responses={200: "checkout url"})
     def post(self, request, api_key):
-        api_service = self.request.GET.get('service')
-        validate = processApikey(api_key,api_service)
+        validate = processApikey(api_key)
         try:
             if validate["success"] == False:
                 return Response({'message':validate["message"]},status = status.HTTP_400_BAD_REQUEST)
@@ -270,7 +269,7 @@ class PaypalPaymentLink(APIView):
             elif validate["message"] == "API key is inactive":
                 return Response({'message':validate["message"]},status = status.HTTP_400_BAD_REQUEST)
         except:
-            return Response({'message':f"user_api_services: {validate['user_api_services']}"},status = status.HTTP_400_BAD_REQUEST)
+            return Response({'message':f"api_service_id: {validate['api_service_id']}"},status = status.HTTP_400_BAD_REQUEST)
 
         try:
             data = request.data
@@ -354,8 +353,7 @@ class StripePaymentLink(APIView):
     @swagger_auto_schema(request_body=StripePaymentLinkSerializer,responses={200: 'checkout url'})
 
     def post(self, request, api_key):
-        api_service = self.request.GET.get('service')
-        validate = processApikey(api_key,api_service)
+        validate = processApikey(api_key)
         try:
             if validate["success"] == False:
                 return Response({'message':validate["message"]},status = status.HTTP_400_BAD_REQUEST)
@@ -367,7 +365,7 @@ class StripePaymentLink(APIView):
             elif validate["message"] == "API key is inactive":
                 return Response({'message':validate["message"]},status = status.HTTP_400_BAD_REQUEST)
         except:
-            return Response({'message':f"user_api_services: {validate['user_api_services']}"},status = status.HTTP_400_BAD_REQUEST)
+            return Response({'message':f"api_service_id: {validate['api_service_id']}"},status = status.HTTP_400_BAD_REQUEST)
 
         try:
             today = date.today()
@@ -584,6 +582,7 @@ class PaypalPaymentForTeam(APIView):
             # Create the payment
             if payment.create():
                 approval_url = next(link.href for link in payment.links if link.rel == 'approval_url')
+                print("price",price)
                 return Response({'approval_url': approval_url},status = status.HTTP_200_OK)
             else:
                 #If the currency is not supported by paypal, convert it to usd before processing.
@@ -617,6 +616,7 @@ class PaypalPaymentForTeam(APIView):
                 # Create the payment
                 if payment.create():
                     approval_url = next(link.href for link in payment.links if link.rel == 'approval_url')
+                    print("converted_price",converted_price)
                     return Response({'approval_url': approval_url},status = status.HTTP_200_OK)
                 else:
                     return Response({'error': payment.error}, status=status.HTTP_400_BAD_REQUEST)

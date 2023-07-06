@@ -5,10 +5,10 @@ from .views import (PaypalPayment,StripePayment,PaypalPaymentLink,StripePaymentL
                     Success,Error,stripe_webhook,paypal_webhook,sending)
 
 urlpatterns = [
-    path('paypal/<str:api_key>/',PaypalPayment.as_view()),
-    path('stripe/<str:api_key>/',StripePayment.as_view()),
-    path('paypal/link/<str:api_key>/',PaypalPaymentLink.as_view()),
-    path('stripe/link/<str:api_key>/',StripePaymentLink.as_view()),
+    path('paypal/<str:api_key>',PaypalPayment.as_view()),
+    path('stripe/<str:api_key>',StripePayment.as_view()),
+    path('paypal/link/<str:api_key>',PaypalPaymentLink.as_view()),
+    path('stripe/link/<str:api_key>',StripePaymentLink.as_view()),
     path('success',Success.as_view()),
     path('error',Error.as_view()),
     path('stripe/webhook/', stripe_webhook, name='stripe_webhook'),
