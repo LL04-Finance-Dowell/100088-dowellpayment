@@ -4,30 +4,36 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='WorkFlowAI',
+            name="WorkFlowAI",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('country_name', models.CharField(max_length=100)),
-                ('currency_name', models.CharField(max_length=100)),
-                ('country_code', models.CharField(max_length=100)),
-                ('currency_code', models.CharField(max_length=100)),
-                ('usd_rate', models.FloatField()),
-                ('price', models.FloatField()),
-                ('price_for_100_doc', models.FloatField()),
-                ('price_for_1000_doc', models.FloatField()),
-                ('price_for_2000_doc', models.FloatField()),
-                ('price_for_1_5_member_doc', models.FloatField()),
-                ('price_for_6_10_member_doc', models.FloatField()),
-                ('price_for_11_100_member_doc', models.FloatField()),
-                ('price_for_template_doc', models.FloatField()),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("country_name", models.CharField(max_length=100)),
+                ("currency_name", models.CharField(max_length=100)),
+                ("country_code", models.CharField(max_length=100)),
+                ("currency_code", models.CharField(max_length=100)),
+                ("usd_rate", models.FloatField()),
+                ("price", models.FloatField()),
+                ("price_for_100_doc", models.FloatField()),
+                ("price_for_1000_doc", models.FloatField()),
+                ("price_for_2000_doc", models.FloatField()),
+                ("price_for_1_5_member_doc", models.FloatField()),
+                ("price_for_6_10_member_doc", models.FloatField()),
+                ("price_for_11_100_member_doc", models.FloatField()),
+                ("price_for_template_doc", models.FloatField()),
             ],
         ),
     ]

@@ -4,101 +4,156 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('payment', '0006_wifiqrcode'),
+        ("payment", "0006_wifiqrcode"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='DigitalQ',
+            name="DigitalQ",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('country_name', models.CharField(max_length=100)),
-                ('currency_name', models.CharField(max_length=100)),
-                ('currency_code', models.CharField(max_length=100)),
-                ('price', models.FloatField()),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("country_name", models.CharField(max_length=100)),
+                ("currency_name", models.CharField(max_length=100)),
+                ("currency_code", models.CharField(max_length=100)),
+                ("price", models.FloatField()),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='LicenseCompatibility',
+            name="LicenseCompatibility",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('country_name', models.CharField(max_length=100)),
-                ('currency_name', models.CharField(max_length=100)),
-                ('currency_code', models.CharField(max_length=100)),
-                ('price', models.FloatField()),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("country_name", models.CharField(max_length=100)),
+                ("currency_name", models.CharField(max_length=100)),
+                ("currency_code", models.CharField(max_length=100)),
+                ("price", models.FloatField()),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='LogoScan',
+            name="LogoScan",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('country_name', models.CharField(max_length=100)),
-                ('currency_name', models.CharField(max_length=100)),
-                ('currency_code', models.CharField(max_length=100)),
-                ('price', models.FloatField()),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("country_name", models.CharField(max_length=100)),
+                ("currency_name", models.CharField(max_length=100)),
+                ("currency_code", models.CharField(max_length=100)),
+                ("price", models.FloatField()),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='Nps',
+            name="Nps",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('country_name', models.CharField(max_length=100)),
-                ('currency_name', models.CharField(max_length=100)),
-                ('currency_code', models.CharField(max_length=100)),
-                ('price', models.FloatField()),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("country_name", models.CharField(max_length=100)),
+                ("currency_name", models.CharField(max_length=100)),
+                ("currency_code", models.CharField(max_length=100)),
+                ("price", models.FloatField()),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='SocialMediaAutomation',
+            name="SocialMediaAutomation",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('country_name', models.CharField(max_length=100)),
-                ('currency_name', models.CharField(max_length=100)),
-                ('currency_code', models.CharField(max_length=100)),
-                ('price', models.FloatField()),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("country_name", models.CharField(max_length=100)),
+                ("currency_name", models.CharField(max_length=100)),
+                ("currency_code", models.CharField(max_length=100)),
+                ("price", models.FloatField()),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='UxLive',
+            name="UxLive",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('country_name', models.CharField(max_length=100)),
-                ('currency_name', models.CharField(max_length=100)),
-                ('currency_code', models.CharField(max_length=100)),
-                ('price', models.FloatField()),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("country_name", models.CharField(max_length=100)),
+                ("currency_name", models.CharField(max_length=100)),
+                ("currency_code", models.CharField(max_length=100)),
+                ("price", models.FloatField()),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='Voc',
+            name="Voc",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('country_name', models.CharField(max_length=100)),
-                ('currency_name', models.CharField(max_length=100)),
-                ('currency_code', models.CharField(max_length=100)),
-                ('price', models.FloatField()),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("country_name", models.CharField(max_length=100)),
+                ("currency_name", models.CharField(max_length=100)),
+                ("currency_code", models.CharField(max_length=100)),
+                ("price", models.FloatField()),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
     ]

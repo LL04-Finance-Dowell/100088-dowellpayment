@@ -4,14 +4,13 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('payment', '0004_rename_country_code_workflowai_currency_code'),
+        ("payment", "0004_rename_country_code_workflowai_currency_code"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='workflowai',
-            name='usd_rate',
+            model_name="workflowai",
+            name="usd_rate",
         ),
     ]

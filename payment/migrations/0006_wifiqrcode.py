@@ -4,23 +4,30 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('payment', '0005_remove_workflowai_usd_rate'),
+        ("payment", "0005_remove_workflowai_usd_rate"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='WifiQrcode',
+            name="WifiQrcode",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('country_name', models.CharField(max_length=100)),
-                ('currency_name', models.CharField(max_length=100)),
-                ('currency_code', models.CharField(max_length=100)),
-                ('price', models.FloatField()),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("country_name", models.CharField(max_length=100)),
+                ("currency_name", models.CharField(max_length=100)),
+                ("currency_code", models.CharField(max_length=100)),
+                ("price", models.FloatField()),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
     ]
