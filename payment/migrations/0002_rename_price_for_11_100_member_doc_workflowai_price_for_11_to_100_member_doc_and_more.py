@@ -4,25 +4,24 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('payment', '0001_initial'),
+        ("payment", "0001_initial"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='workflowai',
-            old_name='price_for_11_100_member_doc',
-            new_name='price_for_11_to_100_member_doc',
+            model_name="workflowai",
+            old_name="price_for_11_100_member_doc",
+            new_name="price_for_11_to_100_member_doc",
         ),
         migrations.RenameField(
-            model_name='workflowai',
-            old_name='price_for_1_5_member_doc',
-            new_name='price_for_1_to_5_member_doc',
+            model_name="workflowai",
+            old_name="price_for_1_5_member_doc",
+            new_name="price_for_1_to_5_member_doc",
         ),
         migrations.RenameField(
-            model_name='workflowai',
-            old_name='price_for_6_10_member_doc',
-            new_name='price_for_6_to_10_member_doc',
+            model_name="workflowai",
+            old_name="price_for_6_10_member_doc",
+            new_name="price_for_6_to_10_member_doc",
         ),
     ]

@@ -1,15 +1,31 @@
 from django.contrib import admin
-from .models import (ExchangeRate,WorkFlowAI,WifiQrcode,DigitalQ,
-LogoScan,Nps,Voc,UxLive,SocialMediaAutomation,LicenseCompatibility)
+from .models import (
+    ExchangeRate,
+    WorkFlowAI,
+    WifiQrcode,
+    DigitalQ,
+    PaymentLinkTransaction,
+    LogoScan,
+    Nps,
+    Voc,
+    UxLive,
+    SocialMediaAutomation,
+    LicenseCompatibility,
+    TransactionDetail,
+)
 
 # Register your models here.
 
+
 class WorkflowAIModelAdmin(admin.ModelAdmin):
-    search_fields = ['country_name', 'currency_name', 'currency_code']
+    search_fields = ["country_name", "currency_name", "currency_code"]
+
 
 admin.site.register(ExchangeRate)
+admin.site.register(TransactionDetail)
+admin.site.register(PaymentLinkTransaction)
 
-admin.site.register(WorkFlowAI,WorkflowAIModelAdmin)
+admin.site.register(WorkFlowAI, WorkflowAIModelAdmin)
 admin.site.register(WifiQrcode)
 admin.site.register(DigitalQ)
 admin.site.register(LogoScan)

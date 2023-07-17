@@ -4,21 +4,28 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('payment', '0007_digitalq_licensecompatibility_logoscan_nps_and_more'),
+        ("payment", "0007_digitalq_licensecompatibility_logoscan_nps_and_more"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='ExchangeRate',
+            name="ExchangeRate",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('country_name', models.CharField(max_length=100)),
-                ('currency_name', models.CharField(max_length=100)),
-                ('country_code', models.CharField(max_length=100)),
-                ('currency_code', models.CharField(max_length=100)),
-                ('usd_exchange_rate', models.FloatField()),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("country_name", models.CharField(max_length=100)),
+                ("currency_name", models.CharField(max_length=100)),
+                ("country_code", models.CharField(max_length=100)),
+                ("currency_code", models.CharField(max_length=100)),
+                ("usd_exchange_rate", models.FloatField()),
             ],
         ),
     ]
