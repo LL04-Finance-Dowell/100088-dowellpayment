@@ -38,14 +38,6 @@ stripe_key = os.getenv("STRIPE_KEY", None)
 client_id = os.getenv("PAYPAL_CLIENT_ID", None)
 client_secret = os.getenv("PAYPAL_SECRET_KEY", None)
 
-paypalrestsdk.configure(
-    {
-        "mode": "sandbox",
-        "client_id": os.getenv("PAYPAL_CLIENT_ID", None),
-        "client_secret": os.getenv("PAYPAL_SECRET_KEY", None),
-    }
-)
-
 
 class Success(View):
     template_name = "payment/success.html"
