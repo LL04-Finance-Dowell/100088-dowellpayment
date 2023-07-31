@@ -8,19 +8,13 @@ from .views import (
     VerifyStripePaymentPublic,
     PaypalPaymentPublic,
     VerifyPaypalPaymentPublic,
-    # GenerateStripePaymentLink,
-    # VerifyStripePaymentLink,
-    SquarePayment,
     Success,
     Error,
-    sending,
 )
 
 urlpatterns = [
     path("stripe/initialize", StripePayment.as_view()),
     path("verify/payment/stripe", VerifyStripePayment.as_view()),
-    # path("generate/stripe/link/<str:api_key>", GenerateStripePaymentLink.as_view()),
-    # path("verify/stripe/link/<str:api_key>", VerifyStripePaymentLink.as_view()),
     path("paypal/initialize", PaypalPayment.as_view()),
     path("verify/payment/paypal", VerifyPaypalPayment.as_view()),
     path("stripe/initialize/public/<str:api_key>", StripePaymentPublic.as_view()),
@@ -33,13 +27,6 @@ urlpatterns = [
         "verify/payment/paypal/public/<str:api_key>",
         VerifyPaypalPaymentPublic.as_view(),
     ),
-    path("square/initialize", SquarePayment.as_view()),
     path("success", Success.as_view()),
     path("error", Error.as_view()),
-    # path('team/paypal/initialize',PaypalPaymentForTeam.as_view()),
-    # path('team/stripe/initialize',StripePaymgenerateentForTeamInitialize.as_view()),
-    # path('team/stripe/versend_mailify',TeamPaymentVerify.as_view()),
-    # path('team/paypal/link',PaypalPaymentLinkForTeam.as_view()),
-    # path('team/stripe/link',StripePaymentLinkForTeam.as_view()),
-    # path('send_mail',sending, name="send_mail"),
 ]
