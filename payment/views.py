@@ -314,9 +314,9 @@ class VerifyPaypalPaymentPublic(APIView):
             )
 
 
-# access_token = 'EAAAECow-6fY4OUq7j2SPxjBLY_FEECauFeCzuKtnaIwIEZGdyZWHQLOV85axXbL'
+# access_token = ''
 square = Client(
-    access_token="EAAAFKvcQF8KSTZytmQmA8lT3cGxWCs-MFKt7M14IZj9fda7VD4AdbSN-pQY4yTc",
+    access_token="",
     environment="production",
 )
 
@@ -368,7 +368,7 @@ class SquarePayment(APIView):
     #     headers = {
     #         "Content-Type": "application/json",
     #         "Environment":"production",
-    #         "Authorization": f"Bearer EAAAFKvcQF8KSTZytmQmA8lT3cGxWCs-MFKt7M14IZj9fda7VD4AdbSN-pQY4yTc",
+    #         "Authorization": f"Bearer ",
     #     }
 
     #     body = {
