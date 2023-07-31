@@ -36,6 +36,28 @@ class TransactionDetail(models.Model):
         return self.payment_id
 
 
+class PubicTransactionDetail(models.Model):
+    payment_id = models.CharField(max_length=200)
+    session_id = models.CharField(max_length=500, blank=True, null=True)
+    amount = models.CharField(max_length=100, blank=True, null=True)
+    currency = models.CharField(max_length=100, blank=True, null=True)
+    name = models.CharField(max_length=100, blank=True, null=True)
+    email = models.CharField(max_length=100, blank=True, null=True)
+    desc = models.CharField(max_length=100, blank=True, null=True)
+    date = models.CharField(max_length=100, blank=True, null=True)
+    city = models.CharField(max_length=100, blank=True, null=True)
+    state = models.CharField(max_length=100, blank=True, null=True)
+    address = models.CharField(max_length=100, blank=True, null=True)
+    postal_code = models.CharField(max_length=100, blank=True, null=True)
+    country_code = models.CharField(max_length=100, blank=True, null=True)
+    order_id = models.CharField(max_length=100, blank=True, null=True)
+    status = models.CharField(max_length=100, blank=True, null=True)
+    mail_sent = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.payment_id
+
+
 class PaymentLinkTransaction(models.Model):
     payment_id = models.CharField(max_length=200, blank=True, null=True)
     session_id = models.CharField(max_length=500, blank=True, null=True)

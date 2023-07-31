@@ -12,6 +12,7 @@ from .models import (
     SocialMediaAutomation,
     LicenseCompatibility,
     TransactionDetail,
+    PubicTransactionDetail,
 )
 
 # Register your models here.
@@ -23,6 +24,7 @@ class WorkflowAIModelAdmin(admin.ModelAdmin):
 
 admin.site.register(ExchangeRate)
 admin.site.register(TransactionDetail)
+admin.site.register(PubicTransactionDetail)
 admin.site.register(PaymentLinkTransaction)
 
 admin.site.register(WorkFlowAI, WorkflowAIModelAdmin)
