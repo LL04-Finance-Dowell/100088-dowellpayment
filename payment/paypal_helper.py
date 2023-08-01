@@ -7,11 +7,10 @@ from .sendmail import send_mail
 
 
 def processApikey(api_key):
-    url = "https://100105.pythonanywhere.com/api/v1/process-api-key/"
-    payload = {"api_key": api_key, "api_service_id": "DOWELL100012"}
+    url = f"https://100105.pythonanywhere.com/api/v3/process-services/?type=api_service&api_key={api_key}"
+    payload = {"service_id": "DOWELL10006"}
 
     response = requests.post(url, json=payload)
-    print(response.json())
     return response.json()
 
 
@@ -27,25 +26,10 @@ def paypal_payment(
 ):
     if api_key:
         validate = processApikey(api_key)
-        try:
-            if validate["success"] == False:
-                return Response(
-                    {"message": validate["message"]}, status=status.HTTP_400_BAD_REQUEST
-                )
-
-            elif validate["message"] == "Limit exceeded":
-                return Response(
-                    {"message": validate["message"]}, status=status.HTTP_400_BAD_REQUEST
-                )
-
-            elif validate["message"] == "API key is inactive":
-                return Response(
-                    {"message": validate["message"]}, status=status.HTTP_400_BAD_REQUEST
-                )
-        except:
+        print(validate)
+        if validate["success"] == False:
             return Response(
-                {"message": f"api_service_id: {validate['api_service_id']}"},
-                status=status.HTTP_400_BAD_REQUEST,
+                {"message": validate["message"]}, status=status.HTTP_400_BAD_REQUEST
             )
 
     print("yes")
@@ -109,25 +93,10 @@ def verify_paypal(
 ):
     if api_key:
         validate = processApikey(api_key)
-        try:
-            if validate["success"] == False:
-                return Response(
-                    {"message": validate["message"]}, status=status.HTTP_400_BAD_REQUEST
-                )
-
-            elif validate["message"] == "Limit exceeded":
-                return Response(
-                    {"message": validate["message"]}, status=status.HTTP_400_BAD_REQUEST
-                )
-
-            elif validate["message"] == "API key is inactive":
-                return Response(
-                    {"message": validate["message"]}, status=status.HTTP_400_BAD_REQUEST
-                )
-        except:
+        print(validate)
+        if validate["success"] == False:
             return Response(
-                {"message": f"api_service_id: {validate['api_service_id']}"},
-                status=status.HTTP_400_BAD_REQUEST,
+                {"message": validate["message"]}, status=status.HTTP_400_BAD_REQUEST
             )
 
     encoded_auth = base64.b64encode((f"{client_id}:{client_secret}").encode())
