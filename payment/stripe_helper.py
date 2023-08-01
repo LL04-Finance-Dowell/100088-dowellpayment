@@ -4,11 +4,7 @@ import requests
 import stripe
 from rest_framework import status
 from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
 from .sendmail import send_mail
-from .serializers import (
-    TransactionSerialiazer,
-)
 
 
 def processApikey(api_key):
@@ -82,19 +78,18 @@ def stripe_payment(
             }
         },
     )
-    transaction_info = model_instance.objects.create(
-        payment_id=payment_id,
-        session_id=session.id,
-        desc=product,
-        date=today,
-    )
+
+    transaction_info = model_instance(payment_id, session.id, product, today)
+    print(transaction_info)
     return Response(
         {"approval_url": f"{session.url}", "payment_id": payment_id},
         status=status.HTTP_200_OK,
     )
 
 
-def verify_stripe(stripe_key, payment_id, model_instance, api_key=None):
+def verify_stripe(
+    stripe_key, payment_id, model_instance_update, model_instance_get, api_key=None
+):
     if api_key:
         validate = processApikey(api_key)
         print(validate)
@@ -119,8 +114,9 @@ def verify_stripe(stripe_key, payment_id, model_instance, api_key=None):
                 status=status.HTTP_400_BAD_REQUEST,
             )
     stripe.api_key = stripe_key
-    transaction = get_object_or_404(model_instance, payment_id=payment_id)
-    payment_session = stripe.checkout.Session.retrieve(transaction.session_id)
+    transaction = model_instance_get(payment_id)
+    session_id = transaction["data"]["session_id"]
+    payment_session = stripe.checkout.Session.retrieve(session_id)
     print(payment_session)
     payment_status = payment_session["payment_status"]
 
@@ -135,12 +131,13 @@ def verify_stripe(stripe_key, payment_id, model_instance, api_key=None):
         address = payment_session["customer_details"]["address"]["line1"]
         postal_code = payment_session["customer_details"]["address"]["postal_code"]
         country_code = payment_session["customer_details"]["address"]["country"]
-        desc = transaction.desc
-        date = transaction.date
+        desc = transaction["data"]["desc"]
+        date = transaction["data"]["date"]
         order_id = payment_id
         payment_method = "Stripe"
 
-        if transaction.mail_sent == False:
+        mail_sent = transaction["data"]["mail_sent"]
+        if mail_sent == "False":
             res = send_mail(
                 amount,
                 currency,
@@ -154,25 +151,38 @@ def verify_stripe(stripe_key, payment_id, model_instance, api_key=None):
                 order_id,
                 payment_method,
             )
-
-        transaction.amount = amount
-        transaction.currency = currency
-        transaction.name = name
-        transaction.email = email
-        transaction.city = city
-        transaction.state = state
-        transaction.address = address
-        transaction.postal_code = postal_code
-        transaction.country_code = country_code
-        transaction.order_id = payment_id
-        transaction.status = "succeeded"
-        transaction.mail_sent = True
-        transaction.save()
-
-        serializer = TransactionSerialiazer(transaction)
-
+        transaction_update = model_instance_update(
+            payment_id,
+            amount,
+            currency,
+            name,
+            email,
+            city,
+            state,
+            address,
+            postal_code,
+            country_code,
+        )
         return Response(
-            {"status": "succeeded", "data": serializer.data},
+            {
+                "status": "succeeded",
+                "data": {
+                    "payment_id": f"{payment_id}",
+                    "amount": f"{amount}",
+                    "currency": f"{currency}",
+                    "name": f"{name}",
+                    "email": f"{email}",
+                    "desc": f"{desc}",
+                    "date": f"{date}",
+                    "city": f"{city}",
+                    "state": f"{state}",
+                    "address": f"{address}",
+                    "postal_code": f"{postal_code}",
+                    "country_code": f"{country_code}",
+                    "status": "succeeded",
+                    "mail_sent": "true",
+                },
+            },
             status=status.HTTP_200_OK,
         )
     elif payment_status == "unpaid":

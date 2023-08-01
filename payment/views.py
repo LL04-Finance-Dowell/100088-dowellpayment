@@ -9,11 +9,14 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from .models import (
-    ExchangeRate,
-    TransactionDetail,
-    PubicTransactionDetail,
-    PaymentLinkTransaction,
+
+from .dowellconnection import (
+    DowellTransactionCreate,
+    DowellTransactionUpdate,
+    GetDowellTransaction,
+    PublicTransactionCreate,
+    PublicTransactionUpdate,
+    GetPublicTransaction,
 )
 from .serializers import (
     PaymentSerializer,
@@ -38,7 +41,7 @@ import base64
 import stripe
 import uuid
 from dotenv import load_dotenv
-import paypalrestsdk
+
 from square.client import Client
 
 load_dotenv()
@@ -78,7 +81,7 @@ class StripePayment(APIView):
                 callback_url = "https://100088.pythonanywhere.com/api/success"
                 print(callback_url)
 
-            model_instance = TransactionDetail
+            model_instance = DowellTransactionCreate
             stripe_key = os.getenv("STRIPE_KEY", None)
 
             res = stripe_payment(
@@ -100,10 +103,13 @@ class VerifyStripePayment(APIView):
         try:
             data = request.data
             payment_id = data["id"]
-            model_instance = TransactionDetail
+            model_instance_update = DowellTransactionUpdate
+            model_instance_get = GetDowellTransaction
             stripe_key = os.getenv("STRIPE_KEY", None)
 
-            res = verify_stripe(stripe_key, payment_id, model_instance)
+            res = verify_stripe(
+                stripe_key, payment_id, model_instance_update, model_instance_get
+            )
             return res
 
         except Exception as e:
@@ -111,10 +117,6 @@ class VerifyStripePayment(APIView):
                 {"message": "something went wrond", "error": f"{e}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        # except Http404:
-        #     return JsonResponse(
-        #         {"status": "error", "message": "Transaction not found"}, status=404
-        #     )
 
 
 class PaypalPayment(APIView):
@@ -134,7 +136,7 @@ class PaypalPayment(APIView):
                 callback_url = "https://100088.pythonanywhere.com/api/success"
                 print(callback_url)
 
-            model_instance = TransactionDetail
+            model_instance = DowellTransactionCreate
             client_id = os.getenv("PAYPAL_CLIENT_ID", None)
             client_secret = os.getenv("PAYPAL_SECRET_KEY", None)
 
@@ -165,10 +167,17 @@ class VerifyPaypalPayment(APIView):
             data = request.data
             payment_id = data["id"]
 
-            model_instance = TransactionDetail
+            model_instance_update = DowellTransactionUpdate
+            model_instance_get = GetDowellTransaction
             client_id = os.getenv("PAYPAL_CLIENT_ID", None)
             client_secret = os.getenv("PAYPAL_SECRET_KEY", None)
-            res = verify_paypal(client_id, client_secret, payment_id, model_instance)
+            res = verify_paypal(
+                client_id,
+                client_secret,
+                payment_id,
+                model_instance_update,
+                model_instance_get,
+            )
             return res
         except Exception as e:
             return Response(
@@ -199,7 +208,7 @@ class StripePaymentPublic(APIView):
                 callback_url = "https://100088.pythonanywhere.com/api/success"
                 print(callback_url)
 
-            model_instance = PubicTransactionDetail
+            model_instance = PublicTransactionCreate
             stripe_key = stripe_key
 
             res = stripe_payment(
@@ -230,10 +239,17 @@ class VerifyStripePaymentPublic(APIView):
             payment_id = data["id"]
             stripe_key = data["stripe_key"]
 
-            model_instance = PubicTransactionDetail
+            model_instance_update = PublicTransactionUpdate
+            model_instance_get = GetPublicTransaction
             stripe_key = stripe_key
 
-            res = verify_stripe(stripe_key, payment_id, model_instance, api_key)
+            res = verify_stripe(
+                stripe_key,
+                payment_id,
+                model_instance_update,
+                model_instance_get,
+                api_key,
+            )
             return res
 
         except Exception as e:
@@ -241,10 +257,6 @@ class VerifyStripePaymentPublic(APIView):
                 {"message": "something went wrond", "error": f"{e}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        # except Http404:
-        #     return JsonResponse(
-        #         {"status": "error", "message": "Transaction not found"}, status=404
-        #     )
 
 
 class PaypalPaymentPublic(APIView):
@@ -266,7 +278,7 @@ class PaypalPaymentPublic(APIView):
                 callback_url = "https://100088.pythonanywhere.com/api/success"
                 print(callback_url)
 
-            model_instance = PubicTransactionDetail
+            model_instance = PublicTransactionCreate
             client_id = client_id
             client_secret = client_secret
 
@@ -300,11 +312,17 @@ class VerifyPaypalPaymentPublic(APIView):
             client_secret = data["paypal_secret_key"]
             payment_id = data["id"]
 
-            model_instance = PubicTransactionDetail
+            model_instance_update = PublicTransactionUpdate
+            model_instance_get = GetPublicTransaction
             client_id = client_id
             client_secret = client_secret
             res = verify_paypal(
-                client_id, client_secret, payment_id, model_instance, api_key
+                client_id,
+                client_secret,
+                payment_id,
+                model_instance_update,
+                model_instance_get,
+                api_key,
             )
             return res
         except Exception as e:
