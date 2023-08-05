@@ -65,9 +65,7 @@ class Error(View):
 
 
 class StripePayment(APIView):
-    @swagger_auto_schema(
-        request_body=PaymentSerializer, responses={200: "checkout url"}
-    )
+    @swagger_auto_schema()
     def post(self, request):
         try:
             data = request.data
@@ -76,10 +74,8 @@ class StripePayment(APIView):
             currency_code = data["currency_code"]
             try:
                 callback_url = data["callback_url"]
-                print(callback_url)
             except:
                 callback_url = "https://100088.pythonanywhere.com/api/success"
-                print(callback_url)
 
             model_instance = DowellTransactionCreate
             stripe_key = os.getenv("STRIPE_KEY", None)
@@ -114,7 +110,7 @@ class VerifyStripePayment(APIView):
 
         except Exception as e:
             return Response(
-                {"message": "something went wrond", "error": f"{e}"},
+                {"message": "something went wrong", "error": f"{e}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
