@@ -23,7 +23,6 @@ from .serializers import (
     VerifyPaymentSerializer,
     PublicPaypalPaymentSerializer,
     PublicStripePaymentSerializer,
-    TransactionSerialiazer,
 )
 from .stripe_helper import stripe_payment, verify_stripe
 from .paypal_helper import paypal_payment, verify_paypal

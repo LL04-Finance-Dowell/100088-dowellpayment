@@ -1,11 +1,6 @@
 from rest_framework import serializers
-from .models import TransactionDetail
 
 
-class TransactionSerialiazer(serializers.ModelSerializer):
-    class Meta:
-        model = TransactionDetail
-        fields = "__all__"
 
 
 class PaymentSerializer(serializers.Serializer):
