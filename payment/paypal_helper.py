@@ -4,6 +4,16 @@ import json
 from rest_framework import status
 from rest_framework.response import Response
 from .sendmail import send_mail
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+paypal_mode = os.getenv("LIVE_MODE", None)
+if paypal_mode == "True":
+    paypal_url = "https://api-m.paypal.com"
+else:
+    paypal_url = "https://api-m.sandbox.paypal.com"
 
 
 def processApikey(api_key):
@@ -26,13 +36,11 @@ def paypal_payment(
 ):
     if api_key:
         validate = processApikey(api_key)
-        print(validate)
         if validate["success"] == False:
             return Response(
                 {"message": validate["message"]}, status=status.HTTP_400_BAD_REQUEST
             )
 
-    print("yes")
     if price <= 0:
         return Response(
             {"message": "price cant be zero or less than zero"},
@@ -40,7 +48,7 @@ def paypal_payment(
         )
 
     encoded_auth = base64.b64encode((f"{client_id}:{client_secret}").encode())
-    url = "https://api-m.sandbox.paypal.com/v2/checkout/orders"
+    url = f"{paypal_url}/v2/checkout/orders"
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Basic {encoded_auth.decode()}",
@@ -72,15 +80,24 @@ def paypal_payment(
     }
 
     response = requests.post(url, headers=headers, data=json.dumps(body)).json()
-
-    print(response)
     try:
         transaction_info = model_instance(response["id"], "", product_name, "")
-        print(transaction_info)
     except:
-        return Response({"name": response["name"], "details": response["details"]})
+        try:
+            return Response(
+                {"name": response["name"], "details": response["details"]},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except:
+            return Response(
+                {"error": response["error"], "details": response["error_description"]},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
     approve_payment = response["links"][1]["href"]
-    return Response({"approval_url": approve_payment, "payment_id": response["id"]})
+    return Response(
+        {"approval_url": approve_payment, "payment_id": response["id"]},
+        status=status.HTTP_200_OK,
+    )
 
 
 def verify_paypal(
@@ -93,21 +110,19 @@ def verify_paypal(
 ):
     if api_key:
         validate = processApikey(api_key)
-        print(validate)
         if validate["success"] == False:
             return Response(
                 {"message": validate["message"]}, status=status.HTTP_400_BAD_REQUEST
             )
 
     encoded_auth = base64.b64encode((f"{client_id}:{client_secret}").encode())
-    url = f"https://api-m.sandbox.paypal.com/v2/checkout/orders/{payment_id}"
+    url = f"{paypal_url}/v2/checkout/orders/{payment_id}"
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Basic {encoded_auth.decode()}",
         "Prefer": "return=representation",
     }
     response = requests.get(url, headers=headers).json()
-    print(response)
     try:
         if response["name"] == "RESOURCE_NOT_FOUND":
             return Response(
