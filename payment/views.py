@@ -45,6 +45,18 @@ from square.client import Client
 
 load_dotenv()
 
+dowell_paypal_mode = os.getenv("DOWELL_PAYPAL_LIVE_MODE")
+if dowell_paypal_mode == "True":
+    dowell_paypal_url = "https://api-m.paypal.com"
+else:
+    dowell_paypal_url = "https://api-m.sandbox.paypal.com"
+
+public_paypal_mode = os.getenv("PUBLIC_PAYPAL_LIVE_MODE")
+if public_paypal_mode == "True":
+    public_paypal_url = "https://api-m.paypal.com"
+else:
+    public_paypal_url = "https://api-m.sandbox.paypal.com"
+
 
 class Success(View):
     template_name = "payment/success.html"
@@ -143,6 +155,7 @@ class PaypalPayment(APIView):
                 client_id,
                 client_secret,
                 model_instance,
+                dowell_paypal_url,
             )
             return res
 
@@ -172,6 +185,7 @@ class VerifyPaypalPayment(APIView):
                 payment_id,
                 model_instance_update,
                 model_instance_get,
+                dowell_paypal_url,
             )
             return res
         except Exception as e:
@@ -285,6 +299,7 @@ class PaypalPaymentPublic(APIView):
                 client_id,
                 client_secret,
                 model_instance,
+                public_paypal_url,
                 api_key,
             )
             return res
@@ -317,6 +332,7 @@ class VerifyPaypalPaymentPublic(APIView):
                 payment_id,
                 model_instance_update,
                 model_instance_get,
+                public_paypal_url,
                 api_key,
             )
             return res

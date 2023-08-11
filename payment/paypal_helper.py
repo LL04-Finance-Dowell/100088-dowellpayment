@@ -4,16 +4,6 @@ import json
 from rest_framework import status
 from rest_framework.response import Response
 from .sendmail import send_mail
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
-
-paypal_mode = os.getenv("LIVE_MODE", None)
-if paypal_mode == "True":
-    paypal_url = "https://api-m.paypal.com"
-else:
-    paypal_url = "https://api-m.sandbox.paypal.com"
 
 
 def processApikey(api_key):
@@ -32,6 +22,7 @@ def paypal_payment(
     client_id,
     client_secret,
     model_instance,
+    paypal_url,
     api_key=None,
 ):
     if api_key:
@@ -106,6 +97,7 @@ def verify_paypal(
     payment_id,
     model_instance_update,
     model_instance_get,
+    paypal_url,
     api_key=None,
 ):
     if api_key:
