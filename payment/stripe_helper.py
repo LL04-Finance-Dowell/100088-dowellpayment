@@ -135,28 +135,12 @@ def verify_stripe(
         return Response(
             {
                 "status": "succeeded",
-                "data": {
-                    "payment_id": f"{payment_id}",
-                    "amount": f"{amount}",
-                    "currency": f"{currency}",
-                    "name": f"{name}",
-                    "email": f"{email}",
-                    "desc": f"{desc}",
-                    "date": f"{date}",
-                    "city": f"{city}",
-                    "state": f"{state}",
-                    "address": f"{address}",
-                    "postal_code": f"{postal_code}",
-                    "country_code": f"{country_code}",
-                    "status": "succeeded",
-                    "mail_sent": "true",
-                },
             },
             status=status.HTTP_200_OK,
         )
     elif payment_status == "unpaid":
-        # Payment isgenerate pending or failed
-        return Response({"status": "failed"}, status=status.HTTP_200_OK)
+        
+        return Response({"status": "failed"}, status=status.HTTP_401_UNAUTHORIZED)
     else:
-        # Payment status is unknown or not found
-        return Response({"message": "something went wrong"}, status=status.HTTP_200_OK)
+        
+        return Response({"message": "something went wrong"}, status=status.HTTP_400_BAD_REQUEST)

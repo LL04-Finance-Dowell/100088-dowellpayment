@@ -184,25 +184,9 @@ def verify_paypal(
 
             return Response(
                 {
-                    "status": "succeeded",
-                    "data": {
-                        "payment_id": f"{payment_id}",
-                        "amount": f"{amount}",
-                        "currency": f"{currency}",
-                        "name": f"{name}",
-                        "email": f"{email}",
-                        "desc": f"{desc}",
-                        "date": f"{date}",
-                        "city": f"{city}",
-                        "state": f"{state}",
-                        "address": f"{address}",
-                        "postal_code": f"{postal_code}",
-                        "country_code": f"{country_code}",
-                        "status": "succeeded",
-                        "mail_sent": "true",
-                    },
+                    "status": "succeeded"
                 },
                 status=status.HTTP_200_OK,
             )
         else:
-            return Response({"status": "failed"})
+            return Response({"status": "failed"},status=status.HTTP_401_UNAUTHORIZED)
