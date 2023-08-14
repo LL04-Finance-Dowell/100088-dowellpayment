@@ -88,9 +88,10 @@ def verify_stripe(
     payment_session = stripe.checkout.Session.retrieve(session_id)
     print(payment_session)
     payment_status = payment_session["payment_status"]
+    state = payment_session["status"]
 
     # Check the payment status
-    if payment_status == "paid":
+    if payment_status == "paid" and state == "complete":
         amount = payment_session["amount_total"] / 100
         currency = payment_session["currency"].upper()
         name = payment_session["customer_details"]["name"]
@@ -138,7 +139,7 @@ def verify_stripe(
             },
             status=status.HTTP_200_OK,
         )
-    elif payment_status == "unpaid":
+    elif payment_status == "unpaid" and state == "open":
         
         return Response({"status": "failed"}, status=status.HTTP_401_UNAUTHORIZED)
     else:

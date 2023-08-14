@@ -263,7 +263,7 @@ class VerifyStripePaymentPublic(APIView):
 
         except Exception as e:
             return Response(
-                {"message": "something went wrond", "error": f"{e}"},
+                {"message": "something went wrong", "error": f"{e}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
