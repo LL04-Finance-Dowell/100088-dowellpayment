@@ -29,7 +29,7 @@ def paypal_payment(
         validate = processApikey(api_key)
         if validate["success"] == False:
             return Response(
-                {"message": validate["message"]}, status=status.HTTP_400_BAD_REQUEST
+                {"message": validate["message"]}, status=status.HTTP_401_UNAUTHORIZED
             )
 
     if price <= 0:
@@ -71,19 +71,20 @@ def paypal_payment(
     }
 
     response = requests.post(url, headers=headers, data=json.dumps(body)).json()
+    if "error" in response and response["error"] == "invalid_client":
+        return Response(
+            {"error": response["error"], "details": response["error_description"]},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
     try:
-        transaction_info = model_instance(response["id"], "", product_name, "")
-    except:
-        try:
-            return Response(
-                {"name": response["name"], "details": response["details"]},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        except:
-            return Response(
-                {"error": response["error"], "details": response["error_description"]},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        payment_id = response["id"]
+        transaction_info = model_instance(payment_id, "", product_name, "")
+    except Exception as e:
+        return Response(
+            {"message": "something went wrong", "error": f"{e}"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
     approve_payment = response["links"][1]["href"]
     return Response(
         {"approval_url": approve_payment, "payment_id": response["id"]},
@@ -104,7 +105,7 @@ def verify_paypal(
         validate = processApikey(api_key)
         if validate["success"] == False:
             return Response(
-                {"message": validate["message"]}, status=status.HTTP_400_BAD_REQUEST
+                {"message": validate["message"]}, status=status.HTTP_401_UNAUTHORIZED
             )
 
     encoded_auth = base64.b64encode((f"{client_id}:{client_secret}").encode())
@@ -183,10 +184,8 @@ def verify_paypal(
             )
 
             return Response(
-                {
-                    "status": "succeeded"
-                },
+                {"status": "succeeded"},
                 status=status.HTTP_200_OK,
             )
         else:
-            return Response({"status": "failed"},status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"status": "failed"}, status=status.HTTP_401_UNAUTHORIZED)

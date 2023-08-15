@@ -79,7 +79,7 @@ def verify_stripe(
         print(validate)
         if validate["success"] == False:
             return Response(
-                {"message": validate["message"]}, status=status.HTTP_400_BAD_REQUEST
+                {"message": validate["message"]}, status=status.HTTP_401_UNAUTHORIZED
             )
 
     stripe.api_key = stripe_key
@@ -140,8 +140,8 @@ def verify_stripe(
             status=status.HTTP_200_OK,
         )
     elif payment_status == "unpaid" and state == "open":
-        
         return Response({"status": "failed"}, status=status.HTTP_401_UNAUTHORIZED)
     else:
-        
-        return Response({"message": "something went wrong"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"message": "something went wrong"}, status=status.HTTP_400_BAD_REQUEST
+        )
