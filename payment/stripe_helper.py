@@ -139,9 +139,14 @@ def verify_stripe(
             },
             status=status.HTTP_200_OK,
         )
-    elif payment_status == "unpaid" and state == "open":
+    elif (
+        payment_status == "unpaid"
+        and state == "open"
+        or payment_status == "unpaid"
+        and state == "expired"
+    ):
         return Response({"status": "failed"}, status=status.HTTP_401_UNAUTHORIZED)
     else:
         return Response(
-            {"message": "something went wrong"}, status=status.HTTP_400_BAD_REQUEST
+            {"message": "something went wrong"}, status=status.HTTP_401_UNAUTHORIZED
         )
