@@ -4,7 +4,7 @@ import requests
 import stripe
 from rest_framework import status
 from rest_framework.response import Response
-from .sendmail import send_mail
+from .sendmail import send_mail_one, send_mail_two
 
 
 def processApikey(api_key):
@@ -22,6 +22,7 @@ def stripe_payment(
     callback_url,
     stripe_key,
     model_instance,
+    voucher_code=None,
     api_key=None,
 ):
     if api_key:
@@ -36,7 +37,6 @@ def stripe_payment(
     today = date.today()
     unique_id = uuid.uuid4()
     payment_id = str(unique_id)
-
     session = stripe.checkout.Session.create(
         line_items=[
             {
@@ -63,7 +63,9 @@ def stripe_payment(
         },
     )
 
-    transaction_info = model_instance(payment_id, session.id, product, today)
+    transaction_info = model_instance(
+        payment_id, session.id, product, today, voucher_code
+    )
     print(transaction_info)
     return Response(
         {"approval_url": f"{session.url}", "payment_id": payment_id},
@@ -103,12 +105,17 @@ def verify_stripe(
         country_code = payment_session["customer_details"]["address"]["country"]
         desc = transaction["data"]["desc"]
         date = transaction["data"]["date"]
-        order_id = payment_id
+        ref_id = payment_session["payment_intent"]
         payment_method = "Stripe"
 
         mail_sent = transaction["data"]["mail_sent"]
-        if mail_sent == "False":
-            res = send_mail(
+
+        try:
+            voucher_code = transaction["data"]["voucher_code"]
+        except:
+            voucher_code = ""
+        if mail_sent == "False" and voucher_code == "":
+            res = send_mail_one(
                 amount,
                 currency,
                 name,
@@ -118,11 +125,28 @@ def verify_stripe(
                 city,
                 address,
                 postal_code,
-                order_id,
+                ref_id,
+                payment_method,
+            )
+
+        if mail_sent == "False" and voucher_code != "":
+            res = send_mail_two(
+                amount,
+                currency,
+                name,
+                email,
+                desc,
+                date,
+                city,
+                address,
+                postal_code,
+                voucher_code,
+                ref_id,
                 payment_method,
             )
         transaction_update = model_instance_update(
             payment_id,
+            ref_id,
             amount,
             currency,
             name,

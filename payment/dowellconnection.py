@@ -2,12 +2,13 @@ import requests
 import json
 
 
-def DowellTransactionCreate(payment_id, session_id, desc, today):
+def DowellTransactionCreate(payment_id, session_id, desc, today, voucher_code=None):
     headers = {
         "content-type": "application/json",
     }
     url = "http://uxlivinglab.pythonanywhere.com/"
 
+    voucher = voucher_code if voucher_code is not None else ""
     data = {
         "cluster": "dowellpayment",
         "database": "dowellpayment",
@@ -30,7 +31,8 @@ def DowellTransactionCreate(payment_id, session_id, desc, today):
             "address": "",
             "postal_code": "",
             "country_code": "",
-            "order_id": "",
+            "voucher_code": f"{voucher}",
+            "ref_id": "",
             "status": "",
             "mail_sent": "False",
         },
@@ -45,6 +47,7 @@ def DowellTransactionCreate(payment_id, session_id, desc, today):
 
 def DowellTransactionUpdate(
     payment_id,
+    ref_id,
     amount,
     currency,
     name,
@@ -81,7 +84,7 @@ def DowellTransactionUpdate(
             "address": f"{address}",
             "postal_code": f"{postal_code}",
             "country_code": f"{country_code}",
-            "order_id": f"{payment_id}",
+            "ref_id": f"{ref_id}",
             "status": "succeeded",
             "mail_sent": "True",
         },
@@ -118,7 +121,7 @@ def GetDowellTransaction(payment_id):
     return json_data
 
 
-def PublicTransactionCreate(payment_id, session_id, desc, today):
+def PublicTransactionCreate(payment_id, session_id, desc, today, voucher_code=None):
     headers = {
         "content-type": "application/json",
     }
@@ -146,7 +149,7 @@ def PublicTransactionCreate(payment_id, session_id, desc, today):
             "address": "",
             "postal_code": "",
             "country_code": "",
-            "order_id": "",
+            "ref_id": "",
             "status": "",
             "mail_sent": "False",
         },
@@ -160,6 +163,7 @@ def PublicTransactionCreate(payment_id, session_id, desc, today):
 
 def PublicTransactionUpdate(
     payment_id,
+    ref_id,
     amount,
     currency,
     name,
@@ -196,7 +200,7 @@ def PublicTransactionUpdate(
             "address": f"{address}",
             "postal_code": f"{postal_code}",
             "country_code": f"{country_code}",
-            "order_id": f"{payment_id}",
+            "ref_id": f"{ref_id}",
             "status": "succeeded",
             "mail_sent": "True",
         },

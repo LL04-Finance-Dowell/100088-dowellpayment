@@ -28,7 +28,8 @@
                 "runserver",
                 "--noreload"  // This disables auto-reloading to work better with the debugger.
             ],
-            "django": true
+            "django": true,
+            // "justMyCode": false  
         }
     ]
 }

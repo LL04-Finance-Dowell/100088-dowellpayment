@@ -29,6 +29,8 @@ from .serializers import (
 from .stripe_helper import stripe_payment, verify_stripe
 from .paypal_helper import paypal_payment, verify_paypal
 
+from .voucher import generate_voucher
+
 
 import os
 from dotenv import load_dotenv
@@ -68,20 +70,44 @@ class StripePayment(APIView):
             data = request.data
             serializer = PaymentSerializer(data=data)
             if serializer.is_valid():
-                validate_data = serializer.validated_data
+                validate_data = serializer.to_representation(serializer.validated_data)
                 price = validate_data["price"]
                 product = validate_data["product"]
                 currency_code = validate_data["currency_code"]
+                timezone = validate_data["timezone"]
+                description = validate_data["description"]
+                try:
+                    credit = data["credit"]
+                except:
+                    credit = None
                 callback_url = validate_data["callback_url"]
             else:
                 errors = serializer.errors
                 return Response(errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
-
+            voucher_code = None
+            if timezone and description and credit:
+                try:
+                    voucher_response = generate_voucher(timezone, description, credit)
+                    voucher_code = voucher_response["voucher code"]
+                except:
+                    return Response(
+                        {
+                            "message": "something went wrong",
+                            "error": f"Provide correct value for timezone, description and credit",
+                        },
+                        status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    )
             model_instance = DowellTransactionCreate
             stripe_key = os.getenv("STRIPE_KEY", None)
 
             res = stripe_payment(
-                price, product, currency_code, callback_url, stripe_key, model_instance
+                price=price,
+                product=product,
+                currency_code=currency_code,
+                callback_url=callback_url,
+                stripe_key=stripe_key,
+                model_instance=model_instance,
+                voucher_code=voucher_code,
             )
             return res
         except Exception as e:
@@ -111,7 +137,10 @@ class VerifyStripePayment(APIView):
             stripe_key = os.getenv("STRIPE_KEY", None)
 
             res = verify_stripe(
-                stripe_key, payment_id, model_instance_update, model_instance_get
+                stripe_key=stripe_key,
+                payment_id=payment_id,
+                model_instance_update=model_instance_update,
+                model_instance_get=model_instance_get,
             )
             return res
 
@@ -131,29 +160,50 @@ class PaypalPayment(APIView):
             data = request.data
             serializer = PaymentSerializer(data=data)
             if serializer.is_valid():
-                validate_data = serializer.validated_data
+                validate_data = serializer.to_representation(serializer.validated_data)
                 price = validate_data["price"]
                 product_name = validate_data["product"]
                 currency_code = validate_data["currency_code"]
+                timezone = validate_data["timezone"]
+                description = validate_data["description"]
+                try:
+                    credit = data["credit"]
+                except:
+                    credit = None
                 callback_url = validate_data["callback_url"]
-                print(callback_url)
+                print(validate_data)
             else:
                 errors = serializer.errors
                 return Response(errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+            voucher_code = None
+            if timezone and description and credit:
+                try:
+                    voucher_response = generate_voucher(timezone, description, credit)
+                    voucher_code = voucher_response["voucher code"]
+                except:
+                    return Response(
+                        {
+                            "message": "something went wrong",
+                            "error": f"Provide correct value for timezone, description and credit",
+                        },
+                        status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    )
 
             model_instance = DowellTransactionCreate
             client_id = os.getenv("PAYPAL_CLIENT_ID", None)
             client_secret = os.getenv("PAYPAL_SECRET_KEY", None)
 
             res = paypal_payment(
-                price,
-                product_name,
-                currency_code,
-                callback_url,
-                client_id,
-                client_secret,
-                model_instance,
-                dowell_paypal_url,
+                price=price,
+                product_name=product_name,
+                currency_code=currency_code,
+                callback_url=callback_url,
+                client_id=client_id,
+                client_secret=client_secret,
+                model_instance=model_instance,
+                paypal_url=dowell_paypal_url,
+                voucher_code=voucher_code,
             )
             return res
 
@@ -184,12 +234,12 @@ class VerifyPaypalPayment(APIView):
             client_id = os.getenv("PAYPAL_CLIENT_ID", None)
             client_secret = os.getenv("PAYPAL_SECRET_KEY", None)
             res = verify_paypal(
-                client_id,
-                client_secret,
-                payment_id,
-                model_instance_update,
-                model_instance_get,
-                dowell_paypal_url,
+                client_id=client_id,
+                client_secret=client_secret,
+                payment_id=payment_id,
+                model_instance_update=model_instance_update,
+                model_instance_get=model_instance_get,
+                paypal_url=dowell_paypal_url,
             )
             return res
         except Exception as e:
@@ -211,7 +261,7 @@ class StripePaymentPublic(APIView):
             data = request.data
             serializer = PublicStripeSerializer(data=data)
             if serializer.is_valid():
-                validate_data = serializer.validated_data
+                validate_data = serializer.to_representation(serializer.validated_data)
                 stripe_key = validate_data["stripe_key"]
                 price = validate_data["price"]
                 product = validate_data["product"]
@@ -225,13 +275,13 @@ class StripePaymentPublic(APIView):
             stripe_key = stripe_key
 
             res = stripe_payment(
-                price,
-                product,
-                currency_code,
-                callback_url,
-                stripe_key,
-                model_instance,
-                api_key,
+                price=price,
+                product=product,
+                currency_code=currency_code,
+                callback_url=callback_url,
+                stripe_key=stripe_key,
+                model_instance=model_instance,
+                api_key=api_key,
             )
             return res
 
@@ -264,11 +314,11 @@ class VerifyStripePaymentPublic(APIView):
             stripe_key = stripe_key
 
             res = verify_stripe(
-                stripe_key,
-                payment_id,
-                model_instance_update,
-                model_instance_get,
-                api_key,
+                stripe_key=stripe_key,
+                payment_id=payment_id,
+                model_instance_update=model_instance_update,
+                model_instance_get=model_instance_get,
+                api_key=api_key,
             )
             return res
 
@@ -286,46 +336,35 @@ class PaypalPaymentPublic(APIView):
     def post(self, request, api_key):
         try:
             data = request.data
-            client_id = data["paypal_client_id"]
-            client_secret = data["paypal_secret_key"]
-            price = data["price"]
-            product_name = data["product"]
-            currency_code = data["currency_code"]
-            mode = data["mode"]
 
             serializer = PublicPaypalSerializer(data=data)
             if serializer.is_valid():
-                validate_data = serializer.validated_data
+                validate_data = serializer.to_representation(serializer.validated_data)
                 client_id = validate_data["paypal_client_id"]
                 client_secret = validate_data["paypal_secret_key"]
                 price = validate_data["price"]
                 product_name = validate_data["product"]
                 currency_code = validate_data["currency_code"]
                 callback_url = validate_data["callback_url"]
-                mode = validate_data["mode"]
+                public_paypal_url = validate_data["public_paypal_url"]
             else:
                 errors = serializer.errors
                 return Response(errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
-
-            if mode == "sandbox":
-                public_paypal_url = "https://api-m.sandbox.paypal.com"
-            elif mode == "live":
-                public_paypal_url = "https://api-m.paypal.com"
 
             model_instance = PublicTransactionCreate
             client_id = client_id
             client_secret = client_secret
 
             res = paypal_payment(
-                price,
-                product_name,
-                currency_code,
-                callback_url,
-                client_id,
-                client_secret,
-                model_instance,
-                public_paypal_url,
-                api_key,
+                price=price,
+                product_name=product_name,
+                currency_code=currency_code,
+                callback_url=callback_url,
+                client_id=client_id,
+                client_secret=client_secret,
+                model_instance=model_instance,
+                paypal_url=public_paypal_url,
+                api_key=api_key,
             )
             return res
 
@@ -346,32 +385,27 @@ class VerifyPaypalPaymentPublic(APIView):
 
             serializer = VerifyPublicPaypalSerializer(data=data)
             if serializer.is_valid():
-                validate_data = serializer.validated_data
+                validate_data = serializer.to_representation(serializer.validated_data)
                 client_id = validate_data["paypal_client_id"]
                 client_secret = validate_data["paypal_secret_key"]
                 payment_id = validate_data["id"]
-                mode = validate_data["mode"]
+                public_paypal_url = validate_data["public_paypal_url"]
             else:
                 errors = serializer.errors
                 return Response(errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
-
-            if mode == "sandbox":
-                public_paypal_url = "https://api-m.sandbox.paypal.com"
-            elif mode == "live":
-                public_paypal_url = "https://api-m.paypal.com"
 
             model_instance_update = PublicTransactionUpdate
             model_instance_get = GetPublicTransaction
             client_id = client_id
             client_secret = client_secret
             res = verify_paypal(
-                client_id,
-                client_secret,
-                payment_id,
-                model_instance_update,
-                model_instance_get,
-                public_paypal_url,
-                api_key,
+                client_id=client_id,
+                client_secret=client_secret,
+                payment_id=payment_id,
+                model_instance_update=model_instance_update,
+                model_instance_get=model_instance_get,
+                paypal_url=public_paypal_url,
+                api_key=api_key,
             )
             return res
         except Exception as e:

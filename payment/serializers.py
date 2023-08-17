@@ -1,3 +1,4 @@
+from decimal import Decimal
 from rest_framework import serializers
 
 
@@ -5,9 +6,24 @@ class PaymentSerializer(serializers.Serializer):
     price = serializers.FloatField()
     product = serializers.CharField()
     currency_code = serializers.CharField()
+    timezone = serializers.CharField(required=False, default=None, allow_blank=True)
+    description = serializers.CharField(required=False, default=None, allow_blank=True)
     callback_url = serializers.CharField(
         required=False, default="https://100088.pythonanywhere.com/api/success"
     )
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        price = data.get("price")
+
+        if isinstance(price, str):
+            # Convert the string back to a Decimal
+            price = Decimal(price)
+        if price % 1 == 0:
+            data["price"] = int(price)
+        else:
+            data["price"] = price
+        return data
 
 
 class VerifyPaymentSerializer(serializers.Serializer):
@@ -23,6 +39,19 @@ class PublicStripeSerializer(serializers.Serializer):
         required=False, default="https://100088.pythonanywhere.com/api/success"
     )
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        price = data.get("price")
+
+        if isinstance(price, str):
+            # Convert the string back to a Decimal
+            price = Decimal(price)
+        if price % 1 == 0:
+            data["price"] = int(price)
+        else:
+            data["price"] = price
+        return data
+
 
 class VerifyPublicStripSerializer(serializers.Serializer):
     stripe_key = serializers.CharField()
@@ -30,7 +59,7 @@ class VerifyPublicStripSerializer(serializers.Serializer):
 
 
 class PublicPaypalSerializer(serializers.Serializer):
-    mode_choices = ("sandbox", "live")
+    MODE_CHOICES = ("sandbox", "live")
     paypal_client_id = serializers.CharField()
     paypal_secret_key = serializers.CharField()
     price = serializers.FloatField()
@@ -39,7 +68,35 @@ class PublicPaypalSerializer(serializers.Serializer):
     callback_url = serializers.CharField(
         required=False, default="https://100088.pythonanywhere.com/api/success"
     )
-    mode = serializers.ChoiceField(choices=mode_choices)
+    mode = serializers.CharField()
+
+    def validate_mode(self, value):
+        if value not in self.MODE_CHOICES:
+            raise serializers.ValidationError(
+                "Invalid mode. Must be 'sandbox' or 'live'."
+            )
+        return value
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        price = data.get("price")
+        mode = data.get("mode")
+
+        if isinstance(price, str):
+            # Convert the string back to a Decimal
+            price = Decimal(price)
+
+        if price % 1 == 0:
+            data["price"] = int(price)
+        else:
+            data["price"] = price
+
+        if mode == "sandbox":
+            data["public_paypal_url"] = "https://api-m.sandbox.paypal.com"
+        elif mode == "live":
+            data["public_paypal_url"] = "https://api-m.paypal.com"
+
+        return data
 
 
 class VerifyPublicPaypalSerializer(serializers.Serializer):
@@ -47,4 +104,22 @@ class VerifyPublicPaypalSerializer(serializers.Serializer):
     paypal_client_id = serializers.CharField()
     paypal_secret_key = serializers.CharField()
     id = serializers.CharField()
-    mode = serializers.ChoiceField(choices=MODE_CHOICES)
+    mode = serializers.CharField()
+
+    def validate_mode(self, value):
+        if value not in self.MODE_CHOICES:
+            raise serializers.ValidationError(
+                "Invalid mode. Must be 'sandbox' or 'live'."
+            )
+        return value
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        mode = data.get("mode")
+
+        if mode == "sandbox":
+            data["public_paypal_url"] = "https://api-m.sandbox.paypal.com"
+        elif mode == "live":
+            data["public_paypal_url"] = "https://api-m.paypal.com"
+
+        return data

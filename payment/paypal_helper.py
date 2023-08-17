@@ -3,7 +3,7 @@ import base64
 import json
 from rest_framework import status
 from rest_framework.response import Response
-from .sendmail import send_mail
+from .sendmail import send_mail_one, send_mail_two
 
 
 def processApikey(api_key):
@@ -23,6 +23,7 @@ def paypal_payment(
     client_secret,
     model_instance,
     paypal_url,
+    voucher_code=None,
     api_key=None,
 ):
     if api_key:
@@ -31,7 +32,7 @@ def paypal_payment(
             return Response(
                 {"message": validate["message"]}, status=status.HTTP_401_UNAUTHORIZED
             )
-
+    print(voucher_code)
     if price <= 0:
         return Response(
             {"message": "price cant be zero or less than zero"},
@@ -71,6 +72,15 @@ def paypal_payment(
     }
 
     response = requests.post(url, headers=headers, data=json.dumps(body)).json()
+    if "name" in response and response["name"] == "UNPROCESSABLE_ENTITY":
+        return Response(
+            {
+                "error": response["name"],
+                "details": response["details"][0]["description"],
+            },
+            status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        )
+
     if "error" in response and response["error"] == "invalid_client":
         return Response(
             {"error": response["error"], "details": response["error_description"]},
@@ -79,7 +89,9 @@ def paypal_payment(
 
     try:
         payment_id = response["id"]
-        transaction_info = model_instance(payment_id, "", product_name, "")
+        transaction_info = model_instance(
+            payment_id, "", product_name, "", voucher_code
+        )
     except Exception as e:
         return Response(
             {"message": "something went wrong", "error": f"{e}"},
@@ -154,10 +166,16 @@ def verify_paypal(
             order_id = payment_id
             payment_method = "Paypal"
             desc = transaction["data"]["desc"]
+            ref_id = payment_id
+
+            try:
+                voucher_code = transaction["data"]["voucher_code"]
+            except:
+                voucher_code = ""
 
             mail_sent = transaction["data"]["mail_sent"]
-            if mail_sent == "False":
-                res = send_mail(
+            if mail_sent == "False" and voucher_code == "":
+                res = send_mail_one(
                     amount,
                     currency,
                     name,
@@ -167,11 +185,27 @@ def verify_paypal(
                     city,
                     address,
                     postal_code,
-                    order_id,
+                    ref_id,
+                    payment_method,
+                )
+            if mail_sent == "False" and voucher_code != "":
+                res = send_mail_two(
+                    amount,
+                    currency,
+                    name,
+                    email,
+                    desc,
+                    date,
+                    city,
+                    address,
+                    postal_code,
+                    voucher_code,
+                    ref_id,
                     payment_method,
                 )
             transaction_update = model_instance_update(
                 payment_id,
+                ref_id,
                 amount,
                 currency,
                 name,
