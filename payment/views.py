@@ -11,22 +11,23 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
 from .dowellconnection import (
-    DowellTransactionCreate,
-    DowellTransactionUpdate,
+    CreateDowellTransaction,
+    UpdateDowellTransaction,
     GetDowellTransaction,
-    PublicTransactionCreate,
-    PublicTransactionUpdate,
+    CreateWorkflowPublicTransaction,
+    UpdateWorkflowPublicTransaction,
+    GetWorkflowPublicTransaction,
+    CreatePublicTransaction,
+    UpdatePublicTransaction,
     GetPublicTransaction,
 )
 from .serializers import (
     PaymentSerializer,
     VerifyPaymentSerializer,
- 
     WorkflowStripeSerializer,
     WorkflowVerifyStripSerializer,
     WorkflowPaypalSerializer,
     WorkflowVerifyPaypalSerializer,
-
     PublicStripeSerializer,
     VerifyPublicStripSerializer,
     PublicPaypalSerializer,
@@ -110,7 +111,7 @@ class StripePayment(APIView):
                         },
                         status=status.HTTP_422_UNPROCESSABLE_ENTITY,
                     )
-            model_instance = DowellTransactionCreate
+            model_instance = CreateDowellTransaction
             stripe_key = os.getenv("STRIPE_KEY", None)
 
             res = stripe_payment(
@@ -145,7 +146,7 @@ class VerifyStripePayment(APIView):
                 errors = serializer.errors
                 return Response(errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
-            model_instance_update = DowellTransactionUpdate
+            model_instance_update = UpdateDowellTransaction
             model_instance_get = GetDowellTransaction
             stripe_key = os.getenv("STRIPE_KEY", None)
 
@@ -203,7 +204,7 @@ class PaypalPayment(APIView):
                         status=status.HTTP_422_UNPROCESSABLE_ENTITY,
                     )
 
-            model_instance = DowellTransactionCreate
+            model_instance = CreateDowellTransaction
             client_id = os.getenv("PAYPAL_CLIENT_ID", None)
             client_secret = os.getenv("PAYPAL_SECRET_KEY", None)
 
@@ -242,7 +243,7 @@ class VerifyPaypalPayment(APIView):
                 errors = serializer.errors
                 return Response(errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
-            model_instance_update = DowellTransactionUpdate
+            model_instance_update = UpdateDowellTransaction
             model_instance_get = GetDowellTransaction
             client_id = os.getenv("PAYPAL_CLIENT_ID", None)
             client_secret = os.getenv("PAYPAL_SECRET_KEY", None)
@@ -262,21 +263,19 @@ class VerifyPaypalPayment(APIView):
             )
 
 
-
-
-#PAYMENT API FOR WORKLOW AI TEAM
-
+# PAYMENT API FOR WORKLOW AI INTERNAL TEAM
 class WorkflowStripePayment(APIView):
     @swagger_auto_schema(
-        request_body=PublicStripeSerializer, responses={200: "approval_url"}
+        request_body=WorkflowStripeSerializer, responses={200: "approval_url"}
     )
     def post(self, request):
         try:
             data = request.data
-            serializer = PublicStripeSerializer(data=data)
+            serializer = WorkflowStripeSerializer(data=data)
             if serializer.is_valid():
                 validate_data = serializer.to_representation(serializer.validated_data)
                 stripe_key = validate_data["stripe_key"]
+                template_id = validate_data["template_id"]
                 price = validate_data["price"]
                 product = validate_data["product"]
                 currency_code = validate_data["currency_code"]
@@ -285,7 +284,7 @@ class WorkflowStripePayment(APIView):
                 errors = serializer.errors
                 return Response(errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
-            model_instance = PublicTransactionCreate
+            model_instance = CreateWorkflowPublicTransaction
             stripe_key = stripe_key
 
             res = stripe_payment(
@@ -294,7 +293,8 @@ class WorkflowStripePayment(APIView):
                 currency_code=currency_code,
                 callback_url=callback_url,
                 stripe_key=stripe_key,
-                model_instance=model_instance
+                model_instance=model_instance,
+                template_id=template_id,
             )
             return res
 
@@ -307,13 +307,13 @@ class WorkflowStripePayment(APIView):
 
 class WorkflowVerifyStripePayment(APIView):
     @swagger_auto_schema(
-        request_body=VerifyPublicStripSerializer, responses={200: "status"}
+        request_body=WorkflowVerifyStripSerializer, responses={200: "status"}
     )
     def post(self, request):
         try:
             data = request.data
 
-            serializer = VerifyPublicStripSerializer(data=data)
+            serializer = WorkflowVerifyStripSerializer(data=data)
             if serializer.is_valid():
                 validate_data = serializer.validated_data
                 stripe_key = validate_data["stripe_key"]
@@ -322,15 +322,15 @@ class WorkflowVerifyStripePayment(APIView):
                 errors = serializer.errors
                 return Response(errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
-            model_instance_update = PublicTransactionUpdate
-            model_instance_get = GetPublicTransaction
+            model_instance_update = UpdateWorkflowPublicTransaction
+            model_instance_get = GetWorkflowPublicTransaction
             stripe_key = stripe_key
 
             res = verify_stripe(
                 stripe_key=stripe_key,
                 payment_id=payment_id,
                 model_instance_update=model_instance_update,
-                model_instance_get=model_instance_get
+                model_instance_get=model_instance_get,
             )
             return res
 
@@ -343,27 +343,27 @@ class WorkflowVerifyStripePayment(APIView):
 
 class WorkflowPaypalPayment(APIView):
     @swagger_auto_schema(
-        request_body=PublicPaypalSerializer, responses={200: "approval_url"}
+        request_body=WorkflowPaypalSerializer, responses={200: "approval_url"}
     )
     def post(self, request):
         try:
             data = request.data
 
-            serializer = PublicPaypalSerializer(data=data)
+            serializer = WorkflowPaypalSerializer(data=data)
             if serializer.is_valid():
                 validate_data = serializer.to_representation(serializer.validated_data)
                 client_id = validate_data["paypal_client_id"]
                 client_secret = validate_data["paypal_secret_key"]
+                template_id = validate_data["template_id"]
                 price = validate_data["price"]
                 product_name = validate_data["product"]
                 currency_code = validate_data["currency_code"]
                 callback_url = validate_data["callback_url"]
-                public_paypal_url = validate_data["public_paypal_url"]
             else:
                 errors = serializer.errors
                 return Response(errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
-            model_instance = PublicTransactionCreate
+            model_instance = CreateWorkflowPublicTransaction
             client_id = client_id
             client_secret = client_secret
 
@@ -375,7 +375,8 @@ class WorkflowPaypalPayment(APIView):
                 client_id=client_id,
                 client_secret=client_secret,
                 model_instance=model_instance,
-                paypal_url=workflow_paypal_url
+                paypal_url=workflow_paypal_url,
+                template_id=template_id,
             )
             return res
 
@@ -388,25 +389,24 @@ class WorkflowPaypalPayment(APIView):
 
 class WorkflowVerifyPaypalPayment(APIView):
     @swagger_auto_schema(
-        request_body=VerifyPublicPaypalSerializer, responses={200: "status"}
+        request_body=WorkflowVerifyPaypalSerializer, responses={200: "status"}
     )
     def post(self, request):
         try:
             data = request.data
 
-            serializer = VerifyPublicPaypalSerializer(data=data)
+            serializer = WorkflowVerifyPaypalSerializer(data=data)
             if serializer.is_valid():
-                validate_data = serializer.to_representation(serializer.validated_data)
+                validate_data = serializer.validated_data
                 client_id = validate_data["paypal_client_id"]
                 client_secret = validate_data["paypal_secret_key"]
                 payment_id = validate_data["id"]
-                public_paypal_url = validate_data["public_paypal_url"]
             else:
                 errors = serializer.errors
                 return Response(errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
-            model_instance_update = PublicTransactionUpdate
-            model_instance_get = GetPublicTransaction
+            model_instance_update = UpdateWorkflowPublicTransaction
+            model_instance_get = GetWorkflowPublicTransaction
             client_id = client_id
             client_secret = client_secret
             res = verify_paypal(
@@ -415,7 +415,7 @@ class WorkflowVerifyPaypalPayment(APIView):
                 payment_id=payment_id,
                 model_instance_update=model_instance_update,
                 model_instance_get=model_instance_get,
-                paypal_url=workflow_paypal_url
+                paypal_url=workflow_paypal_url,
             )
             return res
         except Exception as e:
@@ -423,9 +423,6 @@ class WorkflowVerifyPaypalPayment(APIView):
                 {"message": "something went wrong", "error": f"{e}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
-
-
 
 
 # PAYMENT API FOR PUBLIC USAGE
@@ -450,7 +447,7 @@ class StripePaymentPublic(APIView):
                 errors = serializer.errors
                 return Response(errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
-            model_instance = PublicTransactionCreate
+            model_instance = CreatePublicTransaction
             stripe_key = stripe_key
 
             res = stripe_payment(
@@ -488,7 +485,7 @@ class VerifyStripePaymentPublic(APIView):
                 errors = serializer.errors
                 return Response(errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
-            model_instance_update = PublicTransactionUpdate
+            model_instance_update = UpdatePublicTransaction
             model_instance_get = GetPublicTransaction
             stripe_key = stripe_key
 
@@ -530,7 +527,7 @@ class PaypalPaymentPublic(APIView):
                 errors = serializer.errors
                 return Response(errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
-            model_instance = PublicTransactionCreate
+            model_instance = CreatePublicTransaction
             client_id = client_id
             client_secret = client_secret
 
@@ -573,7 +570,7 @@ class VerifyPaypalPaymentPublic(APIView):
                 errors = serializer.errors
                 return Response(errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
-            model_instance_update = PublicTransactionUpdate
+            model_instance_update = UpdatePublicTransaction
             model_instance_get = GetPublicTransaction
             client_id = client_id
             client_secret = client_secret

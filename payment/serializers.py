@@ -2,6 +2,9 @@ from decimal import Decimal
 from rest_framework import serializers
 
 
+# SERIALIZERS FOR DOWELL INTERNAL TEAM
+
+
 class PaymentSerializer(serializers.Serializer):
     price = serializers.FloatField()
     product = serializers.CharField()
@@ -30,6 +33,70 @@ class VerifyPaymentSerializer(serializers.Serializer):
     id = serializers.CharField()
 
 
+# SERIALIZERS FOR WORKLOW AI INTERNAL TEAM
+class WorkflowStripeSerializer(serializers.Serializer):
+    stripe_key = serializers.CharField()
+    template_id = serializers.CharField()
+    price = serializers.FloatField()
+    product = serializers.CharField()
+    currency_code = serializers.CharField()
+    callback_url = serializers.CharField(
+        required=False, default="https://100088.pythonanywhere.com/api/success"
+    )
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        price = data.get("price")
+
+        if isinstance(price, str):
+            # Convert the string back to a Decimal
+            price = Decimal(price)
+        if price % 1 == 0:
+            data["price"] = int(price)
+        else:
+            data["price"] = price
+        return data
+
+
+class WorkflowVerifyStripSerializer(serializers.Serializer):
+    stripe_key = serializers.CharField()
+    id = serializers.CharField()
+
+
+class WorkflowPaypalSerializer(serializers.Serializer):
+    paypal_client_id = serializers.CharField()
+    paypal_secret_key = serializers.CharField()
+    template_id = serializers.CharField()
+    price = serializers.FloatField()
+    product = serializers.CharField()
+    currency_code = serializers.CharField()
+    callback_url = serializers.CharField(
+        required=False, default="https://100088.pythonanywhere.com/api/success"
+    )
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        price = data.get("price")
+
+        if isinstance(price, str):
+            # Convert the string back to a Decimal
+            price = Decimal(price)
+
+        if price % 1 == 0:
+            data["price"] = int(price)
+        else:
+            data["price"] = price
+
+        return data
+
+
+class WorkflowVerifyPaypalSerializer(serializers.Serializer):
+    paypal_client_id = serializers.CharField()
+    paypal_secret_key = serializers.CharField()
+    id = serializers.CharField()
+
+
+# SERIALIZERS FOR PUBLIC USAGE
 class PublicStripeSerializer(serializers.Serializer):
     stripe_key = serializers.CharField()
     price = serializers.FloatField()

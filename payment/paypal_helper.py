@@ -23,6 +23,7 @@ def paypal_payment(
     client_secret,
     model_instance,
     paypal_url,
+    template_id=None,
     voucher_code=None,
     api_key=None,
 ):
@@ -90,7 +91,7 @@ def paypal_payment(
     try:
         payment_id = response["id"]
         transaction_info = model_instance(
-            payment_id, "", product_name, "", voucher_code
+            payment_id, "", product_name, "", template_id, voucher_code
         )
     except Exception as e:
         return Response(

@@ -22,6 +22,7 @@ def stripe_payment(
     callback_url,
     stripe_key,
     model_instance,
+    template_id=None,
     voucher_code=None,
     api_key=None,
 ):
@@ -64,7 +65,7 @@ def stripe_payment(
     )
 
     transaction_info = model_instance(
-        payment_id, session.id, product, today, voucher_code
+        payment_id, session.id, product, today, template_id, voucher_code
     )
     print(transaction_info)
     return Response(

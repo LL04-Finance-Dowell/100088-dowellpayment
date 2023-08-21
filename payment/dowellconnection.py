@@ -2,7 +2,10 @@ import requests
 import json
 
 
-def DowellTransactionCreate(payment_id, session_id, desc, today, voucher_code=None):
+# COLLECTIONS FOR DOWELL INTERNAL TEAM
+def CreateDowellTransaction(
+    payment_id, session_id, desc, today, template_id=None, voucher_code=None
+):
     headers = {
         "content-type": "application/json",
     }
@@ -45,7 +48,7 @@ def DowellTransactionCreate(payment_id, session_id, desc, today, voucher_code=No
     return json_data
 
 
-def DowellTransactionUpdate(
+def UpdateDowellTransaction(
     payment_id,
     ref_id,
     amount,
@@ -121,7 +124,130 @@ def GetDowellTransaction(payment_id):
     return json_data
 
 
-def PublicTransactionCreate(payment_id, session_id, desc, today, voucher_code=None):
+# COLLECTIONS FOR WORKFLOW AI INTERNAL TEAM
+def CreateWorkflowPublicTransaction(
+    payment_id, session_id, desc, today, template_id=None, voucher_code=None
+):
+    headers = {
+        "content-type": "application/json",
+    }
+    url = "http://uxlivinglab.pythonanywhere.com/"
+
+    data = {
+        "cluster": "dowellpayment",
+        "database": "dowellpayment",
+        "collection": "WorkflowTransactions",
+        "document": "WorkflowTransactions",
+        "team_member_ID": "1225001",
+        "function_ID": "ABCDE",
+        "command": "insert",
+        "field": {
+            "payment_id": f"{payment_id}",
+            "session_id": f"{session_id}",
+            "template_id": f"{template_id}",
+            "amount": "",
+            "currency": "",
+            "name": "",
+            "email": "",
+            "desc": f"{desc}",
+            "date": f"{today}",
+            "city": "",
+            "state": "",
+            "address": "",
+            "postal_code": "",
+            "country_code": "",
+            "ref_id": "",
+            "status": "",
+            "mail_sent": "False",
+        },
+        "update_field": {},
+        "platform": "bangalore",
+    }
+    response = requests.post(url, json=data, headers=headers)
+    json_data = json.loads(response.json())
+    print(json_data)
+
+
+def UpdateWorkflowPublicTransaction(
+    payment_id,
+    ref_id,
+    amount,
+    currency,
+    name,
+    email,
+    city,
+    state,
+    address,
+    postal_code,
+    country_code,
+):
+    headers = {
+        "content-type": "application/json",
+    }
+    url = "http://uxlivinglab.pythonanywhere.com/"
+
+    data = {
+        "cluster": "dowellpayment",
+        "database": "dowellpayment",
+        "collection": "WorkflowTransactions",
+        "document": "WorkflowTransactions",
+        "team_member_ID": "1225001",
+        "function_ID": "ABCDE",
+        "command": "update",
+        "field": {
+            "payment_id": f"{payment_id}",
+        },
+        "update_field": {
+            "amount": f"{amount}",
+            "currency": f"{currency}",
+            "name": f"{name}",
+            "email": f"{email}",
+            "city": f"{city}",
+            "state": f"{state}",
+            "address": f"{address}",
+            "postal_code": f"{postal_code}",
+            "country_code": f"{country_code}",
+            "ref_id": f"{ref_id}",
+            "status": "succeeded",
+            "mail_sent": "True",
+        },
+        "platform": "bangalore",
+    }
+    response = requests.post(url, json=data, headers=headers)
+    json_data = json.loads(response.json())
+    print(json_data)
+
+
+def GetWorkflowPublicTransaction(payment_id):
+    headers = {
+        "content-type": "application/json",
+    }
+    url = "http://uxlivinglab.pythonanywhere.com/"
+
+    data = {
+        "cluster": "dowellpayment",
+        "database": "dowellpayment",
+        "collection": "WorkflowTransactions",
+        "document": "WorkflowTransactions",
+        "team_member_ID": "1225001",
+        "function_ID": "ABCDE",
+        "command": "find",
+        "field": {
+            "payment_id": f"{payment_id}",
+        },
+        "update_field": {},
+        "platform": "bangalore",
+    }
+    response = requests.post(url, json=data, headers=headers)
+    json_data = json.loads(response.json())
+    print(json_data)
+    return json_data
+
+
+# COLLECTIONS FOR PUBLIC
+def CreatePublicTransaction(
+    payment_id, session_id, desc, today, template_id=None, voucher_code=None
+):
     headers = {
         "content-type": "application/json",
     }
@@ -161,7 +287,7 @@ def PublicTransactionCreate(payment_id, session_id, desc, today, voucher_code=No
     print(json_data)
 
 
-def PublicTransactionUpdate(
+def UpdatePublicTransaction(
     payment_id,
     ref_id,
     amount,
