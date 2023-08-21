@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "rest_framework_api_key",
     # Internal package
     "payment",
+    "purchasing_power_parity",
 ]
 
 MIDDLEWARE = [

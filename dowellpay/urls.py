@@ -47,5 +47,6 @@ urlpatterns = [
     ),
     path("redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
     path("admin/", admin.site.urls),
-    path("", include("payment.urls")),
+    path("api", include("payment.urls")),
+    path("api/ppp", include("purchasing_power_parity.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
