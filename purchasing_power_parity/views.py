@@ -24,20 +24,27 @@ class GetPurchasingPowerParity(APIView):
         #GET PPP OBJECT FROM DB
 
         #BASE COUNTRY
+        '''use base country data to get the base country currency code'''
         base_country_currency_code = "USD"
         
         #BASE CURRENCY
+        '''get the base currency world bank ppp from db'''
         base_currency_obj = PPPCalculation.objects.get(currency_code=base_currency)
         base_world_bank_ppp = base_currency_obj.world_bank_ppp
         
         #TARGET COUNTRY
+        '''get the target country world bank ppp from db'''
         target_country_obj = PPPCalculation.objects.get(country_name=target_country)
         target_country_world_bank_ppp = target_country_obj.world_bank_ppp
         target_country_currency = target_country_obj.currency_code
         
         #GET EXCHANGE RATE OF BASE CURRENCY IN BASE COUNTRY
+        '''
+        get the exchange rate of the base currency using the base country data
+        This exchange rate will be gotten from an external API
+        '''
         base_currency_obj = PPPCalculation.objects.get(currency_code=base_currency)
-        base_currency_exchange_rate = base_currency_obj.usd_exchange_rate
+        base_currency_exchange_rate = base_currency_obj.usd_exchange_rate * float(base_price)
         base_currency_code = base_currency_obj.currency_code
 
         #GET PPP RATIO
@@ -46,19 +53,24 @@ class GetPurchasingPowerParity(APIView):
 
 
         #GET EXCHANGE RATE OF TARGET COUNTRY PPP RATIO IN TARGET CURRENCY
+        '''
+        get the exchange rate of target country ppp ratio in target currency from an
+        external API
+        '''
         target_exchange_rate=target_country_obj.usd_exchange_rate
+        target_currency_exchange_rate = purchasing_power/target_exchange_rate
 
 
         
 
-        print("base price", base_price)
-        print("base_world_bank_ppp",base_world_bank_ppp)
-        print("target_country_world_bank_ppp",target_country_world_bank_ppp)
+        # print("base price", base_price)
+        # print("base_world_bank_ppp",base_world_bank_ppp)
+        # print("target_country_world_bank_ppp",target_country_world_bank_ppp)
          
         
 
         return Response(
-            {"base_currency_exchange_rate":f"{base_price} {base_country_currency_code} = {base_currency_exchange_rate} {base_currency_code}","purchasing_power": f"{purchasing_power} {target_country_currency}",
-             "target_currency_exchange_rate":f"{purchasing_power} {target_country_currency} = {base_currency_exchange_rate} {target_currency}"},
+            {"base_currency_exchange_rate":f"{base_price} {base_country_currency_code} = {base_currency_exchange_rate} {base_currency_code}","purchasing_power": f"{base_currency_exchange_rate} {base_currency_code} = {purchasing_power} {target_country_currency}",
+             "target_currency_exchange_rate":f"{purchasing_power} {target_country_currency} = {target_currency_exchange_rate} {target_currency}"},
             status=status.HTTP_200_OK,
         )
