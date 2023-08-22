@@ -3,5 +3,5 @@ from .views import GetPurchasingPowerParity
 
 
 urlpatterns = [
-    path("get",GetPurchasingPowerParity.as_view()),
+    path("get", GetPurchasingPowerParity.as_view()),
 ]

@@ -3,4 +3,9 @@ from .models import PPPCalculation
 
 # Register your models here.
 
-admin.site.register(PPPCalculation)
+
+class PPPCalculationAdmin(admin.ModelAdmin):
+    search_fields = ["country_name", "currency_name", "currency_code"]
+
+
+admin.site.register(PPPCalculation, PPPCalculationAdmin)
