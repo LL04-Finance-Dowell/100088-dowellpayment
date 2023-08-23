@@ -9,3 +9,4 @@ class PPPCalculationAdmin(admin.ModelAdmin):
 
 
 admin.site.register(PPPCalculation, PPPCalculationAdmin)
+# admin.site.register(PPPCalculation2,PPPCalculationAdmin)

@@ -3,6 +3,17 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import PPPCalculation
+import requests
+import os
+from dotenv import load_dotenv
+import json
+from django.db.models import Q
+
+import currencyapicom
+
+load_dotenv()
+
+currency_api_key = os.getenv("CURRENCY_API")
 
 # Create your views here.
 
@@ -12,8 +23,11 @@ from .models import PPPCalculation
 # End point [target price ()]
 
 
+
 class GetPurchasingPowerParity(APIView):
     def post(self, request):
+
+       
         data = request.data
         base_country = data["base_country"]
         base_price = data["base_price"]
@@ -25,16 +39,17 @@ class GetPurchasingPowerParity(APIView):
 
         #BASE COUNTRY
         '''use base country data to get the base country currency code'''
-        base_country_currency_code = "USD"
+        base_country_obj = PPPCalculation.objects.get(Q(country_name__iexact=base_country))
+        base_country_currency_code = base_country_obj.currency_code
         
         #BASE CURRENCY
         '''get the base currency world bank ppp from db'''
-        base_currency_obj = PPPCalculation.objects.get(currency_code=base_currency)
+        base_currency_obj = PPPCalculation.objects.get(Q(currency_code__iexact=base_currency))
         base_world_bank_ppp = base_currency_obj.world_bank_ppp
         
         #TARGET COUNTRY
         '''get the target country world bank ppp from db'''
-        target_country_obj = PPPCalculation.objects.get(country_name=target_country)
+        target_country_obj = PPPCalculation.objects.get(Q(country_name__iexact=target_country))
         target_country_world_bank_ppp = target_country_obj.world_bank_ppp
         target_country_currency = target_country_obj.currency_code
         
@@ -43,9 +58,22 @@ class GetPurchasingPowerParity(APIView):
         get the exchange rate of the base currency using the base country data
         This exchange rate will be gotten from an external API
         '''
-        base_currency_obj = PPPCalculation.objects.get(currency_code=base_currency)
-        base_currency_exchange_rate = base_currency_obj.usd_exchange_rate * float(base_price)
+        base_currency_obj = PPPCalculation.objects.get(Q(currency_code__iexact=base_currency))
+        # base_currency_exchange_rate = base_currency_obj.usd_exchange_rate * float(base_price)
         base_currency_code = base_currency_obj.currency_code
+        client = currencyapicom.Client('currency_api_key')
+        result = client.latest(f"{base_country_currency_code}",[f"{base_currency_code}"])
+        print("result 1")
+        print(result)
+        base_currency_exchange_rate = result["data"][f"{base_currency_code}"]["value"] * float(base_price)
+        print(base_currency_exchange_rate)
+
+        # out = get_latest_rate("EUR","NGN")
+        # print("out",out)
+
+        
+       
+
 
         #GET PPP RATIO
         world_bank_division = base_world_bank_ppp / target_country_world_bank_ppp
@@ -57,8 +85,15 @@ class GetPurchasingPowerParity(APIView):
         get the exchange rate of target country ppp ratio in target currency from an
         external API
         '''
-        target_exchange_rate=target_country_obj.usd_exchange_rate
-        target_currency_exchange_rate = purchasing_power/target_exchange_rate
+        # target_exchange_rate=target_country_obj.usd_exchange_rate
+        # target_currency_exchange_rate = purchasing_power/target_exchange_rate
+
+        client = currencyapicom.Client('currency_api_key')
+        result2 = client.latest(f"{target_country_currency}",[f"{target_currency}"])
+        print("result 2")
+        print(result2)
+        target_currency_exchange_rate = result2["data"][f"{target_currency}"]["value"] * (purchasing_power)
+        print(target_currency_exchange_rate)
 
 
         
