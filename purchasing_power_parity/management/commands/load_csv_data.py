@@ -5,8 +5,6 @@ from django.core.management import BaseCommand
 from purchasing_power_parity.models import PPPCalculation
 
 
-
-
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -15,7 +13,6 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from google.oauth2 import service_account
 import re
-
 
 
 ERROR_MESSAGE = """
@@ -51,10 +48,7 @@ class Command(BaseCommand):
         print("Data Loaded Successfully")
 
 
-
-
-
-#DEVELOPMENT ENVIRONMENT
+# DEVELOPMENT ENVIRONMENT
 
 # SAMPLE_SPREADSHEET_ID = '1o7V941xhnRBuWPGfztoWL5Mt9UGkibbhhXD2tvb0JRs'
 # SAMPLE_RANGE_NAME = 'PPP (Base price 1 usd )!A1:G199'
@@ -104,7 +98,7 @@ class Command(BaseCommand):
 
 #                     # Remove commas and convert to a float
 #                     world_bank_ppp = float(re.sub(r'[^\d.]', '', row[4]))
-                    
+
 #                     # Remove commas and convert to a float
 #                     usd_exchange_rate = float(re.sub(r'[^\d.]', '', row[5]))
 
@@ -125,11 +119,6 @@ class Command(BaseCommand):
 #             print(err)
 
 
-
-
-
-
-
 # PRODUCTION ENVIRONMENT
 
 # class Command(BaseCommand):
@@ -142,7 +131,7 @@ class Command(BaseCommand):
 
 #         credentials = service_account.Credentials.from_service_account_file('/home/nabilah/Desktop/dowell/Payment_API/orgmail-c4daca2e8bab.json')
 
-        
+
 #         try:
 #             service = build('sheets', 'v4', credentials=credentials)
 
