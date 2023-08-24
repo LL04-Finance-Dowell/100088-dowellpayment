@@ -19,13 +19,15 @@ class PaymentSerializer(serializers.Serializer):
         data = super().to_representation(instance)
         price = data.get("price")
 
-        if isinstance(price, str):
-            # Convert the string back to a Decimal
-            price = Decimal(price)
+        # if isinstance(price, str):
+        #     # Convert the string back to a Decimal
+        #     price = Decimal(price)
+        discount_price = round( price - (0.4*price), 2)
+    
         if price % 1 == 0:
-            data["price"] = int(price)
+            data["price"] = int(discount_price)
         else:
-            data["price"] = price
+            data["price"] = discount_price
         return data
 
 
@@ -48,9 +50,6 @@ class WorkflowStripeSerializer(serializers.Serializer):
         data = super().to_representation(instance)
         price = data.get("price")
 
-        if isinstance(price, str):
-            # Convert the string back to a Decimal
-            price = Decimal(price)
         if price % 1 == 0:
             data["price"] = int(price)
         else:
@@ -78,9 +77,6 @@ class WorkflowPaypalSerializer(serializers.Serializer):
         data = super().to_representation(instance)
         price = data.get("price")
 
-        if isinstance(price, str):
-            # Convert the string back to a Decimal
-            price = Decimal(price)
 
         if price % 1 == 0:
             data["price"] = int(price)
@@ -110,9 +106,6 @@ class PublicStripeSerializer(serializers.Serializer):
         data = super().to_representation(instance)
         price = data.get("price")
 
-        if isinstance(price, str):
-            # Convert the string back to a Decimal
-            price = Decimal(price)
         if price % 1 == 0:
             data["price"] = int(price)
         else:
@@ -149,9 +142,6 @@ class PublicPaypalSerializer(serializers.Serializer):
         price = data.get("price")
         mode = data.get("mode")
 
-        if isinstance(price, str):
-            # Convert the string back to a Decimal
-            price = Decimal(price)
 
         if price % 1 == 0:
             data["price"] = int(price)
