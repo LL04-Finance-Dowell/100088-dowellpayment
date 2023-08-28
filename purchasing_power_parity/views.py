@@ -11,6 +11,7 @@ import requests
 
 import currencyapicom
 
+
 load_dotenv()
 
 currency_api_key = os.getenv("CURRENCY_API")

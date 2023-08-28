@@ -12,6 +12,10 @@ from .views import (
     VerifyStripePaymentPublic,
     PaypalPaymentPublic,
     VerifyPaypalPaymentPublic,
+    StripePaymentPublicUse,
+    VerifyStripePaymentPublicUse,
+    PaypalPaymentPublicUse,
+    VerifyPaypalPaymentPublicUse,
     Success,
     Error,
 )
@@ -34,6 +38,16 @@ urlpatterns = [
     path(
         "verify/payment/paypal/public/<str:api_key>",
         VerifyPaypalPaymentPublic.as_view(),
+    ),
+    path("stripe/initialize/public-use", StripePaymentPublicUse.as_view()),
+    path(
+        "verify/payment/stripe/public-use",
+        VerifyStripePaymentPublicUse.as_view(),
+    ),
+    path("paypal/initialize/public-use", PaypalPaymentPublicUse.as_view()),
+    path(
+        "verify/payment/paypal/public-use",
+        VerifyPaypalPaymentPublicUse.as_view(),
     ),
     path("success", Success.as_view()),
     path("error", Error.as_view()),

@@ -426,8 +426,6 @@ class WorkflowVerifyPaypalPayment(APIView):
 
 
 # PAYMENT API FOR PUBLIC USAGE
-
-
 class StripePaymentPublic(APIView):
     @swagger_auto_schema(
         request_body=PublicStripeSerializer, responses={200: "approval_url"}
@@ -582,6 +580,166 @@ class VerifyPaypalPaymentPublic(APIView):
                 model_instance_get=model_instance_get,
                 paypal_url=public_paypal_url,
                 api_key=api_key,
+            )
+            return res
+        except Exception as e:
+            return Response(
+                {"message": "something went wrong", "error": f"{e}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+
+# PAYMENT API FOR PUBLIC USAGE WITHOUT API KEYS
+class StripePaymentPublicUse(APIView):
+    @swagger_auto_schema(
+        request_body=PublicStripeSerializer, responses={200: "approval_url"}
+    )
+    def post(self, request):
+        try:
+            data = request.data
+            serializer = PublicStripeSerializer(data=data)
+            if serializer.is_valid():
+                validate_data = serializer.to_representation(serializer.validated_data)
+                stripe_key = validate_data["stripe_key"]
+                price = validate_data["price"]
+                product = validate_data["product"]
+                currency_code = validate_data["currency_code"]
+                callback_url = validate_data["callback_url"]
+            else:
+                errors = serializer.errors
+                return Response(errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+            model_instance = CreatePublicTransaction
+            stripe_key = stripe_key
+
+            res = stripe_payment(
+                price=price,
+                product=product,
+                currency_code=currency_code,
+                callback_url=callback_url,
+                stripe_key=stripe_key,
+                model_instance=model_instance,
+            )
+            return res
+
+        except Exception as e:
+            return Response(
+                {"message": "something went wrong", "error": f"{e}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+
+class VerifyStripePaymentPublicUse(APIView):
+    @swagger_auto_schema(
+        request_body=VerifyPublicStripSerializer, responses={200: "status"}
+    )
+    def post(self, request):
+        try:
+            data = request.data
+
+            serializer = VerifyPublicStripSerializer(data=data)
+            if serializer.is_valid():
+                validate_data = serializer.validated_data
+                stripe_key = validate_data["stripe_key"]
+                payment_id = validate_data["id"]
+            else:
+                errors = serializer.errors
+                return Response(errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+            model_instance_update = UpdatePublicTransaction
+            model_instance_get = GetPublicTransaction
+            stripe_key = stripe_key
+
+            res = verify_stripe(
+                stripe_key=stripe_key,
+                payment_id=payment_id,
+                model_instance_update=model_instance_update,
+                model_instance_get=model_instance_get,
+            )
+            return res
+
+        except Exception as e:
+            return Response(
+                {"message": "something went wrong", "error": f"{e}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+
+class PaypalPaymentPublicUse(APIView):
+    @swagger_auto_schema(
+        request_body=PublicPaypalSerializer, responses={200: "approval_url"}
+    )
+    def post(self, request):
+        try:
+            data = request.data
+
+            serializer = PublicPaypalSerializer(data=data)
+            if serializer.is_valid():
+                validate_data = serializer.to_representation(serializer.validated_data)
+                client_id = validate_data["paypal_client_id"]
+                client_secret = validate_data["paypal_secret_key"]
+                price = validate_data["price"]
+                product_name = validate_data["product"]
+                currency_code = validate_data["currency_code"]
+                callback_url = validate_data["callback_url"]
+                public_paypal_url = validate_data["public_paypal_url"]
+            else:
+                errors = serializer.errors
+                return Response(errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+            model_instance = CreatePublicTransaction
+            client_id = client_id
+            client_secret = client_secret
+
+            res = paypal_payment(
+                price=price,
+                product_name=product_name,
+                currency_code=currency_code,
+                callback_url=callback_url,
+                client_id=client_id,
+                client_secret=client_secret,
+                model_instance=model_instance,
+                paypal_url=public_paypal_url,
+            )
+            return res
+
+        except Exception as e:
+            return Response(
+                {"message": "something went wrong", "error": f"{e}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+
+class VerifyPaypalPaymentPublicUse(APIView):
+    @swagger_auto_schema(
+        request_body=VerifyPublicPaypalSerializer, responses={200: "status"}
+    )
+    def post(self, request):
+        try:
+            data = request.data
+
+            serializer = VerifyPublicPaypalSerializer(data=data)
+            if serializer.is_valid():
+                validate_data = serializer.to_representation(serializer.validated_data)
+                client_id = validate_data["paypal_client_id"]
+                client_secret = validate_data["paypal_secret_key"]
+                payment_id = validate_data["id"]
+                public_paypal_url = validate_data["public_paypal_url"]
+            else:
+                errors = serializer.errors
+                return Response(errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+            model_instance_update = UpdatePublicTransaction
+            model_instance_get = GetPublicTransaction
+            client_id = client_id
+            client_secret = client_secret
+            res = verify_paypal(
+                client_id=client_id,
+                client_secret=client_secret,
+                payment_id=payment_id,
+                model_instance_update=model_instance_update,
+                model_instance_get=model_instance_get,
+                paypal_url=public_paypal_url,
             )
             return res
         except Exception as e:
