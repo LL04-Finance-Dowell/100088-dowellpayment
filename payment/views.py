@@ -9,6 +9,11 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+import qrcode
+from io import BytesIO
+from django.conf import settings
+from django.core.files.storage import FileSystemStorage
+import uuid
 
 from .dowellconnection import (
     CreateDowellTransaction,
@@ -130,6 +135,46 @@ class StripePayment(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+class StripeQrcodePayment(APIView):
+    @swagger_auto_schema(
+        request_body=PaymentSerializer, responses={200: "approval_url"}
+    )
+    def post(self,request):
+        data = request.data
+        callback_url = data["callback_url"]
+        #return Response({"data":callback_url})
+    
+        # Generate the QR code
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=10,
+            border=4,
+        )
+        qr.add_data(callback_url)
+        qr.make(fit=True)
+        qr_image = qr.make_image(fill_color="black", back_color="white")
+
+        # Save the QR code image to a BytesIO buffer
+        qr_buffer = BytesIO()
+        qr_image.save(qr_buffer, format='PNG')
+        qr_buffer.seek(0)
+
+        # Construct the path to the 'qrcodes' directory
+        qrcodes_dir = os.path.join(settings.MEDIA_ROOT, 'qrcodes')
+        
+        # Save the image to the 'qrcodes' directory in your media root
+        fs = FileSystemStorage(location=qrcodes_dir)
+        unique_id = str(uuid.uuid4())
+        filename = f"{unique_id}/qrcode.png"
+        filepath = fs.save(filename, qr_buffer)
+        
+        # Get the URL of the saved QR code image
+        qr_image_url = os.path.join(settings.MEDIA_URL, 'qrcodes', filename)
+        
+        return Response({'qr_image_url': f"http://127.0.0.1:8000{qr_image_url}"})
+        
+    
 
 class VerifyStripePayment(APIView):
     @swagger_auto_schema(

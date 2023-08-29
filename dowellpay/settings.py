@@ -46,6 +46,8 @@ INSTALLED_APPS = [
     "rest_framework_swagger",
     "drf_yasg",
     "rest_framework_api_key",
+    "apscheduler",
+    "django_apscheduler",
     # Internal package
     "payment",
     "purchasing_power_parity",

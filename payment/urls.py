@@ -2,6 +2,7 @@ from django.urls import path
 from .views import (
     PaypalPayment,
     StripePayment,
+    StripeQrcodePayment,
     VerifyPaypalPayment,
     VerifyStripePayment,
     WorkflowStripePayment,
@@ -22,6 +23,7 @@ from .views import (
 
 urlpatterns = [
     path("stripe/initialize", StripePayment.as_view()),
+    path("stripe/initialize/qrcode", StripeQrcodePayment.as_view()),
     path("verify/payment/stripe", VerifyStripePayment.as_view()),
     path("paypal/initialize", PaypalPayment.as_view()),
     path("verify/payment/paypal", VerifyPaypalPayment.as_view()),
