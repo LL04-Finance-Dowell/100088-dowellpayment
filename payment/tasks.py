@@ -6,14 +6,16 @@ from django.conf import settings
 import os
 import shutil
 
+
 def cleanup_qrcodes():
-    qr_codes_dir = os.path.join(settings.MEDIA_ROOT, 'qrcodes')
+    qr_codes_dir = os.path.join(settings.MEDIA_ROOT, "qrcodes")
     if os.path.exists(qr_codes_dir):
         shutil.rmtree(qr_codes_dir)
         os.makedirs(qr_codes_dir)
-        print('Successfully cleaned up QR code images')
+        print("Successfully cleaned up QR code images")
     else:
-        print('QR code images directory does not exist')
+        print("QR code images directory does not exist")
+
 
 # Create a scheduler
 scheduler = BackgroundScheduler()
@@ -24,7 +26,7 @@ scheduler.add_jobstore(DjangoJobStore(), "default")
 # Schedule the cleanup task to run every 24 hours
 scheduler.add_job(
     cleanup_qrcodes,
-    trigger=IntervalTrigger(hours=24),
+    trigger=IntervalTrigger(minutes=5),
     id="cleanup_qrcodes",
     name="Cleanup QR Codes",
     replace_existing=True,

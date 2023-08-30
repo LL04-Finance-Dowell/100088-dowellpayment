@@ -4,6 +4,7 @@ import requests
 import stripe
 from rest_framework import status
 from rest_framework.response import Response
+from .qrcodes import payment_qrcode
 from .sendmail import send_mail_one, send_mail_two
 
 
@@ -24,14 +25,17 @@ def stripe_payment(
     model_instance,
     template_id=None,
     voucher_code=None,
+    generate_qrcode=None,
     api_key=None,
 ):
+    print(generate_qrcode)
     if api_key:
         validate = processApikey(api_key)
         print(validate)
         if validate["success"] == False:
             return Response(
-                {"message": validate["message"]}, status=status.HTTP_400_BAD_REQUEST
+                {"success": False, "message": validate["message"]},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
     stripe.api_key = stripe_key
@@ -63,15 +67,28 @@ def stripe_payment(
             }
         },
     )
-
     transaction_info = model_instance(
         payment_id, session.id, product, today, template_id, voucher_code
     )
+
     print(transaction_info)
-    return Response(
-        {"approval_url": f"{session.url}", "payment_id": payment_id},
-        status=status.HTTP_200_OK,
-    )
+
+    if generate_qrcode == True:
+        data = payment_qrcode(session.url, payment_id)
+        image_url = data["qr_image_url"]
+        return Response(
+            {"success": True, "qr_image_url": image_url, "payment_id": payment_id},
+            status=status.HTTP_200_OK,
+        )
+    else:
+        return Response(
+            {
+                "success": True,
+                "approval_url": f"{session.url}",
+                "payment_id": payment_id,
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 def verify_stripe(
@@ -82,7 +99,8 @@ def verify_stripe(
         print(validate)
         if validate["success"] == False:
             return Response(
-                {"message": validate["message"]}, status=status.HTTP_401_UNAUTHORIZED
+                {"success": False, "message": validate["message"]},
+                status=status.HTTP_401_UNAUTHORIZED,
             )
 
     stripe.api_key = stripe_key
@@ -160,6 +178,7 @@ def verify_stripe(
         )
         return Response(
             {
+                "success": True,
                 "status": "succeeded",
             },
             status=status.HTTP_200_OK,
@@ -170,8 +189,11 @@ def verify_stripe(
         or payment_status == "unpaid"
         and state == "expired"
     ):
-        return Response({"status": "failed"}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response(
+            {"success": False, "status": "failed"}, status=status.HTTP_401_UNAUTHORIZED
+        )
     else:
         return Response(
-            {"message": "something went wrong"}, status=status.HTTP_401_UNAUTHORIZED
+            {"success": False, "message": "something went wrong"},
+            status=status.HTTP_401_UNAUTHORIZED,
         )

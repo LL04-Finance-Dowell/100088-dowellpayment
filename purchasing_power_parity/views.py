@@ -93,6 +93,7 @@ class GetPurchasingPowerParity(APIView):
             except Exception as e:
                 return Response(
                     {
+                        "success": False,
                         "message": "something went wrong",
                         "details": "Invalid Currency Code",
                         "error": f"{e}",
@@ -102,9 +103,11 @@ class GetPurchasingPowerParity(APIView):
 
             return Response(
                 {
-                    "base_currency_exchange_rate": f"{base_price} {base_currency} = {base_currency_exchange_rate} {base_country_currency_code}",
-                    "purchasing_power": f"{base_currency_exchange_rate} {base_country_currency_code} = {purchasing_power} {target_country_currency_code}",
-                    "target_currency_exchange_rate": f"{purchasing_power} {target_country_currency_code} = {target_currency_exchange_rate} {target_currency}",
+                    "success": True,
+                    "message": "Expected values",
+                    "base_currency_exchange_rate": f"{base_currency_exchange_rate} {base_country_currency_code}",
+                    "purchasing_power": f"{purchasing_power} {target_country_currency_code}",
+                    "target_currency_exchange_rate": f"{target_currency_exchange_rate} {target_currency}",
                 },
                 status=status.HTTP_200_OK,
             )
@@ -112,6 +115,7 @@ class GetPurchasingPowerParity(APIView):
         except Exception as e:
             return Response(
                 {
+                    "success": False,
                     "message": "something went wrong",
                     "details": "Invalid Country Name",
                     "error": f"{e}",
@@ -182,6 +186,7 @@ class GetPublicPurchasingPowerParity(APIView):
             except Exception as e:
                 return Response(
                     {
+                        "success": False,
                         "message": "something went wrong",
                         "details": "Invalid Currency Code",
                         "error": f"{e}",
@@ -191,9 +196,11 @@ class GetPublicPurchasingPowerParity(APIView):
 
             return Response(
                 {
-                    "base_currency_exchange_rate": f"{base_price} {base_currency} = {base_currency_exchange_rate} {base_country_currency_code}",
-                    "purchasing_power": f"{base_currency_exchange_rate} {base_country_currency_code} = {purchasing_power} {target_country_currency_code}",
-                    "target_currency_exchange_rate": f"{purchasing_power} {target_country_currency_code} = {target_currency_exchange_rate} {target_currency}",
+                    "success": True,
+                    "message": "Expected values",
+                    "base_currency_exchange_rate": f"{base_currency_exchange_rate} {base_country_currency_code}",
+                    "purchasing_power": f"{purchasing_power} {target_country_currency_code}",
+                    "target_currency_exchange_rate": f"{target_currency_exchange_rate} {target_currency}",
                 },
                 status=status.HTTP_200_OK,
             )
@@ -201,6 +208,7 @@ class GetPublicPurchasingPowerParity(APIView):
         except Exception as e:
             return Response(
                 {
+                    "success": False,
                     "message": "something went wrong",
                     "details": "Invalid Country Name",
                     "error": f"{e}",

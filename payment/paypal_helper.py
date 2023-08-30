@@ -3,6 +3,7 @@ import base64
 import json
 from rest_framework import status
 from rest_framework.response import Response
+from .qrcodes import payment_qrcode
 from .sendmail import send_mail_one, send_mail_two
 
 
@@ -25,18 +26,20 @@ def paypal_payment(
     paypal_url,
     template_id=None,
     voucher_code=None,
+    generate_qrcode=None,
     api_key=None,
 ):
     if api_key:
         validate = processApikey(api_key)
         if validate["success"] == False:
             return Response(
-                {"message": validate["message"]}, status=status.HTTP_401_UNAUTHORIZED
+                {"success": False, "message": validate["message"]},
+                status=status.HTTP_401_UNAUTHORIZED,
             )
     print(voucher_code)
     if price <= 0:
         return Response(
-            {"message": "price cant be zero or less than zero"},
+            {"success": False, "message": "price cant be zero or less than zero"},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
@@ -76,6 +79,7 @@ def paypal_payment(
     if "name" in response and response["name"] == "UNPROCESSABLE_ENTITY":
         return Response(
             {
+                "success": False,
                 "error": response["name"],
                 "details": response["details"][0]["description"],
             },
@@ -84,7 +88,11 @@ def paypal_payment(
 
     if "error" in response and response["error"] == "invalid_client":
         return Response(
-            {"error": response["error"], "details": response["error_description"]},
+            {
+                "success": False,
+                "error": response["error"],
+                "details": response["error_description"],
+            },
             status=status.HTTP_401_UNAUTHORIZED,
         )
 
@@ -95,14 +103,27 @@ def paypal_payment(
         )
     except Exception as e:
         return Response(
-            {"message": "something went wrong", "error": f"{e}"},
+            {"success": False, "message": "something went wrong", "error": f"{e}"},
             status=status.HTTP_400_BAD_REQUEST,
         )
     approve_payment = response["links"][1]["href"]
-    return Response(
-        {"approval_url": approve_payment, "payment_id": response["id"]},
-        status=status.HTTP_200_OK,
-    )
+
+    if generate_qrcode == True:
+        data = payment_qrcode(approve_payment, payment_id)
+        image_url = data["qr_image_url"]
+        return Response(
+            {"success": True, "qr_image_url": image_url, "payment_id": payment_id},
+            status=status.HTTP_200_OK,
+        )
+    else:
+        return Response(
+            {
+                "success": True,
+                "approval_url": approve_payment,
+                "payment_id": payment_id,
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 def verify_paypal(
@@ -118,7 +139,8 @@ def verify_paypal(
         validate = processApikey(api_key)
         if validate["success"] == False:
             return Response(
-                {"message": validate["message"]}, status=status.HTTP_401_UNAUTHORIZED
+                {"success": False, "message": validate["message"]},
+                status=status.HTTP_401_UNAUTHORIZED,
             )
 
     encoded_auth = base64.b64encode((f"{client_id}:{client_secret}").encode())
@@ -132,7 +154,7 @@ def verify_paypal(
     try:
         if response["name"] == "RESOURCE_NOT_FOUND":
             return Response(
-                {"message": response["details"][0]["issue"]},
+                {"success": False, "message": response["details"][0]["issue"]},
                 status=status.HTTP_400_BAD_REQUEST,
             )
     except:
@@ -140,30 +162,71 @@ def verify_paypal(
     try:
         if response["error"] == "invalid_client":
             return Response(
-                {"message": response["error_description"]},
+                {"success": False, "message": response["error_description"]},
                 status=status.HTTP_400_BAD_REQUEST,
             )
     except:
         payment_status = response["status"]
         if payment_status == "APPROVED":
             transaction = model_instance_get(payment_id)
-            payment_id = response["id"]
-            amount = response["purchase_units"][0]["amount"]["value"]
-            currency = response["purchase_units"][0]["amount"]["currency_code"].upper()
-            name = response["purchase_units"][0]["shipping"]["name"]["full_name"]
-            email = response["payer"]["email_address"]
-            city = response["purchase_units"][0]["shipping"]["address"]["admin_area_2"]
-            state = response["purchase_units"][0]["shipping"]["address"]["admin_area_1"]
-            address = response["purchase_units"][0]["shipping"]["address"][
-                "address_line_1"
-            ]
-            postal_code = response["purchase_units"][0]["shipping"]["address"][
-                "postal_code"
-            ]
-            country_code = response["purchase_units"][0]["shipping"]["address"][
-                "country_code"
-            ]
-            date = response["create_time"].split("T")[0]
+            try:
+                payment_id = response["id"]
+            except:
+                payment_id = ""
+            try:
+                amount = response["purchase_units"][0]["amount"]["value"]
+            except:
+                amount = ""
+            try:
+                currency = response["purchase_units"][0]["amount"][
+                    "currency_code"
+                ].upper()
+            except:
+                currency = ""
+            try:
+                name = response["purchase_units"][0]["shipping"]["name"]["full_name"]
+            except:
+                name = ""
+            try:
+                email = response["payer"]["email_address"]
+            except:
+                email = ""
+            try:
+                city = response["purchase_units"][0]["shipping"]["address"][
+                    "admin_area_2"
+                ]
+            except:
+                city = ""
+
+            try:
+                state = response["purchase_units"][0]["shipping"]["address"][
+                    "admin_area_1"
+                ]
+            except:
+                state = ""
+            try:
+                address = response["purchase_units"][0]["shipping"]["address"][
+                    "address_line_1"
+                ]
+            except:
+                address = ""
+
+            try:
+                postal_code = response["purchase_units"][0]["shipping"]["address"][
+                    "postal_code"
+                ]
+            except:
+                postal_code = ""
+            try:
+                country_code = response["purchase_units"][0]["shipping"]["address"][
+                    "country_code"
+                ]
+            except:
+                country_code = ""
+            try:
+                date = response["create_time"].split("T")[0]
+            except:
+                date = ""
             order_id = payment_id
             payment_method = "Paypal"
             desc = transaction["data"]["desc"]
@@ -219,8 +282,11 @@ def verify_paypal(
             )
 
             return Response(
-                {"status": "succeeded"},
+                {"success": True, "status": "succeeded"},
                 status=status.HTTP_200_OK,
             )
         else:
-            return Response({"status": "failed"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                {"success": False, "status": "failed"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )

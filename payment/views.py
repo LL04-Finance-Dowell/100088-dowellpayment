@@ -9,11 +9,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-import qrcode
-from io import BytesIO
-from django.conf import settings
-from django.core.files.storage import FileSystemStorage
-import uuid
+
 
 from .dowellconnection import (
     CreateDowellTransaction,
@@ -102,7 +98,10 @@ class StripePayment(APIView):
                 callback_url = validate_data["callback_url"]
             else:
                 errors = serializer.errors
-                return Response(errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+                return Response(
+                    {"success": False, "errors": errors},
+                    status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                )
             voucher_code = None
             if timezone and description and credit:
                 try:
@@ -111,6 +110,7 @@ class StripePayment(APIView):
                 except:
                     return Response(
                         {
+                            "success": False,
                             "message": "something went wrong",
                             "error": f"Provide correct value for timezone, description and credit",
                         },
@@ -131,50 +131,68 @@ class StripePayment(APIView):
             return res
         except Exception as e:
             return Response(
-                {"message": "something went wrong", "error": f"{e}"},
+                {"success": False, "message": "something went wrong", "error": f"{e}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
 
 class StripeQrcodePayment(APIView):
     @swagger_auto_schema(
         request_body=PaymentSerializer, responses={200: "approval_url"}
     )
-    def post(self,request):
-        data = request.data
-        callback_url = data["callback_url"]
-        #return Response({"data":callback_url})
-    
-        # Generate the QR code
-        qr = qrcode.QRCode(
-            version=1,
-            error_correction=qrcode.constants.ERROR_CORRECT_L,
-            box_size=10,
-            border=4,
-        )
-        qr.add_data(callback_url)
-        qr.make(fit=True)
-        qr_image = qr.make_image(fill_color="black", back_color="white")
+    def post(self, request):
+        try:
+            data = request.data
+            serializer = PaymentSerializer(data=data)
+            if serializer.is_valid():
+                validate_data = serializer.to_representation(serializer.validated_data)
+                price = validate_data["price"]
+                product = validate_data["product"]
+                currency_code = validate_data["currency_code"]
+                timezone = validate_data["timezone"]
+                description = validate_data["description"]
+                try:
+                    credit = data["credit"]
+                except:
+                    credit = None
+                callback_url = validate_data["callback_url"]
+            else:
+                errors = serializer.errors
+                return Response(errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+            voucher_code = None
+            if timezone and description and credit:
+                try:
+                    voucher_response = generate_voucher(timezone, description, credit)
+                    voucher_code = voucher_response["voucher code"]
+                except:
+                    return Response(
+                        {
+                            "success": False,
+                            "message": "something went wrong",
+                            "error": f"Provide correct value for timezone, description and credit",
+                        },
+                        status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    )
+            model_instance = CreateDowellTransaction
+            stripe_key = os.getenv("STRIPE_KEY", None)
 
-        # Save the QR code image to a BytesIO buffer
-        qr_buffer = BytesIO()
-        qr_image.save(qr_buffer, format='PNG')
-        qr_buffer.seek(0)
+            res = stripe_payment(
+                price=price,
+                product=product,
+                currency_code=currency_code,
+                callback_url=callback_url,
+                stripe_key=stripe_key,
+                model_instance=model_instance,
+                voucher_code=voucher_code,
+                generate_qrcode=True,
+            )
+            return res
+        except Exception as e:
+            return Response(
+                {"success": False, "message": "something went wrong", "error": f"{e}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-        # Construct the path to the 'qrcodes' directory
-        qrcodes_dir = os.path.join(settings.MEDIA_ROOT, 'qrcodes')
-        
-        # Save the image to the 'qrcodes' directory in your media root
-        fs = FileSystemStorage(location=qrcodes_dir)
-        unique_id = str(uuid.uuid4())
-        filename = f"{unique_id}/qrcode.png"
-        filepath = fs.save(filename, qr_buffer)
-        
-        # Get the URL of the saved QR code image
-        qr_image_url = os.path.join(settings.MEDIA_URL, 'qrcodes', filename)
-        
-        return Response({'qr_image_url': f"http://127.0.0.1:8000{qr_image_url}"})
-        
-    
 
 class VerifyStripePayment(APIView):
     @swagger_auto_schema(
@@ -205,7 +223,7 @@ class VerifyStripePayment(APIView):
 
         except Exception as e:
             return Response(
-                {"message": "something went wrong", "error": f"{e}"},
+                {"success": False, "message": "something went wrong", "error": f"{e}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -243,6 +261,7 @@ class PaypalPayment(APIView):
                 except:
                     return Response(
                         {
+                            "success": False,
                             "message": "something went wrong",
                             "error": f"Provide correct value for timezone, description and credit",
                         },
@@ -268,7 +287,72 @@ class PaypalPayment(APIView):
 
         except Exception as e:
             return Response(
-                {"message": "something went wrong", "error": f"{e}"},
+                {"success": False, "message": "something went wrong", "error": f"{e}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+
+class PaypalQrcodePayment(APIView):
+    @swagger_auto_schema(
+        request_body=PaymentSerializer, responses={200: "approval_url"}
+    )
+    def post(self, request):
+        try:
+            data = request.data
+            serializer = PaymentSerializer(data=data)
+            if serializer.is_valid():
+                validate_data = serializer.to_representation(serializer.validated_data)
+                price = validate_data["price"]
+                product_name = validate_data["product"]
+                currency_code = validate_data["currency_code"]
+                timezone = validate_data["timezone"]
+                description = validate_data["description"]
+                try:
+                    credit = data["credit"]
+                except:
+                    credit = None
+                callback_url = validate_data["callback_url"]
+                print(validate_data)
+            else:
+                errors = serializer.errors
+                return Response(errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+            voucher_code = None
+            if timezone and description and credit:
+                try:
+                    voucher_response = generate_voucher(timezone, description, credit)
+                    voucher_code = voucher_response["voucher code"]
+                except:
+                    return Response(
+                        {
+                            "success": False,
+                            "message": "something went wrong",
+                            "error": f"Provide correct value for timezone, description and credit",
+                        },
+                        status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    )
+
+            model_instance = CreateDowellTransaction
+            client_id = os.getenv("PAYPAL_CLIENT_ID", None)
+            client_secret = os.getenv("PAYPAL_SECRET_KEY", None)
+
+            res = paypal_payment(
+                price=price,
+                product_name=product_name,
+                currency_code=currency_code,
+                callback_url=callback_url,
+                client_id=client_id,
+                client_secret=client_secret,
+                model_instance=model_instance,
+                paypal_url=dowell_paypal_url,
+                voucher_code=voucher_code,
+                generate_qrcode=True,
+            )
+            return res
+
+        except Exception as e:
+            return Response(
+                {"success": False, "message": "something went wrong", "error": f"{e}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -278,6 +362,7 @@ class VerifyPaypalPayment(APIView):
         request_body=VerifyPaymentSerializer, responses={200: "status"}
     )
     def post(self, request):
+        print("yes1")
         try:
             data = request.data
             serializer = VerifyPaymentSerializer(data=data)
@@ -303,7 +388,7 @@ class VerifyPaypalPayment(APIView):
             return res
         except Exception as e:
             return Response(
-                {"message": "something went wrong", "error": f"{e}"},
+                {"success": False, "message": "something went wrong", "error": f"{e}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -345,7 +430,7 @@ class WorkflowStripePayment(APIView):
 
         except Exception as e:
             return Response(
-                {"message": "something went wrong", "error": f"{e}"},
+                {"success": False, "message": "something went wrong", "error": f"{e}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -381,7 +466,7 @@ class WorkflowVerifyStripePayment(APIView):
 
         except Exception as e:
             return Response(
-                {"message": "something went wrong", "error": f"{e}"},
+                {"success": False, "message": "something went wrong", "error": f"{e}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -427,7 +512,7 @@ class WorkflowPaypalPayment(APIView):
 
         except Exception as e:
             return Response(
-                {"message": "something went wrong", "error": f"{e}"},
+                {"success": False, "message": "something went wrong", "error": f"{e}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -465,7 +550,7 @@ class WorkflowVerifyPaypalPayment(APIView):
             return res
         except Exception as e:
             return Response(
-                {"message": "something went wrong", "error": f"{e}"},
+                {"success": False, "message": "something went wrong", "error": f"{e}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -506,7 +591,7 @@ class StripePaymentPublic(APIView):
 
         except Exception as e:
             return Response(
-                {"message": "something went wrong", "error": f"{e}"},
+                {"success": False, "message": "something went wrong", "error": f"{e}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -543,7 +628,7 @@ class VerifyStripePaymentPublic(APIView):
 
         except Exception as e:
             return Response(
-                {"message": "something went wrong", "error": f"{e}"},
+                {"success": False, "message": "something went wrong", "error": f"{e}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -589,7 +674,7 @@ class PaypalPaymentPublic(APIView):
 
         except Exception as e:
             return Response(
-                {"message": "something went wrong", "error": f"{e}"},
+                {"success": False, "message": "something went wrong", "error": f"{e}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -629,7 +714,7 @@ class VerifyPaypalPaymentPublic(APIView):
             return res
         except Exception as e:
             return Response(
-                {"message": "something went wrong", "error": f"{e}"},
+                {"success": False, "message": "something went wrong", "error": f"{e}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -652,7 +737,10 @@ class StripePaymentPublicUse(APIView):
                 callback_url = validate_data["callback_url"]
             else:
                 errors = serializer.errors
-                return Response(errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+                return Response(
+                    {"success": False, "errors": errors},
+                    status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                )
 
             model_instance = CreatePublicTransaction
             stripe_key = stripe_key
@@ -669,7 +757,7 @@ class StripePaymentPublicUse(APIView):
 
         except Exception as e:
             return Response(
-                {"message": "something went wrong", "error": f"{e}"},
+                {"success": False, "message": "something went wrong", "error": f"{e}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -705,7 +793,7 @@ class VerifyStripePaymentPublicUse(APIView):
 
         except Exception as e:
             return Response(
-                {"message": "something went wrong", "error": f"{e}"},
+                {"success": False, "message": "something went wrong", "error": f"{e}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -750,7 +838,7 @@ class PaypalPaymentPublicUse(APIView):
 
         except Exception as e:
             return Response(
-                {"message": "something went wrong", "error": f"{e}"},
+                {"success": False, "message": "something went wrong", "error": f"{e}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -772,7 +860,10 @@ class VerifyPaypalPaymentPublicUse(APIView):
                 public_paypal_url = validate_data["public_paypal_url"]
             else:
                 errors = serializer.errors
-                return Response(errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+                return Response(
+                    {"success": False, "errors": errors},
+                    status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                )
 
             model_instance_update = UpdatePublicTransaction
             model_instance_get = GetPublicTransaction
@@ -789,6 +880,6 @@ class VerifyPaypalPaymentPublicUse(APIView):
             return res
         except Exception as e:
             return Response(
-                {"message": "something went wrong", "error": f"{e}"},
+                {"success": False, "message": "something went wrong", "error": f"{e}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
