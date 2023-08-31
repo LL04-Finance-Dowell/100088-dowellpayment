@@ -6,7 +6,7 @@ from rest_framework import status
 from .models import PPPCalculation
 from dotenv import load_dotenv
 from django.db.models import Q
-from .serializers import PPPSerializer
+from .serializers import PPPSerializer,CurrencyNameSerializer
 import requests
 
 import currencyapicom
@@ -41,6 +41,21 @@ def processApikey(api_key):
 
 # FOR DOWELL INTERNAL TEAM
 class GetPurchasingPowerParity(APIView):
+    def get(self,request):
+        try:
+            obj = PPPCalculation.objects.all()
+            serializer = CurrencyNameSerializer(obj, many=True)
+            return Response({"success":True,"message":"List of currency name","data":serializer.data},status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {
+                    "success": False,
+                    "message": "something went wrong",
+                    "error": f"{e}",
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
     def post(self, request):
         try:
             data = request.data
@@ -72,9 +87,12 @@ class GetPurchasingPowerParity(APIView):
             target_country_currency_code = target_country_obj.currency_code
 
             try:
+                print("yes")
                 # GET EXCHANGE RATE OF BASE COUNTRY IN BASE CURRENCY
+                base_currency_code = PPPCalculation.objects.get(Q(currency_name__iexact=base_currency)).currency_code.upper()
+                print("base_currency_code",base_currency_code)
                 base_currency_exchange_rate = get_latest_rate(
-                    base_currency, base_country_currency_code
+                    base_currency_code, base_country_currency_code
                 ) * float(base_price)
 
                 # GET PPP RATIO
@@ -86,8 +104,10 @@ class GetPurchasingPowerParity(APIView):
                 )
 
                 # GET EXCHANGE RATE OF TARGET COUNTRY PPP RATIO IN TARGET CURRENCY
+                target_currency_code = PPPCalculation.objects.get(Q(currency_name__iexact=target_currency)).currency_code.upper()
+                print("target_currency_code",target_currency_code)
                 target_currency_exchange_rate = get_latest_rate(
-                    target_country_currency_code, target_currency
+                    target_country_currency_code, target_currency_code
                 ) * (purchasing_power)
 
             except Exception as e:
@@ -107,7 +127,7 @@ class GetPurchasingPowerParity(APIView):
                     "message": "Expected values",
                     "base_currency_exchange_rate": f"{base_currency_exchange_rate} {base_country_currency_code}",
                     "purchasing_power": f"{purchasing_power} {target_country_currency_code}",
-                    "target_currency_exchange_rate": f"{target_currency_exchange_rate} {target_currency}",
+                    "target_currency_exchange_rate": f"{target_currency_exchange_rate} {target_currency_code}",
                 },
                 status=status.HTTP_200_OK,
             )

@@ -362,7 +362,6 @@ class VerifyPaypalPayment(APIView):
         request_body=VerifyPaymentSerializer, responses={200: "status"}
     )
     def post(self, request):
-        print("yes1")
         try:
             data = request.data
             serializer = VerifyPaymentSerializer(data=data)

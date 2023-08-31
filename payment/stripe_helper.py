@@ -71,7 +71,7 @@ def stripe_payment(
         payment_id, session.id, product, today, template_id, voucher_code
     )
 
-    print(transaction_info)
+    # print(transaction_info)
 
     if generate_qrcode == True:
         data = payment_qrcode(session.url, payment_id)

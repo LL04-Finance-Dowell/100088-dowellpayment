@@ -20,7 +20,6 @@ def send_mail_one(
     ref_id,
     payment_method,
 ):
-    print("yes3")
     order_template = "payment/order.html"
 
     # API endpoint to send the email
