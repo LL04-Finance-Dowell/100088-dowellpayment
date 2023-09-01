@@ -113,18 +113,49 @@ def verify_stripe(
 
     # Check the payment status
     if payment_status == "paid" and state == "complete":
-        amount = payment_session["amount_total"] / 100
-        currency = payment_session["currency"].upper()
-        name = payment_session["customer_details"]["name"]
-        email = payment_session["customer_details"]["email"]
-        city = payment_session["customer_details"]["address"]["city"]
-        state = payment_session["customer_details"]["address"]["state"]
-        address = payment_session["customer_details"]["address"]["line1"]
-        postal_code = payment_session["customer_details"]["address"]["postal_code"]
-        country_code = payment_session["customer_details"]["address"]["country"]
+        try:
+            amount = payment_session["amount_total"] / 100
+        except:
+            amount = ""
+        try:
+            currency = payment_session["currency"].upper()
+        except:
+            currency = ""
+        try:
+            name = payment_session["customer_details"]["name"]
+        except:
+            name = ""
+        try:
+            email = payment_session["customer_details"]["email"]
+        except:
+            email = ""
+        try:
+            city = payment_session["customer_details"]["address"]["city"]
+        except:
+            city = ""
+        try:
+            state = payment_session["customer_details"]["address"]["state"]
+        except:
+            state = ""
+        try:
+            address = payment_session["customer_details"]["address"]["line1"]
+        except:
+            address = ""
+        try:
+            postal_code = payment_session["customer_details"]["address"]["postal_code"]
+        except:
+            postal_code = ""
+        try:
+            country_code = payment_session["customer_details"]["address"]["country"]
+        except:
+            country_code = ""
+        try:
+            ref_id = payment_session["payment_intent"]
+        except:
+            ref_id = ""
         desc = transaction["data"]["desc"]
         date = transaction["data"]["date"]
-        ref_id = payment_session["payment_intent"]
+
         payment_method = "Stripe"
 
         mail_sent = transaction["data"]["mail_sent"]

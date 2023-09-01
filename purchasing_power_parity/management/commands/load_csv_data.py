@@ -40,8 +40,8 @@ class Command(BaseCommand):
                 currency_name=row["CURRENCY NAME"],
                 country_code=row["Country Code"],
                 currency_code=row["CURRENCY CODE"],
-                world_bank_ppp=row["PRICE"],
-                usd_exchange_rate=row["EXCHANGE RATE IN USD"],
+                world_bank_ppp=row["ppp value"],
+                # usd_exchange_rate=row["EXCHANGE RATE IN USD"],
             )
             ppp_data.save()
 
