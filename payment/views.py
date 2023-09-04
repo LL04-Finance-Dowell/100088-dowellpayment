@@ -432,6 +432,48 @@ class WorkflowStripePayment(APIView):
                 {"success": False, "message": "something went wrong", "error": f"{e}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        
+    
+class WorkflowStripeQrPayment(APIView):
+    @swagger_auto_schema(
+        request_body=WorkflowStripeSerializer, responses={200: "approval_url"}
+    )
+    def post(self, request):
+        try:
+            data = request.data
+            serializer = WorkflowStripeSerializer(data=data)
+            if serializer.is_valid():
+                validate_data = serializer.to_representation(serializer.validated_data)
+                stripe_key = validate_data["stripe_key"]
+                template_id = validate_data["template_id"]
+                price = validate_data["price"]
+                product = validate_data["product"]
+                currency_code = validate_data["currency_code"]
+                callback_url = validate_data["callback_url"]
+            else:
+                errors = serializer.errors
+                return Response(errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+            model_instance = CreateWorkflowPublicTransaction
+            stripe_key = stripe_key
+
+            res = stripe_payment(
+                price=price,
+                product=product,
+                currency_code=currency_code,
+                callback_url=callback_url,
+                stripe_key=stripe_key,
+                model_instance=model_instance,
+                template_id=template_id,
+                generate_qrcode=True,
+            )
+            return res
+
+        except Exception as e:
+            return Response(
+                {"success": False, "message": "something went wrong", "error": f"{e}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
 
 class WorkflowVerifyStripePayment(APIView):
@@ -515,6 +557,52 @@ class WorkflowPaypalPayment(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+
+class WorkflowPaypalQrPayment(APIView):
+    @swagger_auto_schema(
+        request_body=WorkflowPaypalSerializer, responses={200: "approval_url"}
+    )
+    def post(self, request):
+        try:
+            data = request.data
+
+            serializer = WorkflowPaypalSerializer(data=data)
+            if serializer.is_valid():
+                validate_data = serializer.to_representation(serializer.validated_data)
+                client_id = validate_data["paypal_client_id"]
+                client_secret = validate_data["paypal_secret_key"]
+                template_id = validate_data["template_id"]
+                price = validate_data["price"]
+                product_name = validate_data["product"]
+                currency_code = validate_data["currency_code"]
+                callback_url = validate_data["callback_url"]
+            else:
+                errors = serializer.errors
+                return Response(errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+            model_instance = CreateWorkflowPublicTransaction
+            client_id = client_id
+            client_secret = client_secret
+
+            res = paypal_payment(
+                price=price,
+                product_name=product_name,
+                currency_code=currency_code,
+                callback_url=callback_url,
+                client_id=client_id,
+                client_secret=client_secret,
+                model_instance=model_instance,
+                paypal_url=workflow_paypal_url,
+                template_id=template_id,
+                generate_qrcode=True,
+            )
+            return res
+
+        except Exception as e:
+            return Response(
+                {"success": False, "message": "something went wrong", "error": f"{e}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
 class WorkflowVerifyPaypalPayment(APIView):
     @swagger_auto_schema(
