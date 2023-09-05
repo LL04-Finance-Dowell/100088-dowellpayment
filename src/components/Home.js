@@ -28,18 +28,19 @@ const Home = () => {
   const [results, setResults] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [currencies, setCurrencies] = useState([]); 
+  const [currencies, setCurrencies] = useState([]);
 
   useEffect(() => {
-    axios.get(DOWELL_CURRENCY_NAME)
+    axios
+      .get(DOWELL_CURRENCY_NAME)
       .then((response) => {
         setCurrencies(response.data.data);
+        console.log(response.data.data);
       })
       .catch((error) => {
         console.error("Error fetching currencies:", error);
       });
   }, []);
-
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
@@ -107,14 +108,14 @@ const Home = () => {
       <TextField
         name="base_currency"
         label="base_currency"
-        select 
+        select
         value={inputs.base_currency}
         onChange={handleInputChange}
         fullWidth
         margin="normal"
       >
         {currencies.map((currency) => (
-          <MenuItem key= {currency.currency_name} value={currency.currency_name}>
+          <MenuItem key={currency.currency_name} value={currency.currency_name}>
             {currency.currency_name}
           </MenuItem>
         ))}
@@ -130,30 +131,44 @@ const Home = () => {
       <TextField
         name="base_country"
         label="base_country"
+        select
         value={inputs.base_country}
         onChange={handleInputChange}
         fullWidth
         margin="normal"
-      />
+      >
+        {currencies.map((country) => (
+          <MenuItem key={country.country_name} value={country.country_name}>
+            {country.country_name}
+          </MenuItem>
+        ))}
+      </TextField>
       <TextField
         name="target_country"
         label="target_country"
+        select
         value={inputs.target_country}
         onChange={handleInputChange}
         fullWidth
         margin="normal"
-      />
+      >
+        {currencies.map((country) => (
+          <MenuItem key={country.country_name} value={country.country_name}>
+            {country.country_name}
+          </MenuItem>
+        ))}
+      </TextField>
       <TextField
         name="target_currency"
         label="target_currency"
-        select 
+        select
         value={inputs.target_currency}
         onChange={handleInputChange}
         fullWidth
         margin="normal"
       >
         {currencies.map((currency) => (
-          <MenuItem key= {currency.currency_name} value={currency.currency_name}>
+          <MenuItem key={currency.currency_name} value={currency.currency_name}>
             {currency.currency_name}
           </MenuItem>
         ))}
