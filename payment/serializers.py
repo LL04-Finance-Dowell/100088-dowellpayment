@@ -18,16 +18,19 @@ class PaymentSerializer(serializers.Serializer):
     def to_representation(self, instance):
         data = super().to_representation(instance)
         price = data.get("price")
-
-        # if isinstance(price, str):
-        #     # Convert the string back to a Decimal
-        #     price = Decimal(price)
-        discount_price = round(price - (0.4 * price), 2)
+        
+        """
+        Calculation for 40% discount 
+        to use this pass the dicount_price into the
+        if else statement like this 
+        data["price"] = int(discount_price)
+        """
+        # discount_price = round(price - (0.4 * price), 2)
 
         if price % 1 == 0:
-            data["price"] = int(discount_price)
+            data["price"] = int(price)
         else:
-            data["price"] = discount_price
+            data["price"] = price
         return data
 
 
