@@ -3,12 +3,17 @@ import json
 
 
 # COLLECTIONS FOR DOWELL INTERNAL TEAM
+"""ADD PAYMENT DETAILS TO DATABASE"""
+
+
 def CreateDowellTransaction(
     payment_id, session_id, desc, today, template_id=None, voucher_code=None
 ):
     headers = {
         "content-type": "application/json",
     }
+
+    # API endpoint to connect to dowellconnection
     url = "http://uxlivinglab.pythonanywhere.com/"
 
     voucher = voucher_code if voucher_code is not None else ""
@@ -48,6 +53,9 @@ def CreateDowellTransaction(
     return json_data
 
 
+"""UPDATE PAYMENT DETAILS IN DATABASE"""
+
+
 def UpdateDowellTransaction(
     payment_id,
     ref_id,
@@ -64,6 +72,8 @@ def UpdateDowellTransaction(
     headers = {
         "content-type": "application/json",
     }
+
+    # API endpoint to connect to dowellconnection
     url = "http://uxlivinglab.pythonanywhere.com/"
 
     data = {
@@ -98,10 +108,15 @@ def UpdateDowellTransaction(
     print(json_data)
 
 
+"""GET PAYMENT DETAILS FROM DATABASE"""
+
+
 def GetDowellTransaction(payment_id):
     headers = {
         "content-type": "application/json",
     }
+
+    # API endpoint to connect to dowellconnection
     url = "http://uxlivinglab.pythonanywhere.com/"
 
     data = {
@@ -125,12 +140,17 @@ def GetDowellTransaction(payment_id):
 
 
 # COLLECTIONS FOR WORKFLOW AI INTERNAL TEAM
+"""ADD PAYMENT DETAILS TO DATABASE"""
+
+
 def CreateWorkflowPublicTransaction(
     payment_id, session_id, desc, today, template_id=None, voucher_code=None
 ):
     headers = {
         "content-type": "application/json",
     }
+
+    # API endpoint to connect to dowellconnection
     url = "http://uxlivinglab.pythonanywhere.com/"
 
     data = {
@@ -168,6 +188,9 @@ def CreateWorkflowPublicTransaction(
     print(json_data)
 
 
+"""UPDATE PAYMENT DETAILS IN DATABASE"""
+
+
 def UpdateWorkflowPublicTransaction(
     payment_id,
     ref_id,
@@ -184,6 +207,8 @@ def UpdateWorkflowPublicTransaction(
     headers = {
         "content-type": "application/json",
     }
+
+    # API endpoint to connect to dowellconnection
     url = "http://uxlivinglab.pythonanywhere.com/"
 
     data = {
@@ -218,10 +243,15 @@ def UpdateWorkflowPublicTransaction(
     print(json_data)
 
 
+"""GET PAYMENT DETAILS FROM DATABASE"""
+
+
 def GetWorkflowPublicTransaction(payment_id):
     headers = {
         "content-type": "application/json",
     }
+
+    # API endpoint to connect to dowellconnection
     url = "http://uxlivinglab.pythonanywhere.com/"
 
     data = {
@@ -245,12 +275,17 @@ def GetWorkflowPublicTransaction(payment_id):
 
 
 # COLLECTIONS FOR PUBLIC
+"""ADD PAYMENT DETAILS TO DATABASE"""
+
+
 def CreatePublicTransaction(
     payment_id, session_id, desc, today, template_id=None, voucher_code=None
 ):
     headers = {
         "content-type": "application/json",
     }
+
+    # API endpoint to connect to dowellconnection
     url = "http://uxlivinglab.pythonanywhere.com/"
 
     data = {
@@ -287,6 +322,9 @@ def CreatePublicTransaction(
     print(json_data)
 
 
+"""UPDATE PAYMENT DETAILS IN DATABASE"""
+
+
 def UpdatePublicTransaction(
     payment_id,
     ref_id,
@@ -303,6 +341,8 @@ def UpdatePublicTransaction(
     headers = {
         "content-type": "application/json",
     }
+
+    # API endpoint to connect to dowellconnection
     url = "http://uxlivinglab.pythonanywhere.com/"
 
     data = {
@@ -337,10 +377,15 @@ def UpdatePublicTransaction(
     print(json_data)
 
 
+"""GET PAYMENT DETAILS FROM DATABASE"""
+
+
 def GetPublicTransaction(payment_id):
     headers = {
         "content-type": "application/json",
     }
+
+    # API endpoint to connect to dowellconnection
     url = "http://uxlivinglab.pythonanywhere.com/"
 
     data = {

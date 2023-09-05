@@ -30,6 +30,7 @@ def stripe_payment(
 ):
     print(generate_qrcode)
     if api_key:
+        """CHECK IF API KEY IS VALID"""
         validate = processApikey(api_key)
         print(validate)
         if validate["success"] == False:
@@ -67,6 +68,8 @@ def stripe_payment(
             }
         },
     )
+
+    """CONNECT TO DOWELL DATABASE AND STORE THE INFORMATION"""
     transaction_info = model_instance(
         payment_id, session.id, product, today, template_id, voucher_code
     )
@@ -104,8 +107,12 @@ def verify_stripe(
             )
 
     stripe.api_key = stripe_key
+
+    """GET PAYMENT DATA FROM DOWELL CONNECTION USING THE PAYMENT ID"""
     transaction = model_instance_get(payment_id)
     session_id = transaction["data"]["session_id"]
+
+    """GET PAYMENT DETAILS FROM STRIPE USING THE SESSION ID"""
     payment_session = stripe.checkout.Session.retrieve(session_id)
     print(payment_session)
     payment_status = payment_session["payment_status"]
@@ -164,6 +171,8 @@ def verify_stripe(
             voucher_code = transaction["data"]["voucher_code"]
         except:
             voucher_code = ""
+
+        """USE THIS MAIL TEMPLATE IF VOUCHER CODE IS NOT INCLUDED IN THE PAYMENT DATA """
         if mail_sent == "False" and voucher_code == "":
             res = send_mail_one(
                 amount,
@@ -179,6 +188,7 @@ def verify_stripe(
                 payment_method,
             )
 
+        """USE THIS MAIL TEMPLATE IF VOUCHER CODE IS INCLUDED IN THE PAYMENT DATA """
         if mail_sent == "False" and voucher_code != "":
             res = send_mail_two(
                 amount,
@@ -194,6 +204,7 @@ def verify_stripe(
                 ref_id,
                 payment_method,
             )
+        """CONNECT TO DOWELL DATABASE AND UPDATE THE PAYMENT DETAILS"""
         transaction_update = model_instance_update(
             payment_id,
             ref_id,

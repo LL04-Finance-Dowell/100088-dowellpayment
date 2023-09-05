@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+"""MAIL FUNCTION IF VOUCHER CODE IS NOT PROVIDED"""
+
 
 def send_mail_one(
     amount,
@@ -63,6 +65,9 @@ def send_mail_one(
 
     response = requests.post(url, files=files, data=email_data)
     return response
+
+
+"""MAIL FUNCTION IF VOUCHER CODE IS PROVIDED"""
 
 
 def send_mail_two(

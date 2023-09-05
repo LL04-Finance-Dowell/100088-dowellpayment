@@ -4,6 +4,8 @@ from rest_framework import serializers
 
 # SERIALIZERS FOR DOWELL INTERNAL TEAM
 
+"""INITIALIZATION SERIALIZER FOR BOTH STRIPE AND PAYPAL"""
+
 
 class PaymentSerializer(serializers.Serializer):
     price = serializers.FloatField()
@@ -18,7 +20,7 @@ class PaymentSerializer(serializers.Serializer):
     def to_representation(self, instance):
         data = super().to_representation(instance)
         price = data.get("price")
-        
+
         """
         Calculation for 40% discount 
         to use this pass the dicount_price into the
@@ -34,11 +36,17 @@ class PaymentSerializer(serializers.Serializer):
         return data
 
 
+"""VERIFICATION SERIALIZER FOR BOTH STRIPE AND PAYPAL"""
+
+
 class VerifyPaymentSerializer(serializers.Serializer):
     id = serializers.CharField()
 
 
 # SERIALIZERS FOR WORKLOW AI INTERNAL TEAM
+"""INITIALIZATION SERIALIZER FOR STRIPE ONLY"""
+
+
 class WorkflowStripeSerializer(serializers.Serializer):
     stripe_key = serializers.CharField()
     template_id = serializers.CharField()
@@ -60,9 +68,15 @@ class WorkflowStripeSerializer(serializers.Serializer):
         return data
 
 
+"""VERIFICATION SERIALIZER FOR STRIPE ONLY"""
+
+
 class WorkflowVerifyStripSerializer(serializers.Serializer):
     stripe_key = serializers.CharField()
     id = serializers.CharField()
+
+
+"""INITIALIZATION SERIALIZER FOR PAYPAL ONLY"""
 
 
 class WorkflowPaypalSerializer(serializers.Serializer):
@@ -88,6 +102,9 @@ class WorkflowPaypalSerializer(serializers.Serializer):
         return data
 
 
+"""VERIFICATION SERIALIZER FOR PAYPAL ONLY"""
+
+
 class WorkflowVerifyPaypalSerializer(serializers.Serializer):
     paypal_client_id = serializers.CharField()
     paypal_secret_key = serializers.CharField()
@@ -95,6 +112,9 @@ class WorkflowVerifyPaypalSerializer(serializers.Serializer):
 
 
 # SERIALIZERS FOR PUBLIC USAGE
+"""INITIALIZATION SERIALIZER FOR STRIPE ONLY"""
+
+
 class PublicStripeSerializer(serializers.Serializer):
     stripe_key = serializers.CharField()
     price = serializers.FloatField()
@@ -115,9 +135,15 @@ class PublicStripeSerializer(serializers.Serializer):
         return data
 
 
+"""VERIFICATION SERIALIZER FOR STRIPE ONLY"""
+
+
 class VerifyPublicStripSerializer(serializers.Serializer):
     stripe_key = serializers.CharField()
     id = serializers.CharField()
+
+
+"""INITIALIZATION SERIALIZER FOR PAYPAL ONLY"""
 
 
 class PublicPaypalSerializer(serializers.Serializer):
@@ -155,6 +181,9 @@ class PublicPaypalSerializer(serializers.Serializer):
             data["public_paypal_url"] = "https://api-m.paypal.com"
 
         return data
+
+
+"""VERIFICATION SERIALIZER FOR PAYPAL ONLY"""
 
 
 class VerifyPublicPaypalSerializer(serializers.Serializer):

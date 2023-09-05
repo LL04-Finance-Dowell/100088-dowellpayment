@@ -8,6 +8,7 @@ from .sendmail import send_mail_one, send_mail_two
 
 
 def processApikey(api_key):
+    """API URL FOR DOWELL SERVICE"""
     url = f"https://100105.pythonanywhere.com/api/v3/process-services/?type=api_service&api_key={api_key}"
     payload = {"service_id": "DOWELL10006"}
 
@@ -30,6 +31,7 @@ def paypal_payment(
     api_key=None,
 ):
     if api_key:
+        """CHECK IF API KEY IS VALID"""
         validate = processApikey(api_key)
         if validate["success"] == False:
             return Response(
@@ -75,6 +77,7 @@ def paypal_payment(
         },
     }
 
+    """INITIALIZE PAYPAL PAYMENT FOR USER"""
     response = requests.post(url, headers=headers, data=json.dumps(body)).json()
     if "name" in response and response["name"] == "UNPROCESSABLE_ENTITY":
         return Response(
@@ -98,6 +101,7 @@ def paypal_payment(
 
     try:
         payment_id = response["id"]
+        """CONNECT TO DOWELL DATABASE AND STORE THE INFORMATION"""
         transaction_info = model_instance(
             payment_id, "", product_name, "", template_id, voucher_code
         )
@@ -108,6 +112,7 @@ def paypal_payment(
         )
     approve_payment = response["links"][1]["href"]
 
+    """GENERATE QRCODE FOR PAYMENT"""
     if generate_qrcode == True:
         data = payment_qrcode(approve_payment, payment_id)
         image_url = data["qr_image_url"]
@@ -136,6 +141,7 @@ def verify_paypal(
     api_key=None,
 ):
     if api_key:
+        """CHECK IF API KEY IS VALID"""
         validate = processApikey(api_key)
         if validate["success"] == False:
             return Response(
@@ -150,6 +156,8 @@ def verify_paypal(
         "Authorization": f"Basic {encoded_auth.decode()}",
         "Prefer": "return=representation",
     }
+
+    """GET PAYMENT DETAILS FROM PAYPAL USING THE PAYMENT ID"""
     response = requests.get(url, headers=headers).json()
     try:
         if response["name"] == "RESOURCE_NOT_FOUND":
@@ -168,6 +176,7 @@ def verify_paypal(
     except:
         payment_status = response["status"]
         if payment_status == "APPROVED":
+            """GET PAYMENT DATA FROM DOWELL CONNECTION USING THE PAYMENT ID"""
             transaction = model_instance_get(payment_id)
             try:
                 payment_id = response["id"]
@@ -238,6 +247,8 @@ def verify_paypal(
                 voucher_code = ""
 
             mail_sent = transaction["data"]["mail_sent"]
+
+            """USE THIS MAIL TEMPLATE IF VOUCHER CODE IS NOT INCLUDED IN THE PAYMENT DATA """
             if mail_sent == "False" and voucher_code == "":
                 res = send_mail_one(
                     amount,
@@ -252,6 +263,8 @@ def verify_paypal(
                     ref_id,
                     payment_method,
                 )
+
+            """USE THIS MAIL TEMPLATE IF VOUCHER CODE IS INCLUDED IN THE PAYMENT DATA """
             if mail_sent == "False" and voucher_code != "":
                 res = send_mail_two(
                     amount,
@@ -267,6 +280,8 @@ def verify_paypal(
                     ref_id,
                     payment_method,
                 )
+
+            """CONNECT TO DOWELL DATABASE AND UPDATE THE PAYMENT DETAILS"""
             transaction_update = model_instance_update(
                 payment_id,
                 ref_id,

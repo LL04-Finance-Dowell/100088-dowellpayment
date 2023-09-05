@@ -5,6 +5,9 @@ from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 
 
+"""GENRATE QRCODE FOR PAYMENT"""
+
+
 def payment_qrcode(approval_url, payment_id):
     # Generate the QR code
     qr = qrcode.QRCode(

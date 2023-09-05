@@ -45,13 +45,14 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+"""GET PAYPAL MODE DOWELL INTERNAL TEAM"""
 dowell_paypal_mode = os.getenv("DOWELL_PAYPAL_LIVE_MODE")
 if dowell_paypal_mode == "True":
     dowell_paypal_url = "https://api-m.paypal.com"
 else:
     dowell_paypal_url = "https://api-m.sandbox.paypal.com"
 
-
+"""GET PAYPAL MODE FOR WORKFLOW AI TEAM"""
 workflow_paypal_mode = os.getenv("WORKFLOW_AI_PAYPAL_LIVE_MODE")
 if workflow_paypal_mode == "True":
     workflow_paypal_url = "https://api-m.paypal.com"
@@ -74,6 +75,8 @@ class Error(View):
 
 
 # PAYMENT API FOR DOWELL INTERNAL TEAM
+
+"""INITIALIZE STRIPE ENDPOINT TO GENERATE APPROVAL URL AND PAYMENT ID AS RESPONSE"""
 
 
 class StripePayment(APIView):
@@ -105,6 +108,7 @@ class StripePayment(APIView):
             voucher_code = None
             if timezone and description and credit:
                 try:
+                    """GENERATE VOUCHER"""
                     voucher_response = generate_voucher(timezone, description, credit)
                     voucher_code = voucher_response["voucher code"]
                 except:
@@ -136,6 +140,9 @@ class StripePayment(APIView):
             )
 
 
+"""INITIALIZE STRIPE ENDPOINT TO GENERATE QRCODE IMAGE URL AND PAYMENT ID AS RESPONSE"""
+
+
 class StripeQrcodePayment(APIView):
     @swagger_auto_schema(
         request_body=PaymentSerializer, responses={200: "approval_url"}
@@ -162,6 +169,7 @@ class StripeQrcodePayment(APIView):
             voucher_code = None
             if timezone and description and credit:
                 try:
+                    """GENERATE VOUCHER"""
                     voucher_response = generate_voucher(timezone, description, credit)
                     voucher_code = voucher_response["voucher code"]
                 except:
@@ -192,6 +200,9 @@ class StripeQrcodePayment(APIView):
                 {"success": False, "message": "something went wrong", "error": f"{e}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+
+"""VERIFY PAYMENT FOR STRIPE ENDPOINT BY PROVIDING PAYMENT ID AS THE REQUEST BODY"""
 
 
 class VerifyStripePayment(APIView):
@@ -228,6 +239,9 @@ class VerifyStripePayment(APIView):
             )
 
 
+"""INITIALIZE PAYPAL ENDPOINT TO GENERATE APPROVAL URL AND PAYMENT ID AS RESPONSE"""
+
+
 class PaypalPayment(APIView):
     @swagger_auto_schema(
         request_body=PaymentSerializer, responses={200: "approval_url"}
@@ -256,6 +270,7 @@ class PaypalPayment(APIView):
             voucher_code = None
             if timezone and description and credit:
                 try:
+                    """GENERATE VOUCHER"""
                     voucher_response = generate_voucher(timezone, description, credit)
                     voucher_code = voucher_response["voucher code"]
                 except:
@@ -290,6 +305,9 @@ class PaypalPayment(APIView):
                 {"success": False, "message": "something went wrong", "error": f"{e}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+
+"""INITIALIZE PAYPAL ENDPOINT TO GENERATE QRCODE IMAGE URL AND PAYMENT ID AS RESPONSE"""
 
 
 class PaypalQrcodePayment(APIView):
@@ -357,6 +375,9 @@ class PaypalQrcodePayment(APIView):
             )
 
 
+"""VERIFY PAYMENT FOR PAYPAL ENDPOINT BY PROVIDING PAYMENT ID AS THE REQUEST BODY"""
+
+
 class VerifyPaypalPayment(APIView):
     @swagger_auto_schema(
         request_body=VerifyPaymentSerializer, responses={200: "status"}
@@ -393,6 +414,9 @@ class VerifyPaypalPayment(APIView):
 
 
 # PAYMENT API FOR WORKLOW AI INTERNAL TEAM
+"""INITIALIZE STRIPE ENDPOINT TO GENERATE APPROVAL URL AND PAYMENT ID AS RESPONSE"""
+
+
 class WorkflowStripePayment(APIView):
     @swagger_auto_schema(
         request_body=WorkflowStripeSerializer, responses={200: "approval_url"}
@@ -432,8 +456,11 @@ class WorkflowStripePayment(APIView):
                 {"success": False, "message": "something went wrong", "error": f"{e}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        
-    
+
+
+"""INITIALIZE STRIPE ENDPOINT TO GENERATE QRCODE IMAGE URL AND PAYMENT ID AS RESPONSE"""
+
+
 class WorkflowStripeQrPayment(APIView):
     @swagger_auto_schema(
         request_body=WorkflowStripeSerializer, responses={200: "approval_url"}
@@ -476,6 +503,9 @@ class WorkflowStripeQrPayment(APIView):
             )
 
 
+"""VERIFY PAYMENT FOR STRIPE ENDPOINT BY PROVIDING PAYMENT ID AS THE REQUEST BODY"""
+
+
 class WorkflowVerifyStripePayment(APIView):
     @swagger_auto_schema(
         request_body=WorkflowVerifyStripSerializer, responses={200: "status"}
@@ -510,6 +540,9 @@ class WorkflowVerifyStripePayment(APIView):
                 {"success": False, "message": "something went wrong", "error": f"{e}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+
+"""INITIALIZE PAYPAL ENDPOINT TO GENERATE APPROVAL URL AND PAYMENT ID AS RESPONSE"""
 
 
 class WorkflowPaypalPayment(APIView):
@@ -558,6 +591,9 @@ class WorkflowPaypalPayment(APIView):
             )
 
 
+"""INITIALIZE PAYPAL ENDPOINT TO GENERATE QRCODE IMAGE URL AND PAYMENT ID AS RESPONSE"""
+
+
 class WorkflowPaypalQrPayment(APIView):
     @swagger_auto_schema(
         request_body=WorkflowPaypalSerializer, responses={200: "approval_url"}
@@ -604,6 +640,10 @@ class WorkflowPaypalQrPayment(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+
+"""VERIFY PAYMENT FOR PAYPAL ENDPOINT BY PROVIDING PAYMENT ID AS THE REQUEST BODY"""
+
+
 class WorkflowVerifyPaypalPayment(APIView):
     @swagger_auto_schema(
         request_body=WorkflowVerifyPaypalSerializer, responses={200: "status"}
@@ -643,6 +683,9 @@ class WorkflowVerifyPaypalPayment(APIView):
 
 
 # PAYMENT API FOR PUBLIC USAGE
+"""INITIALIZE STRIPE ENDPOINT TO GENERATE APPROVAL URL AND PAYMENT ID AS RESPONSE"""
+
+
 class StripePaymentPublic(APIView):
     @swagger_auto_schema(
         request_body=PublicStripeSerializer, responses={200: "approval_url"}
@@ -683,6 +726,9 @@ class StripePaymentPublic(APIView):
             )
 
 
+"""VERIFY PAYMENT FOR STRIPE ENDPOINT BY PROVIDING PAYMENT ID AS THE REQUEST BODY"""
+
+
 class VerifyStripePaymentPublic(APIView):
     @swagger_auto_schema(
         request_body=VerifyPublicStripSerializer, responses={200: "status"}
@@ -718,6 +764,9 @@ class VerifyStripePaymentPublic(APIView):
                 {"success": False, "message": "something went wrong", "error": f"{e}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+
+"""INITIALIZE PAYPAL ENDPOINT TO GENERATE APPROVAL URL AND PAYMENT ID AS RESPONSE"""
 
 
 class PaypalPaymentPublic(APIView):
@@ -766,6 +815,9 @@ class PaypalPaymentPublic(APIView):
             )
 
 
+"""INITIALIZE PAYPAL ENDPOINT TO GENERATE QRCODE IMAGE URL AND PAYMENT ID AS RESPONSE"""
+
+
 class VerifyPaypalPaymentPublic(APIView):
     @swagger_auto_schema(
         request_body=VerifyPublicPaypalSerializer, responses={200: "status"}
@@ -807,6 +859,9 @@ class VerifyPaypalPaymentPublic(APIView):
 
 
 # PAYMENT API FOR PUBLIC USAGE WITHOUT API KEYS
+"""INITIALIZE STRIPE ENDPOINT TO GENERATE APPROVAL URL AND PAYMENT ID AS RESPONSE"""
+
+
 class StripePaymentPublicUse(APIView):
     @swagger_auto_schema(
         request_body=PublicStripeSerializer, responses={200: "approval_url"}
@@ -849,6 +904,9 @@ class StripePaymentPublicUse(APIView):
             )
 
 
+"""VERIFY PAYMENT FOR STRIPE ENDPOINT BY PROVIDING PAYMENT ID AS THE REQUEST BODY"""
+
+
 class VerifyStripePaymentPublicUse(APIView):
     @swagger_auto_schema(
         request_body=VerifyPublicStripSerializer, responses={200: "status"}
@@ -883,6 +941,9 @@ class VerifyStripePaymentPublicUse(APIView):
                 {"success": False, "message": "something went wrong", "error": f"{e}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+
+"""INITIALIZE PAYPAL ENDPOINT TO GENERATE APPROVAL URL AND PAYMENT ID AS RESPONSE"""
 
 
 class PaypalPaymentPublicUse(APIView):
@@ -928,6 +989,9 @@ class PaypalPaymentPublicUse(APIView):
                 {"success": False, "message": "something went wrong", "error": f"{e}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+
+"""VERIFY PAYMENT FOR PAYPAL ENDPOINT BY PROVIDING PAYMENT ID AS THE REQUEST BODY"""
 
 
 class VerifyPaypalPaymentPublicUse(APIView):
