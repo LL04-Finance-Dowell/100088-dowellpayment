@@ -3,6 +3,6 @@ from .views import GetPurchasingPowerParity, GetPublicPurchasingPowerParity
 
 
 urlpatterns = [
-    path("", GetPurchasingPowerParity.as_view()),
-    path("public/<str:api_key>", GetPublicPurchasingPowerParity.as_view()),
+    path("ppp", GetPurchasingPowerParity.as_view()),
+    path("ppp/public/<str:api_key>", GetPublicPurchasingPowerParity.as_view()),
 ]
