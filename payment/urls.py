@@ -13,12 +13,16 @@ from .views import (
     WorkflowPaypalQrPayment,
     WorkflowVerifyPaypalPayment,
     StripePaymentPublic,
+    StripeQrPaymentPublic,
     VerifyStripePaymentPublic,
     PaypalPaymentPublic,
+    PaypalQrPaymentPublic,
     VerifyPaypalPaymentPublic,
     StripePaymentPublicUse,
+    StripeQrPaymentPublicUse,
     VerifyStripePaymentPublicUse,
     PaypalPaymentPublicUse,
+    PaypalQrPaymentPublicUse,
     VerifyPaypalPaymentPublicUse,
     Success,
     Error,
@@ -39,20 +43,28 @@ urlpatterns = [
     path("workflow/verify/payment/paypal", WorkflowVerifyPaypalPayment.as_view()),
     path("stripe/initialize/public/<str:api_key>", StripePaymentPublic.as_view()),
     path(
+        "stripe/initialize/qrcode/public/<str:api_key>", StripeQrPaymentPublic.as_view()
+    ),
+    path(
         "verify/payment/stripe/public/<str:api_key>",
         VerifyStripePaymentPublic.as_view(),
     ),
     path("paypal/initialize/public/<str:api_key>", PaypalPaymentPublic.as_view()),
     path(
+        "paypal/initialize/qrcode/public/<str:api_key>", PaypalQrPaymentPublic.as_view()
+    ),
+    path(
         "verify/payment/paypal/public/<str:api_key>",
         VerifyPaypalPaymentPublic.as_view(),
     ),
     path("stripe/initialize/public-use", StripePaymentPublicUse.as_view()),
+    path("stripe/initialize/qrcode/public-use", StripeQrPaymentPublicUse.as_view()),
     path(
         "verify/payment/stripe/public-use",
         VerifyStripePaymentPublicUse.as_view(),
     ),
     path("paypal/initialize/public-use", PaypalPaymentPublicUse.as_view()),
+    path("paypal/initialize/qrcode/public-use", PaypalQrPaymentPublicUse.as_view()),
     path(
         "verify/payment/paypal/public-use",
         VerifyPaypalPaymentPublicUse.as_view(),
