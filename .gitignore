@@ -7,7 +7,5 @@ PPP_CALCULATION.csv
 credentials.json
 orgmail-c4daca2e8bab.json
 token.json
-qrcode/
 /qrcode
-/node_moduels
-node_moduels/
+/node_modules
