@@ -6,9 +6,6 @@ from .helper import get_all_currency_name, get_ppp_data
 import requests
 
 
-
-
-
 # Create your views here.
 def processApikey(api_key):
     url = f"https://100105.pythonanywhere.com/api/v3/process-services/?type=api_service&api_key={api_key}"
@@ -49,8 +46,9 @@ class GetPurchasingPowerParity(APIView):
                 errors = serializer.errors
                 return Response(errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
-            
-            res = get_ppp_data(base_currency,base_price,base_country,target_country,target_currency)
+            res = get_ppp_data(
+                base_currency, base_price, base_country, target_country, target_currency
+            )
             return res
         except Exception as e:
             return Response(
@@ -58,7 +56,6 @@ class GetPurchasingPowerParity(APIView):
                     "success": False,
                     "message": "something went wrong",
                     "details": "Invalid Country Name",
-                    "error": f"{e}",
                 },
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
@@ -109,7 +106,9 @@ class GetPublicPurchasingPowerParity(APIView):
                 errors = serializer.errors
                 return Response(errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
-            res = get_ppp_data(base_currency,base_price,base_country,target_country,target_currency)
+            res = get_ppp_data(
+                base_currency, base_price, base_country, target_country, target_currency
+            )
             return res
         except Exception as e:
             return Response(
@@ -117,7 +116,6 @@ class GetPublicPurchasingPowerParity(APIView):
                     "success": False,
                     "message": "something went wrong",
                     "details": "Invalid Country Name",
-                    "error": f"{e}",
                 },
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )

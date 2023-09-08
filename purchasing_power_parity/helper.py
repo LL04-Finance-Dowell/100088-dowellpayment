@@ -12,6 +12,8 @@ load_dotenv()
 
 currency_api_key = os.getenv("CURRENCY_API")
 
+"""GET EXCHANGE RATE FROM CURRENCY API"""
+
 
 def get_latest_rate(from_currency, to_currency):
     client = currencyapicom.Client(currency_api_key)
@@ -19,6 +21,9 @@ def get_latest_rate(from_currency, to_currency):
     print(response)
     result = response["data"][f"{to_currency}"]["value"]
     return result
+
+
+"""GET ALL CURRENCY NAME AND COUNTRY NAME"""
 
 
 def get_all_currency_name():
@@ -32,6 +37,9 @@ def get_all_currency_name():
         },
         status=status.HTTP_200_OK,
     )
+
+
+"""CALCULATE THE PURCHASING POWER PARITY"""
 
 
 def get_ppp_data(
@@ -76,7 +84,6 @@ def get_ppp_data(
                 "success": False,
                 "message": "something went wrong",
                 "details": "Invalid Currency Name",
-                "error": f"{e}",
             },
             status=status.HTTP_422_UNPROCESSABLE_ENTITY,
         )
