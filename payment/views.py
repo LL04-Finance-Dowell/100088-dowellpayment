@@ -36,14 +36,22 @@ from .serializers import (
 )
 from .stripe_helper import stripe_payment, verify_stripe
 from .paypal_helper import paypal_payment, verify_paypal
-
 from .voucher import generate_voucher
-
-
 import os
 from dotenv import load_dotenv
-
 load_dotenv()
+
+
+
+import plaid
+from plaid.api import plaid_api
+from plaid.model.link_token_create_request import LinkTokenCreateRequest
+from plaid.model.link_token_create_request_user import LinkTokenCreateRequestUser
+from plaid.model.products import Products
+from plaid.model.country_code import CountryCode
+
+
+# from plaid import ApiClient
 
 """GET PAYPAL MODE DOWELL INTERNAL TEAM"""
 dowell_paypal_mode = os.getenv("DOWELL_PAYPAL_LIVE_MODE")
@@ -1283,3 +1291,35 @@ class VerifyPaypalPaymentPublicUse(APIView):
                 {"success": False, "message": "something went wrong", "error": f"{e}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+PLAID_CLIENT_ID = os.getenv("PLAID_CLIENT_ID")
+PLAID_SECRET = os.getenv("PLAID_SECRET")
+
+configuration = plaid.Configuration(
+    host=plaid.Environment.Sandbox,
+    api_key={
+        'clientId': PLAID_CLIENT_ID,
+        'secret': PLAID_SECRET,
+    }
+)
+api_client = plaid.ApiClient(configuration)
+client = plaid_api.PlaidApi(api_client)
+
+class NetPayment(APIView):
+    def post(self,request):
+
+        request = LinkTokenCreateRequest(
+            products=[Products("auth")],
+            client_name="Plaid Test App",
+            country_codes=[CountryCode('US')],
+            redirect_uri='https://100088.pythonanywhere.com/api/success',
+            language='en',
+            webhook='https://webhook.example.com',
+            user=LinkTokenCreateRequestUser(
+                client_user_id="user-id"
+            )
+        )
+        response = client.link_token_create(request)
+        print(response)
+
+        return Response({"message":response.to_dict()})
