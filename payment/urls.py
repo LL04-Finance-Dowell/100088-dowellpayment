@@ -27,7 +27,8 @@ from .views import (
     Success,
     Error,
 
-    NetPayment,
+    NetPaymentPlaid,
+    NetPaymentYapily
 )
 
 urlpatterns = [
@@ -74,5 +75,6 @@ urlpatterns = [
     path("success", Success.as_view()),
     path("error", Error.as_view()),
 
-    path("plaid/initialize",NetPayment.as_view())
+    path("plaid/initialize",NetPaymentPlaid.as_view()),
+    path("yapily/initialize",NetPaymentYapily.as_view())
 ]

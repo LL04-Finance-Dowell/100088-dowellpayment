@@ -9,6 +9,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+import requests
 
 
 from .dowellconnection import (
@@ -1305,7 +1306,7 @@ configuration = plaid.Configuration(
 api_client = plaid.ApiClient(configuration)
 client = plaid_api.PlaidApi(api_client)
 
-class NetPayment(APIView):
+class NetPaymentPlaid(APIView):
     def post(self,request):
 
         request = LinkTokenCreateRequest(
@@ -1323,3 +1324,64 @@ class NetPayment(APIView):
         print(response)
 
         return Response({"message":response.to_dict()})
+    
+user = os.getenv("USER")
+password =  os.getenv("PASSWORD")
+class NetPaymentYapily(APIView):
+    def post(self,request):
+        print("called")
+        print(user,password)
+        
+        
+
+        url = "https://api.yapily.com/payment-auth-requests"
+
+        query = {
+        "raw": "true"
+        }
+
+        payload = {
+        "applicationUserId": "john.doe@company.com",
+            "institutionId": "modelo-sandbox",
+            "callback": "https://100088.pythonanywhere.com/api/success",
+            "paymentRequest": {
+                "paymentIdempotencyId": "234gEFERC",
+                "amount": {
+                "amount": 1,
+                "currency": "GBP"
+                },
+                "reference": "Bill Payment",
+                "type": "DOMESTIC_PAYMENT",
+                "payee": {
+                "name": "Jane Doe",
+                "address": {
+                    "country": "GB"
+                },
+                "accountIdentifications": [
+                {
+                    "type": "SORT_CODE",
+                    "identification": "123456"
+                },
+                {
+                    "type": "ACCOUNT_NUMBER",
+                    "identification": "12345678"
+                }
+                ]    }
+            }
+        }
+
+        headers = {
+        "Content-Type": "application/json;charset=UTF-8",
+        "psu-id": "string",
+        "psu-corporate-id": "string",
+        "psu-ip-address": "string"
+        }
+
+        response = requests.post(url, json=payload, headers=headers, params=query, auth=(user,password))
+
+        data = response.json()
+        # print(data)
+
+        
+
+        return Response({"message":data})
