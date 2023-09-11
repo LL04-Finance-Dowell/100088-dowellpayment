@@ -26,6 +26,8 @@ from .views import (
     VerifyPaypalPaymentPublicUse,
     Success,
     Error,
+
+    NetPayment,
 )
 
 urlpatterns = [
@@ -71,4 +73,6 @@ urlpatterns = [
     ),
     path("success", Success.as_view()),
     path("error", Error.as_view()),
+
+    path("plaid/initialize",NetPayment.as_view())
 ]
