@@ -68,6 +68,8 @@ if workflow_paypal_mode == "True":
 else:
     workflow_paypal_url = "https://api-m.sandbox.paypal.com"
 
+user = os.getenv("USER")
+password =  os.getenv("PASSWORD")
 
 class Success(View):
     template_name = "payment/success.html"
@@ -1325,8 +1327,7 @@ class NetPaymentPlaid(APIView):
 
         return Response({"message":response.to_dict()})
     
-user = os.getenv("USER")
-password =  os.getenv("PASSWORD")
+
 class NetPaymentYapily(APIView):
     def post(self,request):
         print("called")
