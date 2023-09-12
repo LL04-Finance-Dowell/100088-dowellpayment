@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.http import HttpResponseRedirect
 from django.views import View
 from rest_framework.views import APIView
 from rest_framework_api_key.permissions import HasAPIKey
@@ -1335,7 +1336,7 @@ class InitializeNetPaymentYapily(APIView):
         print("called")
         # print(user,password)
         unique_id = uuid.uuid4()
-        paymentIdempotencyId = str(unique_id)[:10]
+        paymentIdempotencyId = str(unique_id).replace("-","")
         print("paymentIdempotencyId",paymentIdempotencyId)
         
         
@@ -1347,7 +1348,7 @@ class InitializeNetPaymentYapily(APIView):
         }
 
         payload = {
-        "applicationUserId": "john.doe@company.com",
+            "applicationUserId": "john.doe@company.com",
             "institutionId": "modelo-sandbox",
             "callback": "http://127.0.0.1:8000/api/yapily/create/payment",
             "paymentRequest": {
@@ -1374,6 +1375,7 @@ class InitializeNetPaymentYapily(APIView):
                 }
                 ]    }
             }
+            
         }
 
         headers = {
@@ -1396,8 +1398,6 @@ class CreateNetPaymentYapily(APIView):
         print("__________________________")
         print(consent_token)
 
-        unique_id = uuid.uuid4()
-        paymentIdempotencyId = str(unique_id)[:10]
         
         
 
@@ -1408,11 +1408,7 @@ class CreateNetPaymentYapily(APIView):
         }
 
         payload = {
-        
-
-           
-            "paymentRequest": {
-                "paymentIdempotencyId": f"{paymentIdempotencyId}",
+             "paymentIdempotencyId": "d71b7b4ea43b4882be31a4f057cd36c6",
                 "amount": {
                 "amount": 1,
                 "currency": "GBP"
@@ -1434,7 +1430,6 @@ class CreateNetPaymentYapily(APIView):
                     "identification": "12345678"
                 }
                 ]    }
-            }
         }
 
         headers = {
@@ -1449,6 +1444,8 @@ class CreateNetPaymentYapily(APIView):
         print("----------------------------------")
         data = response.json()
         print(data)
-        # return Response({"message":data})
+        redirect_url = "https://www.google.com/"
+        response = HttpResponseRedirect(redirect_url)
+        return  response
     
-        return HttpResponse("good one")
+        # return HttpResponse("good one")
