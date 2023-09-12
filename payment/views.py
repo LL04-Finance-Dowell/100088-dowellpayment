@@ -1346,7 +1346,7 @@ class NetPaymentYapily(APIView):
             "institutionId": "modelo-sandbox",
             "callback": "https://100088.pythonanywhere.com/api/success",
             "paymentRequest": {
-                "paymentIdempotencyId": "234gEFERC",
+                "paymentIdempotencyId": "234gEFERCr",
                 "amount": {
                 "amount": 1,
                 "currency": "GBP"
