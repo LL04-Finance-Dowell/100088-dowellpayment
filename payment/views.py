@@ -51,6 +51,8 @@ from plaid.model.link_token_create_request_user import LinkTokenCreateRequestUse
 from plaid.model.products import Products
 from plaid.model.country_code import CountryCode
 
+import uuid
+
 
 # from plaid import ApiClient
 
@@ -68,7 +70,7 @@ if workflow_paypal_mode == "True":
 else:
     workflow_paypal_url = "https://api-m.sandbox.paypal.com"
 
-user = os.getenv("USER")
+user = os.getenv("USERID")
 password =  os.getenv("PASSWORD")
 
 class Success(View):
@@ -1328,10 +1330,13 @@ class NetPaymentPlaid(APIView):
         return Response({"message":response.to_dict()})
     
 
-class NetPaymentYapily(APIView):
+class InitializeNetPaymentYapily(APIView):
     def post(self,request):
         print("called")
-        print(user,password)
+        # print(user,password)
+        unique_id = uuid.uuid4()
+        paymentIdempotencyId = str(unique_id)[:10]
+        print("paymentIdempotencyId",paymentIdempotencyId)
         
         
 
@@ -1344,9 +1349,9 @@ class NetPaymentYapily(APIView):
         payload = {
         "applicationUserId": "john.doe@company.com",
             "institutionId": "modelo-sandbox",
-            "callback": "https://100088.pythonanywhere.com/api/success",
+            "callback": "http://127.0.0.1:8000/api/yapily/create/payment",
             "paymentRequest": {
-                "paymentIdempotencyId": "234gEFERCr",
+                "paymentIdempotencyId": f"{paymentIdempotencyId}",
                 "amount": {
                 "amount": 1,
                 "currency": "GBP"
@@ -1382,7 +1387,68 @@ class NetPaymentYapily(APIView):
 
         data = response.json()
         # print(data)
+        return Response({"message":data})
+    
+class CreateNetPaymentYapily(APIView):
+    def get(self,request):
+        print("yes")
+        consent_token = request.GET.get("consent")
+        print("__________________________")
+        print(consent_token)
 
+        unique_id = uuid.uuid4()
+        paymentIdempotencyId = str(unique_id)[:10]
+        
         
 
-        return Response({"message":data})
+        url = "https://api.yapily.com/payments"
+
+        query = {
+        "raw": "true"
+        }
+
+        payload = {
+        
+
+           
+            "paymentRequest": {
+                "paymentIdempotencyId": f"{paymentIdempotencyId}",
+                "amount": {
+                "amount": 1,
+                "currency": "GBP"
+                },
+                "reference": "Bill Payment",
+                "type": "DOMESTIC_PAYMENT",
+                "payee": {
+                "name": "Jane Doe",
+                "address": {
+                    "country": "GB"
+                },
+                "accountIdentifications": [
+                {
+                    "type": "SORT_CODE",
+                    "identification": "123456"
+                },
+                {
+                    "type": "ACCOUNT_NUMBER",
+                    "identification": "12345678"
+                }
+                ]    }
+            }
+        }
+
+        headers = {
+        "Content-Type": "application/json;charset=UTF-8",
+        "consent":f"{consent_token}",
+        "psu-id": "string",
+        "psu-corporate-id": "string",
+        "psu-ip-address": "string"
+        }
+
+        response = requests.post(url, json=payload, headers=headers,params=query, auth=(user,password))
+        print("----------------------------------")
+        data = response.json()
+        print(data)
+        # return Response({"message":data})
+    
+        return HttpResponse("good one")
