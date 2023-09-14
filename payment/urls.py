@@ -29,7 +29,9 @@ from .views import (
 
     NetPaymentPlaid,
     InitializeNetPaymentYapily,
-    CreateNetPaymentYapily
+    CreateNetPaymentYapily,
+    GetAllBank,
+    CreatePayment,
 )
 
 urlpatterns = [
@@ -78,5 +80,7 @@ urlpatterns = [
 
     path("plaid/initialize",NetPaymentPlaid.as_view()),
     path("yapily/initialize/payment",InitializeNetPaymentYapily.as_view()),
-    path("yapily/create/payment",CreateNetPaymentYapily.as_view())
+    path("yapily/create/payment",CreateNetPaymentYapily.as_view()),
+    path("token/all-bank",GetAllBank.as_view()),
+    path("token/create-payment",CreatePayment.as_view()),
 ]

@@ -1449,3 +1449,108 @@ class CreateNetPaymentYapily(APIView):
         return  response
     
         # return HttpResponse("good one")
+        
+
+class GetAllBank(APIView):
+    def get(self,request):
+        
+        url = "https://api.sandbox.token.io/v2/banks"
+        
+        query = {
+             "supportsSinglePayment": "true",
+        }
+        
+        response = requests.get(url, params=query)
+
+        data = response.json()
+        print(data)
+        
+        return Response(data)
+    
+    
+class CreatePayment(APIView):
+    def post(self,request):
+        
+        # url = "https://api.sandbox.token.io/v2/payments"
+        url = "https://api.token.io/v2/payments"
+        
+        payload = {
+            "initiation": {
+                "bankId": "ob-modelo",
+                "refId": "m:3NU9t2ebPBb38JoGiEVbWxDPrB2z:5zKtXEAq",
+                "memberId": "m:3NU9t2ebPBb38JoGiEVbWxDPrB2z:5zKtXEAq", 
+                "remittanceInformationPrimary": "RemittancePrimary",
+                "remittanceInformationSecondary": "RemittanceSecondary",
+                "onBehalfOfId": "c5a863bc-86f2-4418-a26f-25b24c7983c7",
+                "amount": {
+                "value": "10.23",
+                "currency": "EUR"
+                },
+                "localInstrument": "SEPA",
+                "debtor": {
+                "iban": "GB29NWBK60161331926819",
+                "bic": "BOFIIE2D",
+                "name": "John Smith",
+                "ultimateDebtorName": "John Smith",
+                "address": {
+                    "streetName": "221B",
+                    "buildingNumber": "2C",
+                    "postCode": "E1 6AN",
+                    "townName": "Saint Ives",
+                    "country": "United Kingdom"
+                }
+                },
+                "creditor": {
+                "memberId": "m:3NU9t2ebPBb38JoGiEVbWxDPrB2z:5zKtXEAq", 
+                "iban": "GB29NWBK60161331926819",
+                "bic": "BOFIIE2D",
+                "name": "Customer Inc.",
+                "ultimateCreditorName": "Customer Inc.",
+                "address": {
+                    "streetName": "221B",
+                    "buildingNumber": "2C",
+                    "postCode": "E1 6AN",
+                    "townName": "Saint Ives",
+                    "country": "United Kingdom"
+                },
+                "bankName": "string"
+                },
+                "executionDate": "2023-04-29",
+                "confirmFunds": False,
+                "returnRefundAccount": False,
+                "disableFutureDatedPaymentConversion": False,
+                "callbackUrl": "https://100088.pythonanywhere.com/api/success",
+                "callbackState": "c070b02c-4cca-4ee1-9c1a-537c98ad162e",
+                "chargeBearer": "CRED",
+                "risk": {
+                "psuId": "0000789123",
+                "paymentContextCode": "PISP_PAYEE",
+                "paymentPurposeCode": "DVPM",
+                "merchantCategoryCode": "4812",
+                "beneficiaryAccountType": "BUSINESS",
+                "contractPresentIndicator": True,
+                "beneficiaryPrepopulatedIndicator": True
+                }
+            },
+            "pispConsentAccepted": False,
+            "initialEmbeddedAuth": {
+                "username": "John Smith"
+            }
+        }
+        api_key = os.getenv("API_KEY")
+        print(api_key)
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Basic {api_key}"
+            }
+
+        response = requests.post(url, json=payload, headers=headers)
+
+        data = response.json()
+        print(data)
+
+        
+        return Response(data)
+        
+        
+    
