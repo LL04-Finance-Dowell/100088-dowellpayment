@@ -1455,12 +1455,13 @@ class GetAllBank(APIView):
     def get(self,request):
         
         url = "https://api.sandbox.token.io/v2/banks"
+        # url = "https://api.token.io/banks"
         
         query = {
              "supportsSinglePayment": "true",
         }
         
-        response = requests.get(url, params=query)
+        response = requests.get(url,params=query )
 
         data = response.json()
         print(data)
@@ -1471,14 +1472,14 @@ class GetAllBank(APIView):
 class CreatePayment(APIView):
     def post(self,request):
         
-        # url = "https://api.sandbox.token.io/v2/payments"
-        url = "https://api.token.io/v2/payments"
+        url = "https://api.sandbox.token.io/v2/payments"
+        # url = "https://api.token.io/payments"
+       
         
         payload = {
             "initiation": {
-                "bankId": "ob-modelo",
-                "refId": "m:3NU9t2ebPBb38JoGiEVbWxDPrB2z:5zKtXEAq",
-                "memberId": "m:3NU9t2ebPBb38JoGiEVbWxDPrB2z:5zKtXEAq", 
+                "bankId": "ngp-actv",
+                "refId": "m:3NU9t2ebPBb38JoGiEVbWxDPrB2z:5zKtXEAq", 
                 "remittanceInformationPrimary": "RemittancePrimary",
                 "remittanceInformationSecondary": "RemittanceSecondary",
                 "onBehalfOfId": "c5a863bc-86f2-4418-a26f-25b24c7983c7",
@@ -1488,6 +1489,7 @@ class CreatePayment(APIView):
                 },
                 "localInstrument": "SEPA",
                 "debtor": {
+                "memberId": "m:3NU9t2ebPBb38JoGiEVbWxDPrB2z:5zKtXEAq", 
                 "iban": "GB29NWBK60161331926819",
                 "bic": "BOFIIE2D",
                 "name": "John Smith",
@@ -1551,6 +1553,146 @@ class CreatePayment(APIView):
 
         
         return Response(data)
+
+
+
+# class CreatePayment(APIView):
+#     def post(self,request):
+        
+#         #url = "https://api.sandbox.token.io/v2/payments"
+#         #url = "https://api.token.io/payments"
+        
+
+#         url = "https://api.token.io/token-requests"
+
+#         payload = {
+#         "requestOptions": {
+#             "bankId": "goldbank",
+#             "from": {
+#             "alias": {
+#                 "realmId": "m:3NU9t2ebPBb38JoGiEVbWxDPrB2z:5zKtXEAq",
+#                 "type": "EMAIL",
+#                 "value": "e-sales@token.io"
+#             },
+#             "id": "m:nP4w3u5y8ddrxDJkjimgSX9e4fZ:5zKtXEAq"
+#             },
+#             "psuId": "a:TASDo3124fcsmF0vsmdv4mf4mklsdwls3mcixz14fkasdv5",
+#             "receiptRequested": False,
+#             "tokenInternal": {
+#             "redirectUrl": "http://psu-redirect.com",
+#             "usingWebApp": False
+#             }
+#         },
+#         "requestPayload": {
+#             "actingAs": {
+#             "displayName": "The Great Baking Co.",
+#             "refId": "9htio4a1sp2akdr1aa",
+#             "secondaryName": "jane.doe@company.com"
+#             },
+#             "callbackState": "https://{callback-url}?signature=%7B%22memberId%22%3A%22m%3A3rKtsoKaE1QUti3KCWPrcSQYvJj9% 3A5zKtXEAq%22%2C%22keyId%22%3A%22lgf2Mn0G4kkcXd5m%22%2C%22signature%22%3A%22Md-2D G0X9PpuOxea0iK33cAZ2Ffk6E5I1mAcJS6YywU80Q0yYBOlwvGy37dmovmH_OC7Jl8c-fxQ5gP2RWTaDw%22%7D& state=%257B%2522csrfTokenHash%2522%253A%2522pod1e6xornyoesn2sp%2522%257D& tokenId=ta%3AHWowFawmAwiuPKNdM7xjpiQktPppgK2JatsWPZAyTHcq%3A5zKtXEAq",
+#             "countries": [
+#             "DE",
+#             "IT",
+#             "RO"
+#             ],
+#             "description": "A regular payment",
+#             "disableFutureDatedPaymentConversion": False,
+#             "redirectUrl": "http://psu-redirect.com",
+#             "refId": "9htio4a1sp2akdr1aa",
+#             "to": {
+#             "alias": {
+#                 "realmId": "m:vHZUAMFt6s64vn6aDyMiwBYbPDN:5zKtXEAq",
+#                 "type": "EMAIL",
+#                 "value": "e-sales@token.io"
+#             },
+#             "id": "m:3NU9t2ebPBb38JoGiEVbWxDPrB2z:5zKtXEAq"
+#             },
+#             "userRefId": "3jdaWmcewrj3MX0CDS",
+#             "transferBody": {
+#             "confirmFunds": False,
+#             "currency": "EUR",
+#             "executionDate": "2023-02-28",
+#             "instructions": {
+#                 "metadata": {
+#                 "chargeBearer": "CRED",
+#                 "providerTransferMetadata": {
+#                     "cma9TransferMetadata": {
+#                     "endToEndIdentification": "string",
+#                     "instructionIdentification": "string",
+#                     "risk": {}
+#                     }
+#                 },
+#                 "purposeCode": "CBLK",
+#                 "ultimateCreditor": "ACME GmbH",
+#                 "ultimateDebtor": "John Smith"
+#                 },
+#                 "source": {
+#                 "accountIdentifier": {
+#                     "bankgiro": {
+#                     "bankgiroNumber": "56781234"
+#                     }
+#                 },
+#                 "bankId": "ob-iron",
+#                 "bic": "BOFIIE2D",
+#                 "customerData": {
+#                     "address": {
+#                     "city": "Berlin",
+#                     "conscriptionNumber": "2831",
+#                     "country": "Germany",
+#                     "district": "Friedrichshain",
+#                     "flats": "21A - 21C",
+#                     "full": "Fifth house on the left after the village oak, Smalltown, Smallcountry",
+#                     "hamlet": "Botzowviertel",
+#                     "houseName": "Grossen Blauen Haus",
+#                     "houseNumber": "123",
+#                     "place": "Arnswalder Platz",
+#                     "postCode": "10243",
+#                     "province": "BC",
+#                     "state": "CA",
+#                     "street": "Hans-Otto-Strasse",
+#                     "subdistrict": "Friedrichshain Nord",
+#                     "suburb": "Altona Meadows Suburb"
+#                     },
+#                     "legalNames": "Mr John Arthur Smith"
+#                 }
+#                 },
+#                 "transferDestinations": [
+#                 {
+#                     "customerData": {
+#                     "address": {},
+#                     "legalNames": "Mr John Arthur Smith"
+#                     },
+#                     "type": "BUSINESS",
+#                     "sepa": {
+#                     "iban": "GB29NWBK60161331926819",
+#                     "bic": "BOFIIE2D"
+#                     }
+#                 }
+#                 ]
+#             },
+#             "lifetimeAmount": "10000.00",
+#             "remittanceReference": "MFt6s64vn6aDyMiwBA3",
+#             "returnRefundAccount": False,
+#             "setTransferDestinationsUrl": "string"
+#             }
+#         }
+#         }
+#         api_key = os.getenv("API_KEY") 
+        
+#         headers = {
+#         "Content-Type": "application/json",
+#         "Authorization": f"Basic {api_key}"
+#         }
+        
+#         response = requests.post(url, json=payload, headers=headers)
+#         print(response)
+#         print(response.text)
+#         data = response.json()
+#         print(data)
+                
+        
+        
+#         return Response(data)
         
         
     
