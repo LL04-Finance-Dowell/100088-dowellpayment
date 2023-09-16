@@ -55,6 +55,9 @@ from plaid.model.country_code import CountryCode
 import uuid
 
 
+from .models import YapilyPaymentId
+
+
 # from plaid import ApiClient
 
 """GET PAYPAL MODE DOWELL INTERNAL TEAM"""
@@ -1335,9 +1338,17 @@ class InitializeNetPaymentYapily(APIView):
     def post(self,request):
         print("called")
         # print(user,password)
+        data = request.data
+        amount = data["amount"]
+        currency_code = data["currency_code"]
+        bank_id = data["bank_id"]
+        country_code = data["country_code"]
+
         unique_id = uuid.uuid4()
         paymentIdempotencyId = str(unique_id).replace("-","")
         print("paymentIdempotencyId",paymentIdempotencyId)
+
+        
         
         
 
@@ -1346,16 +1357,16 @@ class InitializeNetPaymentYapily(APIView):
         query = {
         "raw": "true"
         }
-
+        "modelo-sandbox"
         payload = {
             "applicationUserId": "john.doe@company.com",
-            "institutionId": "modelo-sandbox",
+            "institutionId": f"{bank_id}" ,
             "callback": "http://127.0.0.1:8000/api/yapily/create/payment",
             "paymentRequest": {
                 "paymentIdempotencyId": f"{paymentIdempotencyId}",
                 "amount": {
-                "amount": 1,
-                "currency": "GBP"
+                "amount": amount,
+                "currency": f"{currency_code}"
                 },
                 "reference": "Bill Payment",
                 "type": "DOMESTIC_PAYMENT",
@@ -1387,19 +1398,18 @@ class InitializeNetPaymentYapily(APIView):
 
         response = requests.post(url, json=payload, headers=headers, params=query, auth=(user,password))
 
-        data = response.json()
-        # print(data)
-        return Response({"message":data})
+        res_data = response.json()
+        print(res_data)
+        obj = YapilyPaymentId.objects.create(payment_id = paymentIdempotencyId,user_uuid=res_data["data"]["userUuid"])
+        
+        return Response({"authorisationUrl":res_data["data"]["authorisationUrl"],"qrcode_url":res_data["data"]["qrCodeUrl"]})
     
 class CreateNetPaymentYapily(APIView):
     def get(self,request):
-        print("yes")
         consent_token = request.GET.get("consent")
-        print("__________________________")
-        print(consent_token)
-
-        
-        
+        user_uuid = request.GET.get("user-uuid")
+        user_uuid_obj = YapilyPaymentId.objects.get(user_uuid=user_uuid)
+        paymentIdempotencyId = user_uuid_obj.payment_id
 
         url = "https://api.yapily.com/payments"
 
@@ -1408,9 +1418,9 @@ class CreateNetPaymentYapily(APIView):
         }
 
         payload = {
-             "paymentIdempotencyId": "d71b7b4ea43b4882be31a4f057cd36c6",
+             "paymentIdempotencyId": f"{paymentIdempotencyId}",
                 "amount": {
-                "amount": 1,
+                "amount": 200,
                 "currency": "GBP"
                 },
                 "reference": "Bill Payment",
@@ -1450,6 +1460,42 @@ class CreateNetPaymentYapily(APIView):
     
         # return HttpResponse("good one")
         
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class GetAllBank(APIView):
     def get(self,request):
