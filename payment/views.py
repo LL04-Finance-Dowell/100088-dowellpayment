@@ -1334,6 +1334,18 @@ class NetPaymentPlaid(APIView):
         return Response({"message":response.to_dict()})
     
 
+
+# return list of supported country by yapily for the user so that the user can pick one
+# query yapily to get the list of banks and cahce it response from yapily
+# base on the country selected return the banks that are in that country to the frontend
+# extract the (bank name, bank id, bank image url and bank country)
+
+""" 
+to initialize the payment, the client side will return to me the BANK ID, AMOUNT and BANK COUNTRY
+base on the bank id i will query the cache to find out the BANK FEATURES (domestic or international)
+
+"""
+
 class InitializeNetPaymentYapily(APIView):
     def post(self,request):
         print("called")
