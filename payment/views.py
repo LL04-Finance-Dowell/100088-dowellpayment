@@ -1359,6 +1359,7 @@ class InitializeNetPaymentYapily(APIView):
         }
         "modelo-sandbox"
         payload = {
+            "forwardParameters":[paymentIdempotencyId],
             "applicationUserId": "john.doe@company.com",
             "institutionId": f"{bank_id}" ,
             "callback": "http://127.0.0.1:8000/api/yapily/create/payment",
@@ -1400,16 +1401,20 @@ class InitializeNetPaymentYapily(APIView):
 
         res_data = response.json()
         print(res_data)
-        obj = YapilyPaymentId.objects.create(payment_id = paymentIdempotencyId,user_uuid=res_data["data"]["userUuid"])
+        obj = YapilyPaymentId.objects.create(payment_id = paymentIdempotencyId,amount=amount,currency_code=currency_code)
         
         return Response({"authorisationUrl":res_data["data"]["authorisationUrl"],"qrcode_url":res_data["data"]["qrCodeUrl"]})
     
 class CreateNetPaymentYapily(APIView):
     def get(self,request):
+
+        full_url = request.get_full_path()
+        paymentIdempotencyId = full_url.split("&")[-1][:-1]
         consent_token = request.GET.get("consent")
-        user_uuid = request.GET.get("user-uuid")
-        user_uuid_obj = YapilyPaymentId.objects.get(user_uuid=user_uuid)
-        paymentIdempotencyId = user_uuid_obj.payment_id
+
+        obj = YapilyPaymentId.objects.get(payment_id=paymentIdempotencyId)
+        amount = obj.amount
+        currency_code = obj.currency_code
 
         url = "https://api.yapily.com/payments"
 
@@ -1420,8 +1425,8 @@ class CreateNetPaymentYapily(APIView):
         payload = {
              "paymentIdempotencyId": f"{paymentIdempotencyId}",
                 "amount": {
-                "amount": 200,
-                "currency": "GBP"
+                "amount": amount,
+                "currency": f"{currency_code}"
                 },
                 "reference": "Bill Payment",
                 "type": "DOMESTIC_PAYMENT",
@@ -1454,7 +1459,7 @@ class CreateNetPaymentYapily(APIView):
         print("----------------------------------")
         data = response.json()
         print(data)
-        redirect_url = "https://www.google.com/"
+        redirect_url = f"https://www.google.com/?payment_id={paymentIdempotencyId}"
         response = HttpResponseRedirect(redirect_url)
         return  response
     
