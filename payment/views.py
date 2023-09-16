@@ -1401,7 +1401,7 @@ class InitializeNetPaymentYapily(APIView):
 
         res_data = response.json()
         print(res_data)
-        obj = YapilyPaymentId.objects.create(payment_id = paymentIdempotencyId,amount=amount,currency_code=currency_code)
+        obj = YapilyPaymentId.objects.create(payment_id = paymentIdempotencyId,amount=amount,currency_code=currency_code,bank_id=bank_id)
         
         return Response({"authorisationUrl":res_data["data"]["authorisationUrl"],"qrcode_url":res_data["data"]["qrCodeUrl"]})
     
@@ -1463,7 +1463,7 @@ class CreateNetPaymentYapily(APIView):
         response = HttpResponseRedirect(redirect_url)
         return  response
     
-        # return HttpResponse("good one")
+
         
 
 
