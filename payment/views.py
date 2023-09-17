@@ -41,8 +41,8 @@ from .paypal_helper import paypal_payment, verify_paypal
 from .voucher import generate_voucher
 import os
 from dotenv import load_dotenv
-load_dotenv()
 
+load_dotenv()
 
 
 import plaid
@@ -75,7 +75,8 @@ else:
     workflow_paypal_url = "https://api-m.sandbox.paypal.com"
 
 user = os.getenv("USERID")
-password =  os.getenv("PASSWORD")
+password = os.getenv("PASSWORD")
+
 
 class Success(View):
     template_name = "payment/success.html"
@@ -1301,42 +1302,40 @@ class VerifyPaypalPaymentPublicUse(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+
 PLAID_CLIENT_ID = os.getenv("PLAID_CLIENT_ID")
 PLAID_SECRET = os.getenv("PLAID_SECRET")
 
 configuration = plaid.Configuration(
     host=plaid.Environment.Sandbox,
     api_key={
-        'clientId': PLAID_CLIENT_ID,
-        'secret': PLAID_SECRET,
-    }
+        "clientId": PLAID_CLIENT_ID,
+        "secret": PLAID_SECRET,
+    },
 )
 api_client = plaid.ApiClient(configuration)
 client = plaid_api.PlaidApi(api_client)
 
-class NetPaymentPlaid(APIView):
-    def post(self,request):
 
+class NetPaymentPlaid(APIView):
+    def post(self, request):
         request = LinkTokenCreateRequest(
             products=[Products("auth")],
             client_name="Plaid Test App",
-            country_codes=[CountryCode('US')],
-            redirect_uri='https://100088.pythonanywhere.com/api/success',
-            language='en',
-            webhook='https://webhook.example.com',
-            user=LinkTokenCreateRequestUser(
-                client_user_id="user-id"
-            )
+            country_codes=[CountryCode("US")],
+            redirect_uri="https://100088.pythonanywhere.com/api/success",
+            language="en",
+            webhook="https://webhook.example.com",
+            user=LinkTokenCreateRequestUser(client_user_id="user-id"),
         )
         response = client.link_token_create(request)
         print(response)
 
-        return Response({"message":response.to_dict()})
-    
+        return Response({"message": response.to_dict()})
 
 
 # return list of supported country by yapily for the user so that the user can pick one
-# query yapily to get the list of banks and cahce it response from yapily
+# query yapily to get the list of banks and cache it response from yapily
 # base on the country selected return the banks that are in that country to the frontend
 # extract the (bank name, bank id, bank image url and bank country)
 
@@ -1346,8 +1345,67 @@ base on the bank id i will query the cache to find out the BANK FEATURES (domest
 
 """
 
+
+class YapilySupportedCountry(APIView):
+    def get(self, request):
+        supported_countries_code = [
+            "AT",
+            "BE",
+            "DK",
+            "EE",
+            "FI",
+            "FR",
+            "DE",
+            "IS",
+            "IE",
+            "IT",
+            "LV",
+            "LT",
+            "NL",
+            "NO",
+            "PL",
+            "PT",
+            "ES",
+            "SE",
+            "GB",
+        ]
+        return Response({"country_code": supported_countries_code})
+
+    def post(self, request):
+        data = request.data
+        country_code = data["country_code"]
+
+        headers = {"Content-Type": "application/json;charset=UTF-8"}
+
+        url = "https://api.yapily.com/institutions"
+
+        response = requests.get(url, headers=headers, auth=(user, password))
+
+        res_data = response.json()
+        context = []
+        banks = res_data["data"]
+        for bank in banks:
+            supported_country_bank = bank["countries"]
+            for country in supported_country_bank:
+                if country_code == country["countryCode2"]:
+                    bank_id = bank["id"]
+                    bank_name = bank["name"]
+                    code = country_code
+                    bank_logo = bank["media"][0]["source"]
+                    context.append(
+                        {
+                            "bank_id": bank_id,
+                            "bank_name": bank_name,
+                            "country_code": code,
+                            "bank_logo": bank_logo,
+                        }
+                    )
+
+        return Response(context)
+
+
 class InitializeNetPaymentYapily(APIView):
-    def post(self,request):
+    def post(self, request):
         print("called")
         # print(user,password)
         data = request.data
@@ -1357,69 +1415,122 @@ class InitializeNetPaymentYapily(APIView):
         country_code = data["country_code"]
 
         unique_id = uuid.uuid4()
-        paymentIdempotencyId = str(unique_id).replace("-","")
-        print("paymentIdempotencyId",paymentIdempotencyId)
-
-        
-        
-        
+        paymentIdempotencyId = str(unique_id).replace("-", "")
+        print("paymentIdempotencyId", paymentIdempotencyId)
+         
+        headers1 = {"Content-Type": "application/json;charset=UTF-8"}
+        url1 = "https://api.yapily.com/institutions"
+        response1 = requests.get(url1, headers=headers1, auth=(user, password)) 
+        res_data1 = response1.json()
+        banks = res_data1["data"]
+        for bank in banks:
+            print(bank["name"])
+            if bank_id==bank["id"]:
+                bank_features = bank["features"]
+                if "CREATE_DOMESTIC_SINGLE_PAYMENT" in bank_features and country_code =="GB":
+                
+                    payment_type = "DOMESTIC_PAYMENT"
+                if "CREATE_INTERNATIONAL_SINGLE_PAYMENT" in bank_features and country_code != "GB":
+                    payment_type = "INTERNATIONAL_PAYMENT"
+                    
+                if "CREATE_DOMESTIC_SINGLE_PAYMENT" in bank_features and "CREATE_INTERNATIONAL_SINGLE_PAYMENT" in bank_features and country_code =="GB":
+                    payment_type = "DOMESTIC_PAYMENT"
+                    
+                    
 
         url = "https://api.yapily.com/payment-auth-requests"
 
-        query = {
-        "raw": "true"
-        }
+        query = {"raw": "true"}
         "modelo-sandbox"
-        payload = {
-            "forwardParameters":[paymentIdempotencyId],
+
+        if payment_type == "DOMESTIC_PAYMENT":
+            print("DOMESTIC_PAYMENT")
+            payload = {
+            "forwardParameters": [paymentIdempotencyId],
             "applicationUserId": "john.doe@company.com",
-            "institutionId": f"{bank_id}" ,
+            "institutionId": f"{bank_id}",
             "callback": "http://127.0.0.1:8000/api/yapily/create/payment",
             "paymentRequest": {
                 "paymentIdempotencyId": f"{paymentIdempotencyId}",
-                "amount": {
-                "amount": amount,
-                "currency": f"{currency_code}"
-                },
+                "amount": {"amount": amount, "currency": f"{currency_code}"},
                 "reference": "Bill Payment",
-                "type": "DOMESTIC_PAYMENT",
+                "type": f"{payment_type}",
                 "payee": {
-                "name": "Jane Doe",
-                "address": {
-                    "country": "GB"
+                    "name": "Jane Doe",
+                    "address": {"country": "GB"},
+                    "accountIdentifications": [
+                        {"type": "SORT_CODE", "identification": "123456"},
+                        {"type": "ACCOUNT_NUMBER", "identification": "12345678"},
+                    ],
                 },
-                "accountIdentifications": [
-                {
-                    "type": "SORT_CODE",
-                    "identification": "123456"
+            },
+        }
+        if payment_type == "INTERNATIONAL_PAYMENT":
+            print("INTERNATIONAL_PAYMENT") 
+            payload = {
+            "forwardParameters": [paymentIdempotencyId],
+            "applicationUserId": "john.doe@company.com",
+            "institutionId": f"{bank_id}",
+            "callback": "http://127.0.0.1:8000/api/yapily/create/payment",
+            "paymentRequest": {
+                "paymentIdempotencyId": f"{paymentIdempotencyId}",
+                "amount": {"amount": amount, "currency": f"{currency_code}"},
+                "reference": "Bill Payment",
+                "type": f"{payment_type}",
+                "payee": {
+                    "name": "Jane Doe",
+                    "address": {"country": "GB"},
+                    "accountIdentifications": [
+                        {
+                            "type": "BIC",
+                            "identification": "RBOSGB2109M"
+                        },
+                        {
+                            "type": "IBAN",
+                            "identification": "GB29RBOS83040210126939"
+                        }
+                        ]
                 },
-                {
-                    "type": "ACCOUNT_NUMBER",
-                    "identification": "12345678"
+                "internationalPayment":{
+                    "currencyOfTransfer":f"{currency_code}"
                 }
-                ]    }
-            }
+            },
+        }
             
-        }
+            
 
+
+        
         headers = {
-        "Content-Type": "application/json;charset=UTF-8",
-        "psu-id": "string",
-        "psu-corporate-id": "string",
-        "psu-ip-address": "string"
+            "Content-Type": "application/json;charset=UTF-8",
+            "psu-id": "string",
+            "psu-corporate-id": "string",
+            "psu-ip-address": "string",
         }
 
-        response = requests.post(url, json=payload, headers=headers, params=query, auth=(user,password))
+        response = requests.post(
+            url, json=payload, headers=headers, params=query, auth=(user, password)
+        )
 
         res_data = response.json()
         print(res_data)
-        obj = YapilyPaymentId.objects.create(payment_id = paymentIdempotencyId,amount=amount,currency_code=currency_code,bank_id=bank_id)
-        
-        return Response({"authorisationUrl":res_data["data"]["authorisationUrl"],"qrcode_url":res_data["data"]["qrCodeUrl"]})
-    
-class CreateNetPaymentYapily(APIView):
-    def get(self,request):
+        obj = YapilyPaymentId.objects.create(
+            payment_id=paymentIdempotencyId,
+            amount=amount,
+            currency_code=currency_code,
+            bank_id=bank_id,
+        )
 
+        return Response(
+            {
+                "authorisationUrl": res_data["data"]["authorisationUrl"],
+                "qrcode_url": res_data["data"]["qrCodeUrl"],
+            }
+        )
+
+
+class CreateNetPaymentYapily(APIView):
+    def get(self, request):
         full_url = request.get_full_path()
         paymentIdempotencyId = full_url.split("&")[-1][:-1]
         consent_token = request.GET.get("consent")
@@ -1430,155 +1541,101 @@ class CreateNetPaymentYapily(APIView):
 
         url = "https://api.yapily.com/payments"
 
-        query = {
-        "raw": "true"
-        }
+        query = {"raw": "true"}
 
         payload = {
-             "paymentIdempotencyId": f"{paymentIdempotencyId}",
-                "amount": {
-                "amount": amount,
-                "currency": f"{currency_code}"
-                },
-                "reference": "Bill Payment",
-                "type": "DOMESTIC_PAYMENT",
-                "payee": {
+            "paymentIdempotencyId": f"{paymentIdempotencyId}",
+            "amount": {"amount": amount, "currency": f"{currency_code}"},
+            "reference": "Bill Payment",
+            "type": "DOMESTIC_PAYMENT",
+            "payee": {
                 "name": "Jane Doe",
-                "address": {
-                    "country": "GB"
-                },
+                "address": {"country": "GB"},
                 "accountIdentifications": [
-                {
-                    "type": "SORT_CODE",
-                    "identification": "123456"
-                },
-                {
-                    "type": "ACCOUNT_NUMBER",
-                    "identification": "12345678"
-                }
-                ]    }
+                    {"type": "SORT_CODE", "identification": "123456"},
+                    {"type": "ACCOUNT_NUMBER", "identification": "12345678"},
+                ],
+            },
         }
 
         headers = {
-        "Content-Type": "application/json;charset=UTF-8",
-        "consent":f"{consent_token}",
-        "psu-id": "string",
-        "psu-corporate-id": "string",
-        "psu-ip-address": "string"
+            "Content-Type": "application/json;charset=UTF-8",
+            "consent": f"{consent_token}",
+            "psu-id": "string",
+            "psu-corporate-id": "string",
+            "psu-ip-address": "string",
         }
 
-        response = requests.post(url, json=payload, headers=headers,params=query, auth=(user,password))
+        response = requests.post(
+            url, json=payload, headers=headers, params=query, auth=(user, password)
+        )
         print("----------------------------------")
         data = response.json()
         print(data)
         redirect_url = f"https://www.google.com/?payment_id={paymentIdempotencyId}"
         response = HttpResponseRedirect(redirect_url)
-        return  response
-    
-
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        return response
 
 
 class GetAllBank(APIView):
-    def get(self,request):
-        
+    def get(self, request):
         url = "https://api.sandbox.token.io/v2/banks"
         # url = "https://api.token.io/banks"
-        
+
         query = {
-             "supportsSinglePayment": "true",
+            "supportsSinglePayment": "true",
         }
-        
-        response = requests.get(url,params=query )
+
+        response = requests.get(url, params=query)
 
         data = response.json()
         print(data)
-        
+
         return Response(data)
-    
-    
+
+
 class CreatePayment(APIView):
-    def post(self,request):
-        
+    def post(self, request):
         url = "https://api.sandbox.token.io/v2/payments"
         # url = "https://api.token.io/payments"
-       
-        
+
         payload = {
             "initiation": {
                 "bankId": "ngp-actv",
-                "refId": "m:3NU9t2ebPBb38JoGiEVbWxDPrB2z:5zKtXEAq", 
+                "refId": "m:3NU9t2ebPBb38JoGiEVbWxDPrB2z:5zKtXEAq",
                 "remittanceInformationPrimary": "RemittancePrimary",
                 "remittanceInformationSecondary": "RemittanceSecondary",
                 "onBehalfOfId": "c5a863bc-86f2-4418-a26f-25b24c7983c7",
-                "amount": {
-                "value": "10.23",
-                "currency": "EUR"
-                },
+                "amount": {"value": "10.23", "currency": "EUR"},
                 "localInstrument": "SEPA",
                 "debtor": {
-                "memberId": "m:3NU9t2ebPBb38JoGiEVbWxDPrB2z:5zKtXEAq", 
-                "iban": "GB29NWBK60161331926819",
-                "bic": "BOFIIE2D",
-                "name": "John Smith",
-                "ultimateDebtorName": "John Smith",
-                "address": {
-                    "streetName": "221B",
-                    "buildingNumber": "2C",
-                    "postCode": "E1 6AN",
-                    "townName": "Saint Ives",
-                    "country": "United Kingdom"
-                }
+                    "memberId": "m:3NU9t2ebPBb38JoGiEVbWxDPrB2z:5zKtXEAq",
+                    "iban": "GB29NWBK60161331926819",
+                    "bic": "BOFIIE2D",
+                    "name": "John Smith",
+                    "ultimateDebtorName": "John Smith",
+                    "address": {
+                        "streetName": "221B",
+                        "buildingNumber": "2C",
+                        "postCode": "E1 6AN",
+                        "townName": "Saint Ives",
+                        "country": "United Kingdom",
+                    },
                 },
                 "creditor": {
-                "memberId": "m:3NU9t2ebPBb38JoGiEVbWxDPrB2z:5zKtXEAq", 
-                "iban": "GB29NWBK60161331926819",
-                "bic": "BOFIIE2D",
-                "name": "Customer Inc.",
-                "ultimateCreditorName": "Customer Inc.",
-                "address": {
-                    "streetName": "221B",
-                    "buildingNumber": "2C",
-                    "postCode": "E1 6AN",
-                    "townName": "Saint Ives",
-                    "country": "United Kingdom"
-                },
-                "bankName": "string"
+                    "memberId": "m:3NU9t2ebPBb38JoGiEVbWxDPrB2z:5zKtXEAq",
+                    "iban": "GB29NWBK60161331926819",
+                    "bic": "BOFIIE2D",
+                    "name": "Customer Inc.",
+                    "ultimateCreditorName": "Customer Inc.",
+                    "address": {
+                        "streetName": "221B",
+                        "buildingNumber": "2C",
+                        "postCode": "E1 6AN",
+                        "townName": "Saint Ives",
+                        "country": "United Kingdom",
+                    },
+                    "bankName": "string",
                 },
                 "executionDate": "2023-04-29",
                 "confirmFunds": False,
@@ -1588,43 +1645,39 @@ class CreatePayment(APIView):
                 "callbackState": "c070b02c-4cca-4ee1-9c1a-537c98ad162e",
                 "chargeBearer": "CRED",
                 "risk": {
-                "psuId": "0000789123",
-                "paymentContextCode": "PISP_PAYEE",
-                "paymentPurposeCode": "DVPM",
-                "merchantCategoryCode": "4812",
-                "beneficiaryAccountType": "BUSINESS",
-                "contractPresentIndicator": True,
-                "beneficiaryPrepopulatedIndicator": True
-                }
+                    "psuId": "0000789123",
+                    "paymentContextCode": "PISP_PAYEE",
+                    "paymentPurposeCode": "DVPM",
+                    "merchantCategoryCode": "4812",
+                    "beneficiaryAccountType": "BUSINESS",
+                    "contractPresentIndicator": True,
+                    "beneficiaryPrepopulatedIndicator": True,
+                },
             },
             "pispConsentAccepted": False,
-            "initialEmbeddedAuth": {
-                "username": "John Smith"
-            }
+            "initialEmbeddedAuth": {"username": "John Smith"},
         }
         api_key = os.getenv("API_KEY")
         print(api_key)
         headers = {
             "Content-Type": "application/json",
-            "Authorization": f"Basic {api_key}"
-            }
+            "Authorization": f"Basic {api_key}",
+        }
 
         response = requests.post(url, json=payload, headers=headers)
 
         data = response.json()
         print(data)
 
-        
         return Response(data)
-
 
 
 # class CreatePayment(APIView):
 #     def post(self,request):
-        
+
 #         #url = "https://api.sandbox.token.io/v2/payments"
 #         #url = "https://api.token.io/payments"
-        
+
 
 #         url = "https://api.token.io/token-requests"
 
@@ -1740,22 +1793,18 @@ class CreatePayment(APIView):
 #             }
 #         }
 #         }
-#         api_key = os.getenv("API_KEY") 
-        
+#         api_key = os.getenv("API_KEY")
+
 #         headers = {
 #         "Content-Type": "application/json",
 #         "Authorization": f"Basic {api_key}"
 #         }
-        
+
 #         response = requests.post(url, json=payload, headers=headers)
 #         print(response)
 #         print(response.text)
 #         data = response.json()
 #         print(data)
-                
-        
-        
+
+
 #         return Response(data)
-        
-        
-    
