@@ -26,12 +26,14 @@ from .views import (
     VerifyPaypalPaymentPublicUse,
     Success,
     Error,
-    NetPaymentPlaid,
+   
     YapilySupportedCountry,
     InitializeNetPaymentYapily,
     CreateNetPaymentYapily,
-    GetAllBank,
-    CreatePayment,
+    VerifyNetPaymentYapily,
+    # NetPaymentPlaid,
+    # GetAllBank,
+    # CreatePayment,
 )
 
 urlpatterns = [
@@ -77,10 +79,14 @@ urlpatterns = [
     ),
     path("success", Success.as_view()),
     path("error", Error.as_view()),
-    path("plaid/initialize", NetPaymentPlaid.as_view()),
+   
     path("yapily/supported-countries", YapilySupportedCountry.as_view()),
     path("yapily/initialize/payment", InitializeNetPaymentYapily.as_view()),
     path("yapily/create/payment", CreateNetPaymentYapily.as_view()),
-    path("token/all-bank", GetAllBank.as_view()),
-    path("token/create-payment", CreatePayment.as_view()),
+    path("yapily/verify/payment",VerifyNetPaymentYapily.as_view()),
+
+
+    # path("plaid/initialize", NetPaymentPlaid.as_view()),
+    # path("token/all-bank", GetAllBank.as_view()),
+    # path("token/create-payment", CreatePayment.as_view()),
 ]
