@@ -18,7 +18,7 @@ class YapilyPaymentId(models.Model):
     date = models.CharField(max_length=50, blank=True, null=True)
     country_code = models.CharField(max_length=50, blank=True, null=True)
     payment_status = models.CharField(
-        max_length=10, default="Failed", blank=True, null=True
+        max_length=10, default="Initialized", blank=True, null=True
     )
     mail_sent = models.BooleanField(default=False)
 

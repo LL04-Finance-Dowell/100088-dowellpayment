@@ -1375,8 +1375,6 @@ class YapilySupportedCountry(APIView):
 
 class InitializeNetPaymentYapily(APIView):
     def post(self, request):
-        print("called")
-        # print(user,password)
         data = request.data
         amount = data["amount"]
         currency_code = data["currency_code"]
@@ -1387,10 +1385,11 @@ class InitializeNetPaymentYapily(APIView):
 
         unique_id = uuid.uuid4()
         paymentIdempotencyId = str(unique_id).replace("-", "")
-        # print("paymentIdempotencyId", paymentIdempotencyId)
 
         headers1 = {"Content-Type": "application/json;charset=UTF-8"}
+
         url1 = "https://api.yapily.com/institutions"
+
         response1 = requests.get(url1, headers=headers1, auth=(user, password))
         res_data1 = response1.json()
         banks = res_data1["data"]
@@ -1494,6 +1493,8 @@ class InitializeNetPaymentYapily(APIView):
             bank_id=bank_id,
             desc=product_desc,
             date=date,
+            payment_type=payment_type,
+            country_code=country_code,
         )
 
         return Response(
@@ -1518,6 +1519,14 @@ class CreateNetPaymentYapily(APIView):
 
         url = "https://api.yapily.com/payments"
 
+        headers = {
+            "Content-Type": "application/json;charset=UTF-8",
+            "consent": f"{consent}",
+            "psu-id": "string",
+            "psu-corporate-id": "string",
+            "psu-ip-address": "string",
+        }
+
         query = {"raw": "true"}
 
         payload = {
@@ -1535,14 +1544,6 @@ class CreateNetPaymentYapily(APIView):
             },
         }
 
-        headers = {
-            "Content-Type": "application/json;charset=UTF-8",
-            "consent": f"{consent}",
-            "psu-id": "string",
-            "psu-corporate-id": "string",
-            "psu-ip-address": "string",
-        }
-
         response = requests.post(
             url, json=payload, headers=headers, params=query, auth=(user, password)
         )
@@ -1551,8 +1552,12 @@ class CreateNetPaymentYapily(APIView):
         print(data)
         print("----------------------------------")
         id = data["data"]["id"]
+        debtor_name = data["raw"][0]["result"]["Data"]["Debtor"]["Name"]
+        status = data["data"]["status"]
         obj.payment_id = id
         obj.consent_token = consent
+        obj.payment_status = status
+        obj.name = debtor_name
         obj.save()
         redirect_url = f"https://www.google.com/?payment_id={id}"
         response = HttpResponseRedirect(redirect_url)
@@ -1563,18 +1568,21 @@ class VerifyNetPaymentYapily(APIView):
     def post(self, request):
         data = request.data
         payment_id = data["id"]
+
         url = "https://api.yapily.com/payments/" + payment_id + "/details"
 
-        query = {"raw": "true"}
-        obj = YapilyPaymentId.objects.get(payment_id=payment_id)
-        consent = obj.consent_token
         headers = {
             "consent": f"{consent}",
             "psu-id": "string",
             "psu-corporate-id": "string",
             "psu-ip-address": "string",
         }
-        print(user, password)
+
+        query = {"raw": "true"}
+
+        obj = YapilyPaymentId.objects.get(payment_id=payment_id)
+        consent = obj.consent_token
+
         response = requests.get(
             url, headers=headers, params=query, auth=(user, password)
         )
@@ -1584,11 +1592,14 @@ class VerifyNetPaymentYapily(APIView):
         print(data)
         print("---------------------------------")
         status = data["data"]["payments"][0]["status"]
+        # debtor_name = data["raw"][0]["result"]["Data"]["Debtor"]["Name"]
+
         if status == "COMPLETED":
             print("status", status)
         else:
             print("status", status)
         obj.payment_status = status
+
         obj.save()
         return Response(data)
 
