@@ -1303,8 +1303,6 @@ class VerifyPaypalPaymentPublicUse(APIView):
             )
 
 
-
-
 # return list of supported country by yapily for the user so that the user can pick one
 # query yapily to get the list of banks and cache it response from yapily
 # base on the country selected return the banks that are in that country to the frontend
@@ -1384,30 +1382,39 @@ class InitializeNetPaymentYapily(APIView):
         currency_code = data["currency_code"]
         bank_id = data["bank_id"]
         country_code = data["country_code"]
+        # email = data["email"]
+        product_desc = data["product"]
 
         unique_id = uuid.uuid4()
         paymentIdempotencyId = str(unique_id).replace("-", "")
-        print("paymentIdempotencyId", paymentIdempotencyId)
-         
+        # print("paymentIdempotencyId", paymentIdempotencyId)
+
         headers1 = {"Content-Type": "application/json;charset=UTF-8"}
         url1 = "https://api.yapily.com/institutions"
-        response1 = requests.get(url1, headers=headers1, auth=(user, password)) 
+        response1 = requests.get(url1, headers=headers1, auth=(user, password))
         res_data1 = response1.json()
         banks = res_data1["data"]
         for bank in banks:
-            print(bank["name"])
-            if bank_id==bank["id"]:
+            # print(bank["name"])
+            if bank_id == bank["id"]:
                 bank_features = bank["features"]
-                if "CREATE_DOMESTIC_SINGLE_PAYMENT" in bank_features and country_code =="GB":
-                
+                if (
+                    "CREATE_DOMESTIC_SINGLE_PAYMENT" in bank_features
+                    and country_code == "GB"
+                ):
                     payment_type = "DOMESTIC_PAYMENT"
-                if "CREATE_INTERNATIONAL_SINGLE_PAYMENT" in bank_features and country_code != "GB":
+                if (
+                    "CREATE_INTERNATIONAL_SINGLE_PAYMENT" in bank_features
+                    and country_code != "GB"
+                ):
                     payment_type = "INTERNATIONAL_PAYMENT"
-                    
-                if "CREATE_DOMESTIC_SINGLE_PAYMENT" in bank_features and "CREATE_INTERNATIONAL_SINGLE_PAYMENT" in bank_features and country_code =="GB":
+
+                if (
+                    "CREATE_DOMESTIC_SINGLE_PAYMENT" in bank_features
+                    and "CREATE_INTERNATIONAL_SINGLE_PAYMENT" in bank_features
+                    and country_code == "GB"
+                ):
                     payment_type = "DOMESTIC_PAYMENT"
-                    
-                    
 
         url = "https://api.yapily.com/payment-auth-requests"
 
@@ -1417,61 +1424,52 @@ class InitializeNetPaymentYapily(APIView):
         if payment_type == "DOMESTIC_PAYMENT":
             print("DOMESTIC_PAYMENT")
             payload = {
-            "forwardParameters": [paymentIdempotencyId],
-            "applicationUserId": "john.doe@company.com",
-            "institutionId": f"{bank_id}",
-            "callback": "http://127.0.0.1:8000/api/yapily/create/payment",
-            "paymentRequest": {
-                "paymentIdempotencyId": f"{paymentIdempotencyId}",
-                "amount": {"amount": amount, "currency": f"{currency_code}"},
-                "reference": "Bill Payment",
-                "type": f"{payment_type}",
-                "payee": {
-                    "name": "Jane Doe",
-                    "address": {"country": "GB"},
-                    "accountIdentifications": [
-                        {"type": "SORT_CODE", "identification": "123456"},
-                        {"type": "ACCOUNT_NUMBER", "identification": "12345678"},
-                    ],
+                "forwardParameters": [paymentIdempotencyId],
+                "applicationUserId": "john.doe@company.com",
+                "institutionId": f"{bank_id}",
+                "callback": "http://127.0.0.1:8000/api/yapily/create/payment",
+                "paymentRequest": {
+                    "paymentIdempotencyId": f"{paymentIdempotencyId}",
+                    "amount": {"amount": amount, "currency": f"{currency_code}"},
+                    "reference": f"{product_desc}",
+                    "type": f"{payment_type}",
+                    "payee": {
+                        "name": "Jane Doe",
+                        "address": {"country": "GB"},
+                        "accountIdentifications": [
+                            {"type": "SORT_CODE", "identification": "123456"},
+                            {"type": "ACCOUNT_NUMBER", "identification": "12345678"},
+                        ],
+                    },
                 },
-            },
-        }
+            }
         if payment_type == "INTERNATIONAL_PAYMENT":
-            print("INTERNATIONAL_PAYMENT") 
+            print("INTERNATIONAL_PAYMENT")
             payload = {
-            "forwardParameters": [paymentIdempotencyId],
-            "applicationUserId": "john.doe@company.com",
-            "institutionId": f"{bank_id}",
-            "callback": "http://127.0.0.1:8000/api/yapily/create/payment",
-            "paymentRequest": {
-                "paymentIdempotencyId": f"{paymentIdempotencyId}",
-                "amount": {"amount": amount, "currency": f"{currency_code}"},
-                "reference": "Bill Payment",
-                "type": f"{payment_type}",
-                "payee": {
-                    "name": "Jane Doe",
-                    "address": {"country": "GB"},
-                    "accountIdentifications": [
-                        {
-                            "type": "BIC",
-                            "identification": "RBOSGB2109M"
-                        },
-                        {
-                            "type": "IBAN",
-                            "identification": "GB29RBOS83040210126939"
-                        }
-                        ]
+                "forwardParameters": [paymentIdempotencyId],
+                "applicationUserId": "john.doe@company.com",
+                "institutionId": f"{bank_id}",
+                "callback": "http://127.0.0.1:8000/api/yapily/create/payment",
+                "paymentRequest": {
+                    "paymentIdempotencyId": f"{paymentIdempotencyId}",
+                    "amount": {"amount": amount, "currency": f"{currency_code}"},
+                    "reference": f"{product_desc}",
+                    "type": f"{payment_type}",
+                    "payee": {
+                        "name": "Jane Doe",
+                        "address": {"country": "GB"},
+                        "accountIdentifications": [
+                            {"type": "BIC", "identification": "RBOSGB2109M"},
+                            {
+                                "type": "IBAN",
+                                "identification": "GB29RBOS83040210126939",
+                            },
+                        ],
+                    },
+                    "internationalPayment": {"currencyOfTransfer": f"{currency_code}"},
                 },
-                "internationalPayment":{
-                    "currencyOfTransfer":f"{currency_code}"
-                }
-            },
-        }
-            
-            
+            }
 
-
-        
         headers = {
             "Content-Type": "application/json;charset=UTF-8",
             "psu-id": "string",
@@ -1484,18 +1482,25 @@ class InitializeNetPaymentYapily(APIView):
         )
 
         res_data = response.json()
+        print("-------------------------------------")
         print(res_data)
+        print("----------------------------------------")
+        date = res_data["data"]["createdAt"].split("T")[0]
+        # print(date)
         obj = YapilyPaymentId.objects.create(
             payment_idempotency_id=paymentIdempotencyId,
             amount=amount,
             currency_code=currency_code,
             bank_id=bank_id,
+            desc=product_desc,
+            date=date,
         )
 
         return Response(
             {
                 "authorisationUrl": res_data["data"]["authorisationUrl"],
                 "qrcode_url": res_data["data"]["qrCodeUrl"],
+                # "data":res_data,
             }
         )
 
@@ -1509,6 +1514,7 @@ class CreateNetPaymentYapily(APIView):
         obj = YapilyPaymentId.objects.get(payment_idempotency_id=paymentIdempotencyId)
         amount = obj.amount
         currency_code = obj.currency_code
+        product_desc = obj.desc
 
         url = "https://api.yapily.com/payments"
 
@@ -1517,7 +1523,7 @@ class CreateNetPaymentYapily(APIView):
         payload = {
             "paymentIdempotencyId": f"{paymentIdempotencyId}",
             "amount": {"amount": amount, "currency": f"{currency_code}"},
-            "reference": "Bill Payment",
+            "reference": f"{product_desc}",
             "type": "DOMESTIC_PAYMENT",
             "payee": {
                 "name": "Jane Doe",
@@ -1543,8 +1549,8 @@ class CreateNetPaymentYapily(APIView):
         print("----------------------------------")
         data = response.json()
         print(data)
+        print("----------------------------------")
         id = data["data"]["id"]
-        print("This is payment id" ,id)
         obj.payment_id = id
         obj.consent_token = consent
         obj.save()
@@ -1554,57 +1560,37 @@ class CreateNetPaymentYapily(APIView):
 
 
 class VerifyNetPaymentYapily(APIView):
-    def post(self,request):
-
+    def post(self, request):
         data = request.data
         payment_id = data["id"]
         url = "https://api.yapily.com/payments/" + payment_id + "/details"
 
-        query = {
-        "raw": "true"
-        }
+        query = {"raw": "true"}
         obj = YapilyPaymentId.objects.get(payment_id=payment_id)
         consent = obj.consent_token
         headers = {
-        "consent": f"{consent}",
-        "psu-id": "string",
-        "psu-corporate-id": "string",
-        "psu-ip-address": "string"
+            "consent": f"{consent}",
+            "psu-id": "string",
+            "psu-corporate-id": "string",
+            "psu-ip-address": "string",
         }
-        print(user,password)
-        response = requests.get(url, headers=headers, params=query, auth=(user, password))
+        print(user, password)
+        response = requests.get(
+            url, headers=headers, params=query, auth=(user, password)
+        )
 
         data = response.json()
+        print("--------------------------------")
         print(data)
+        print("---------------------------------")
         status = data["data"]["payments"][0]["status"]
         if status == "COMPLETED":
-            print("status",status)
+            print("status", status)
         else:
-            print("status",status)
+            print("status", status)
+        obj.payment_status = status
+        obj.save()
         return Response(data)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 # PLAID_CLIENT_ID = os.getenv("PLAID_CLIENT_ID")
@@ -1730,8 +1716,6 @@ class VerifyNetPaymentYapily(APIView):
 #         print(data)
 
 #         return Response(data)
-
-
 
 
 # class CreatePayment(APIView):
