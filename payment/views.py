@@ -1313,8 +1313,8 @@ class TinkCreatePayment(APIView):
             'Content-Type': 'application/x-www-form-urlencoded'
         }
         data = {
-            'client_id': '08e204f2c8fe46858be8ca27b5e56ca0',
-            'client_secret': '86910253525e4ca2a58c7291aba5da63',
+            'client_id': f"{os.getenv('CLIENT_ID')}",
+            'client_secret': f"{os.getenv('CLIENT_SECRET')}",
             'grant_type': 'client_credentials',
             'scope': 'payment:read,payment:write'
         }
@@ -1352,7 +1352,7 @@ class TinkCreatePayment(APIView):
         res2 = requests.post(url2, json=data2, headers=headers2).json()
         id = res2["id"]
         print(id)
-        auth = f"https://link.tink.com/1.0/pay/?client_id=08e204f2c8fe46858be8ca27b5e56ca0&redirect_uri=https://www.google.com/&market=SE&locale=en_US&payment_request_id={id}"
+        auth = f"https://link.tink.com/1.0/pay/?client_id={os.getenv('CLIENT_ID')}&redirect_uri=https://www.google.com/&market=SE&locale=en_US&payment_request_id={id}"
         print(auth)
         return Response(auth)
 
