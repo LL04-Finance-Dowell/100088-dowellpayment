@@ -1317,28 +1317,110 @@ base on the bank id i will query the cache to find out the BANK FEATURES (domest
 
 class YapilySupportedCountry(APIView):
     def get(self, request):
-        supported_countries_code = [
-            "AT",
-            "BE",
-            "DK",
-            "EE",
-            "FI",
-            "FR",
-            "DE",
-            "IS",
-            "IE",
-            "IT",
-            "LV",
-            "LT",
-            "NL",
-            "NO",
-            "PL",
-            "PT",
-            "ES",
-            "SE",
-            "GB",
+        supported_countries = [
+            {
+                "contry_code": "AT",
+                "country_name": "Austria",
+                "country_logo": "https://images.ctfassets.net/3ndxs7efitel/1pYGpQKFjdF9thBP0KI8Lf/1bb4d414d2a882775a3560df4cdb3cb2/Austria.svg",
+            },
+            {
+                "contry_code": "BE",
+                "country_name": "Belgium",
+                "country_logo": "https://images.ctfassets.net/3ndxs7efitel/3s2yZ0OCbjEsWq7NrRqddS/3e775d276719039ac54211f0a175a492/be.svg",
+            },
+            {
+                "contry_code": "DK",
+                "country_name": "Denmark",
+                "country_logo": "https://images.ctfassets.net/3ndxs7efitel/5Z4JDgKwFarKXq48280huj/ff4b3d43035d03ab106d92a6a0fe9b6e/dk.svg",
+            },
+            {
+                "contry_code": "EE",
+                "country_name": "Estonia",
+                "country_logo": "https://images.ctfassets.net/3ndxs7efitel/Lv4EOakJXdByW69vff7UJ/5f0345fd4cc3798b5c159c3fd49563f3/ee.svg",
+            },
+            {
+                "contry_code": "FI",
+                "country_name": "Finland",
+                "country_logo": "https://images.ctfassets.net/3ndxs7efitel/22bzAFwoRiwtHSIgnBLTg/35d27ea55e76f08611e88330c2b496ca/fi.svg",
+            },
+            {
+                "contry_code": "FR",
+                "country_name": "France",
+                "country_logo": "https://images.ctfassets.net/3ndxs7efitel/659TuuXEmdyz3KMBZq5Mjl/5ece587f440a055e31ec5266fce0a033/France.svg",
+            },
+            {
+                "contry_code": "DE",
+                "country_name": "Germany",
+                "country_logo": "https://images.ctfassets.net/3ndxs7efitel/2rrNAoN0bxWraLHue78giT/0fe7fa8b1463d1b0e37780fbbabcbf59/Germany.svg",
+            },
+            {
+                "contry_code": "IS",
+                "country_name": "Iceland",
+                "country_logo": "https://images.ctfassets.net/3ndxs7efitel/22C6Klm3ezYfSelnhtUqa4/db019ea9c1fffeb97ff8fe0f5e761389/is.svg",
+            },
+            {
+                "contry_code": "IE",
+                "country_name": "Ireland",
+                "country_logo": "https://images.ctfassets.net/3ndxs7efitel/6FKGHt1Bgr7hD1f2MeQo6e/135072161a7d3b183b139e370304bd95/Ireland.svg",
+            },
+            {
+                "contry_code": "IT",
+                "country_name": "Italy",
+                "country_logo": "https://images.ctfassets.net/3ndxs7efitel/2p7zgSHmn9S1wW0ImpCMJB/0bdca83e6641a9a1633643c347bce6ed/Italy.svg",
+            },
+            {
+                "contry_code": "LV",
+                "country_name": "Latvia",
+                "country_logo": "https://images.ctfassets.net/3ndxs7efitel/1K8VSyX6RfTIYgEHm3W68v/bca75e21dfdb99abe3fade3651068f1e/lv.svg",
+            },
+            {
+                "contry_code": "LT",
+                "country_name": "Lithuania",
+                "country_logo": "https://images.ctfassets.net/3ndxs7efitel/5GOFHsXmd7wyO1dqDIH3As/860f6af5b72558452f43c4142a0ec0b2/lt.svg",
+            },
+            {
+                "contry_code": "NL",
+                "country_name": "Netherlands",
+                "country_logo": "https://images.ctfassets.net/3ndxs7efitel/6wBgYzOaA1yp9GC8USPsg8/0122f80fef8e39e8d02b6d963c0a962e/Netherlands.svg",
+            },
+            {
+                "contry_code": "NO",
+                "country_name": "Norway",
+                "country_logo": "https://images.ctfassets.net/3ndxs7efitel/1apjST7XVYfsrxByUAVZ33/8b320c0d43d869b7fc72bf380d1ff1d1/no.svg",
+            },
+            {
+                "contry_code": "PL",
+                "country_name": "Poland",
+                "country_logo": "https://images.ctfassets.net/3ndxs7efitel/5AEwDH3kLmaEuADSM10PMB/e29849065565db645a639b7002892572/pl.svg",
+            },
+            {
+                "contry_code": "PT",
+                "country_name": "Portugal",
+                "country_logo": "https://images.ctfassets.net/3ndxs7efitel/4sfNqcCfxxGaI0RR7XCY0a/6836d1aee7e23ebeb62b2db057826030/pt-flag.svg",
+            },
+            {
+                "contry_code": "ES",
+                "country_name": "Spain",
+                "country_logo": "https://images.ctfassets.net/3ndxs7efitel/3GnXQHnVJ2cu4zALoUhZfi/0eb82ee9e60787e27f443bfce248cb6f/Spain.svg",
+            },
+            {
+                "contry_code": "SE",
+                "country_name": "Sweden",
+                "country_logo": "https://images.ctfassets.net/3ndxs7efitel/6kU0kapUi0xDFQgqDsmuWu/e1db852a8052e4f79be77c2249fdd823/se.svg",
+            },
+            {
+                "contry_code": "GB",
+                "country_name": "United Kingdom",
+                "country_logo": "https://images.ctfassets.net/3ndxs7efitel/44qItkbYe7KHixMQd0gDBX/235a06da9c86a344b7cdcc70f933ef42/UK.svg",
+            },
         ]
-        return Response({"country_code": supported_countries_code})
+        return Response(
+            {
+                "success": True,
+                "count": len(supported_countries),
+                "data": supported_countries,
+            }
+        )
 
     def post(self, request):
         data = request.data
@@ -1351,6 +1433,7 @@ class YapilySupportedCountry(APIView):
         response = requests.get(url, headers=headers, auth=(user, password))
 
         res_data = response.json()
+        print(res_data)
         context = []
         banks = res_data["data"]
         for bank in banks:
