@@ -1303,388 +1303,484 @@ class VerifyPaypalPaymentPublicUse(APIView):
             )
 
 
+
+class TinkCreatePayment(APIView):
+    def post(self,request):
+        url = "https://api.tink.com/api/v1/oauth/token"
+
+       
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+        data = {
+            'client_id': '08e204f2c8fe46858be8ca27b5e56ca0',
+            'client_secret': '86910253525e4ca2a58c7291aba5da63',
+            'grant_type': 'client_credentials',
+            'scope': 'payment:read,payment:write'
+        }
+        
+        res = requests.post(url, data=data, headers=headers).json()
+        
+        access_token = res["access_token"]
+        print("access_token",access_token)
+
+        url2 = "https://api.tink.com/api/v1/payments/requests"
+        headers2 ={
+            "Content-Type":"application/json;charset=UTF-8",
+            "Authorization":f"Bearer {access_token}",
+            
+        }
+        data2  = {
+            "destinations": [
+            {
+                "accountNumber": "IT60X0542811101000000123456",
+                "type": "iban"          
+            }
+            ],
+            "amount": 10,
+            "currency": "SEK",
+            "market": "SE",
+            "recipientName": "Test AB",
+            "sourceMessage": "Payment for Gym Equipment",
+            "remittanceInformation": {
+                "type": "UNSTRUCTURED",
+                "value": "CREDITOR REFERENCE"
+            },
+            "paymentScheme": "SEPA_CREDIT_TRANSFER"
+        }
+
+        res2 = requests.post(url2, json=data2, headers=headers2).json()
+        id = res2["id"]
+        print(id)
+        auth = f"https://link.tink.com/1.0/pay/?client_id=08e204f2c8fe46858be8ca27b5e56ca0&redirect_uri=https://www.google.com/&market=SE&locale=en_US&payment_request_id={id}"
+        print(auth)
+        return Response(auth)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # return list of supported country by yapily for the user so that the user can pick one
 # query yapily to get the list of banks and cache it response from yapily
 # base on the country selected return the banks that are in that country to the frontend
 # extract the (bank name, bank id, bank image url and bank country)
 
-""" 
-to initialize the payment, the client side will return to me the BANK ID, AMOUNT and BANK COUNTRY
-base on the bank id i will query the cache to find out the BANK FEATURES (domestic or international)
+# """ 
+# to initialize the payment, the client side will return to me the BANK ID, AMOUNT and BANK COUNTRY
+# base on the bank id i will query the cache to find out the BANK FEATURES (domestic or international)
 
-"""
-
-
-class YapilySupportedCountry(APIView):
-    def get(self, request):
-        supported_countries = [
-            {
-                "contry_code": "AT",
-                "country_name": "Austria",
-                "country_logo": "https://images.ctfassets.net/3ndxs7efitel/1pYGpQKFjdF9thBP0KI8Lf/1bb4d414d2a882775a3560df4cdb3cb2/Austria.svg",
-            },
-            {
-                "contry_code": "BE",
-                "country_name": "Belgium",
-                "country_logo": "https://images.ctfassets.net/3ndxs7efitel/3s2yZ0OCbjEsWq7NrRqddS/3e775d276719039ac54211f0a175a492/be.svg",
-            },
-            {
-                "contry_code": "DK",
-                "country_name": "Denmark",
-                "country_logo": "https://images.ctfassets.net/3ndxs7efitel/5Z4JDgKwFarKXq48280huj/ff4b3d43035d03ab106d92a6a0fe9b6e/dk.svg",
-            },
-            {
-                "contry_code": "EE",
-                "country_name": "Estonia",
-                "country_logo": "https://images.ctfassets.net/3ndxs7efitel/Lv4EOakJXdByW69vff7UJ/5f0345fd4cc3798b5c159c3fd49563f3/ee.svg",
-            },
-            {
-                "contry_code": "FI",
-                "country_name": "Finland",
-                "country_logo": "https://images.ctfassets.net/3ndxs7efitel/22bzAFwoRiwtHSIgnBLTg/35d27ea55e76f08611e88330c2b496ca/fi.svg",
-            },
-            {
-                "contry_code": "FR",
-                "country_name": "France",
-                "country_logo": "https://images.ctfassets.net/3ndxs7efitel/659TuuXEmdyz3KMBZq5Mjl/5ece587f440a055e31ec5266fce0a033/France.svg",
-            },
-            {
-                "contry_code": "DE",
-                "country_name": "Germany",
-                "country_logo": "https://images.ctfassets.net/3ndxs7efitel/2rrNAoN0bxWraLHue78giT/0fe7fa8b1463d1b0e37780fbbabcbf59/Germany.svg",
-            },
-            {
-                "contry_code": "IS",
-                "country_name": "Iceland",
-                "country_logo": "https://images.ctfassets.net/3ndxs7efitel/22C6Klm3ezYfSelnhtUqa4/db019ea9c1fffeb97ff8fe0f5e761389/is.svg",
-            },
-            {
-                "contry_code": "IE",
-                "country_name": "Ireland",
-                "country_logo": "https://images.ctfassets.net/3ndxs7efitel/6FKGHt1Bgr7hD1f2MeQo6e/135072161a7d3b183b139e370304bd95/Ireland.svg",
-            },
-            {
-                "contry_code": "IT",
-                "country_name": "Italy",
-                "country_logo": "https://images.ctfassets.net/3ndxs7efitel/2p7zgSHmn9S1wW0ImpCMJB/0bdca83e6641a9a1633643c347bce6ed/Italy.svg",
-            },
-            {
-                "contry_code": "LV",
-                "country_name": "Latvia",
-                "country_logo": "https://images.ctfassets.net/3ndxs7efitel/1K8VSyX6RfTIYgEHm3W68v/bca75e21dfdb99abe3fade3651068f1e/lv.svg",
-            },
-            {
-                "contry_code": "LT",
-                "country_name": "Lithuania",
-                "country_logo": "https://images.ctfassets.net/3ndxs7efitel/5GOFHsXmd7wyO1dqDIH3As/860f6af5b72558452f43c4142a0ec0b2/lt.svg",
-            },
-            {
-                "contry_code": "NL",
-                "country_name": "Netherlands",
-                "country_logo": "https://images.ctfassets.net/3ndxs7efitel/6wBgYzOaA1yp9GC8USPsg8/0122f80fef8e39e8d02b6d963c0a962e/Netherlands.svg",
-            },
-            {
-                "contry_code": "NO",
-                "country_name": "Norway",
-                "country_logo": "https://images.ctfassets.net/3ndxs7efitel/1apjST7XVYfsrxByUAVZ33/8b320c0d43d869b7fc72bf380d1ff1d1/no.svg",
-            },
-            {
-                "contry_code": "PL",
-                "country_name": "Poland",
-                "country_logo": "https://images.ctfassets.net/3ndxs7efitel/5AEwDH3kLmaEuADSM10PMB/e29849065565db645a639b7002892572/pl.svg",
-            },
-            {
-                "contry_code": "PT",
-                "country_name": "Portugal",
-                "country_logo": "https://images.ctfassets.net/3ndxs7efitel/4sfNqcCfxxGaI0RR7XCY0a/6836d1aee7e23ebeb62b2db057826030/pt-flag.svg",
-            },
-            {
-                "contry_code": "ES",
-                "country_name": "Spain",
-                "country_logo": "https://images.ctfassets.net/3ndxs7efitel/3GnXQHnVJ2cu4zALoUhZfi/0eb82ee9e60787e27f443bfce248cb6f/Spain.svg",
-            },
-            {
-                "contry_code": "SE",
-                "country_name": "Sweden",
-                "country_logo": "https://images.ctfassets.net/3ndxs7efitel/6kU0kapUi0xDFQgqDsmuWu/e1db852a8052e4f79be77c2249fdd823/se.svg",
-            },
-            {
-                "contry_code": "GB",
-                "country_name": "United Kingdom",
-                "country_logo": "https://images.ctfassets.net/3ndxs7efitel/44qItkbYe7KHixMQd0gDBX/235a06da9c86a344b7cdcc70f933ef42/UK.svg",
-            },
-        ]
-        return Response(
-            {
-                "success": True,
-                "count": len(supported_countries),
-                "data": supported_countries,
-            }
-        )
-
-    def post(self, request):
-        data = request.data
-        country_code = data["country_code"]
-
-        headers = {"Content-Type": "application/json;charset=UTF-8"}
-
-        url = "https://api.yapily.com/institutions"
-
-        response = requests.get(url, headers=headers, auth=(user, password))
-
-        res_data = response.json()
-        print(res_data)
-        context = []
-        banks = res_data["data"]
-        for bank in banks:
-            supported_country_bank = bank["countries"]
-            for country in supported_country_bank:
-                if country_code == country["countryCode2"]:
-                    bank_id = bank["id"]
-                    bank_name = bank["name"]
-                    code = country_code
-                    bank_logo = bank["media"][0]["source"]
-                    context.append(
-                        {
-                            "bank_id": bank_id,
-                            "bank_name": bank_name,
-                            "country_code": code,
-                            "bank_logo": bank_logo,
-                        }
-                    )
-
-        return Response(context)
+# """
 
 
-class InitializeNetPaymentYapily(APIView):
-    def post(self, request):
-        data = request.data
-        amount = data["amount"]
-        currency_code = data["currency_code"]
-        bank_id = data["bank_id"]
-        country_code = data["country_code"]
-        # email = data["email"]
-        product_desc = data["product"]
+# class YapilySupportedCountry(APIView):
+#     def get(self, request):
+#         supported_countries = [
+#             {
+#                 "contry_code": "AT",
+#                 "country_name": "Austria",
+#                 "country_logo": "https://images.ctfassets.net/3ndxs7efitel/1pYGpQKFjdF9thBP0KI8Lf/1bb4d414d2a882775a3560df4cdb3cb2/Austria.svg",
+#             },
+#             {
+#                 "contry_code": "BE",
+#                 "country_name": "Belgium",
+#                 "country_logo": "https://images.ctfassets.net/3ndxs7efitel/3s2yZ0OCbjEsWq7NrRqddS/3e775d276719039ac54211f0a175a492/be.svg",
+#             },
+#             {
+#                 "contry_code": "DK",
+#                 "country_name": "Denmark",
+#                 "country_logo": "https://images.ctfassets.net/3ndxs7efitel/5Z4JDgKwFarKXq48280huj/ff4b3d43035d03ab106d92a6a0fe9b6e/dk.svg",
+#             },
+#             {
+#                 "contry_code": "EE",
+#                 "country_name": "Estonia",
+#                 "country_logo": "https://images.ctfassets.net/3ndxs7efitel/Lv4EOakJXdByW69vff7UJ/5f0345fd4cc3798b5c159c3fd49563f3/ee.svg",
+#             },
+#             {
+#                 "contry_code": "FI",
+#                 "country_name": "Finland",
+#                 "country_logo": "https://images.ctfassets.net/3ndxs7efitel/22bzAFwoRiwtHSIgnBLTg/35d27ea55e76f08611e88330c2b496ca/fi.svg",
+#             },
+#             {
+#                 "contry_code": "FR",
+#                 "country_name": "France",
+#                 "country_logo": "https://images.ctfassets.net/3ndxs7efitel/659TuuXEmdyz3KMBZq5Mjl/5ece587f440a055e31ec5266fce0a033/France.svg",
+#             },
+#             {
+#                 "contry_code": "DE",
+#                 "country_name": "Germany",
+#                 "country_logo": "https://images.ctfassets.net/3ndxs7efitel/2rrNAoN0bxWraLHue78giT/0fe7fa8b1463d1b0e37780fbbabcbf59/Germany.svg",
+#             },
+#             {
+#                 "contry_code": "IS",
+#                 "country_name": "Iceland",
+#                 "country_logo": "https://images.ctfassets.net/3ndxs7efitel/22C6Klm3ezYfSelnhtUqa4/db019ea9c1fffeb97ff8fe0f5e761389/is.svg",
+#             },
+#             {
+#                 "contry_code": "IE",
+#                 "country_name": "Ireland",
+#                 "country_logo": "https://images.ctfassets.net/3ndxs7efitel/6FKGHt1Bgr7hD1f2MeQo6e/135072161a7d3b183b139e370304bd95/Ireland.svg",
+#             },
+#             {
+#                 "contry_code": "IT",
+#                 "country_name": "Italy",
+#                 "country_logo": "https://images.ctfassets.net/3ndxs7efitel/2p7zgSHmn9S1wW0ImpCMJB/0bdca83e6641a9a1633643c347bce6ed/Italy.svg",
+#             },
+#             {
+#                 "contry_code": "LV",
+#                 "country_name": "Latvia",
+#                 "country_logo": "https://images.ctfassets.net/3ndxs7efitel/1K8VSyX6RfTIYgEHm3W68v/bca75e21dfdb99abe3fade3651068f1e/lv.svg",
+#             },
+#             {
+#                 "contry_code": "LT",
+#                 "country_name": "Lithuania",
+#                 "country_logo": "https://images.ctfassets.net/3ndxs7efitel/5GOFHsXmd7wyO1dqDIH3As/860f6af5b72558452f43c4142a0ec0b2/lt.svg",
+#             },
+#             {
+#                 "contry_code": "NL",
+#                 "country_name": "Netherlands",
+#                 "country_logo": "https://images.ctfassets.net/3ndxs7efitel/6wBgYzOaA1yp9GC8USPsg8/0122f80fef8e39e8d02b6d963c0a962e/Netherlands.svg",
+#             },
+#             {
+#                 "contry_code": "NO",
+#                 "country_name": "Norway",
+#                 "country_logo": "https://images.ctfassets.net/3ndxs7efitel/1apjST7XVYfsrxByUAVZ33/8b320c0d43d869b7fc72bf380d1ff1d1/no.svg",
+#             },
+#             {
+#                 "contry_code": "PL",
+#                 "country_name": "Poland",
+#                 "country_logo": "https://images.ctfassets.net/3ndxs7efitel/5AEwDH3kLmaEuADSM10PMB/e29849065565db645a639b7002892572/pl.svg",
+#             },
+#             {
+#                 "contry_code": "PT",
+#                 "country_name": "Portugal",
+#                 "country_logo": "https://images.ctfassets.net/3ndxs7efitel/4sfNqcCfxxGaI0RR7XCY0a/6836d1aee7e23ebeb62b2db057826030/pt-flag.svg",
+#             },
+#             {
+#                 "contry_code": "ES",
+#                 "country_name": "Spain",
+#                 "country_logo": "https://images.ctfassets.net/3ndxs7efitel/3GnXQHnVJ2cu4zALoUhZfi/0eb82ee9e60787e27f443bfce248cb6f/Spain.svg",
+#             },
+#             {
+#                 "contry_code": "SE",
+#                 "country_name": "Sweden",
+#                 "country_logo": "https://images.ctfassets.net/3ndxs7efitel/6kU0kapUi0xDFQgqDsmuWu/e1db852a8052e4f79be77c2249fdd823/se.svg",
+#             },
+#             {
+#                 "contry_code": "GB",
+#                 "country_name": "United Kingdom",
+#                 "country_logo": "https://images.ctfassets.net/3ndxs7efitel/44qItkbYe7KHixMQd0gDBX/235a06da9c86a344b7cdcc70f933ef42/UK.svg",
+#             },
+#         ]
+#         return Response(
+#             {
+#                 "success": True,
+#                 "count": len(supported_countries),
+#                 "data": supported_countries,
+#             }
+#         )
 
-        unique_id = uuid.uuid4()
-        paymentIdempotencyId = str(unique_id).replace("-", "")
+#     def post(self, request):
+#         data = request.data
+#         country_code = data["country_code"]
 
-        headers1 = {"Content-Type": "application/json;charset=UTF-8"}
+#         headers = {"Content-Type": "application/json;charset=UTF-8"}
 
-        url1 = "https://api.yapily.com/institutions"
+#         url = "https://api.yapily.com/institutions"
 
-        response1 = requests.get(url1, headers=headers1, auth=(user, password))
-        res_data1 = response1.json()
-        banks = res_data1["data"]
-        for bank in banks:
-            # print(bank["name"])
-            if bank_id == bank["id"]:
-                bank_features = bank["features"]
-                if (
-                    "CREATE_DOMESTIC_SINGLE_PAYMENT" in bank_features
-                    and country_code == "GB"
-                ):
-                    payment_type = "DOMESTIC_PAYMENT"
-                if (
-                    "CREATE_INTERNATIONAL_SINGLE_PAYMENT" in bank_features
-                    and country_code != "GB"
-                ):
-                    payment_type = "INTERNATIONAL_PAYMENT"
+#         response = requests.get(url, headers=headers, auth=(user, password))
 
-                if (
-                    "CREATE_DOMESTIC_SINGLE_PAYMENT" in bank_features
-                    and "CREATE_INTERNATIONAL_SINGLE_PAYMENT" in bank_features
-                    and country_code == "GB"
-                ):
-                    payment_type = "DOMESTIC_PAYMENT"
+#         res_data = response.json()
+#         print(res_data)
+#         context = []
+#         banks = res_data["data"]
+#         for bank in banks:
+#             supported_country_bank = bank["countries"]
+#             for country in supported_country_bank:
+#                 if country_code == country["countryCode2"]:
+#                     bank_id = bank["id"]
+#                     bank_name = bank["name"]
+#                     code = country_code
+#                     bank_logo = bank["media"][0]["source"]
+#                     context.append(
+#                         {
+#                             "bank_id": bank_id,
+#                             "bank_name": bank_name,
+#                             "country_code": code,
+#                             "bank_logo": bank_logo,
+#                         }
+#                     )
 
-        url = "https://api.yapily.com/payment-auth-requests"
-
-        query = {"raw": "true"}
-        "modelo-sandbox"
-
-        if payment_type == "DOMESTIC_PAYMENT":
-            print("DOMESTIC_PAYMENT")
-            payload = {
-                "forwardParameters": [paymentIdempotencyId],
-                "applicationUserId": "john.doe@company.com",
-                "institutionId": f"{bank_id}",
-                "callback": "http://127.0.0.1:8000/api/yapily/create/payment",
-                "paymentRequest": {
-                    "paymentIdempotencyId": f"{paymentIdempotencyId}",
-                    "amount": {"amount": amount, "currency": f"{currency_code}"},
-                    "reference": f"{product_desc}",
-                    "type": f"{payment_type}",
-                    "payee": {
-                        "name": "Jane Doe",
-                        "address": {"country": "GB"},
-                        "accountIdentifications": [
-                            {"type": "SORT_CODE", "identification": "123456"},
-                            {"type": "ACCOUNT_NUMBER", "identification": "12345678"},
-                        ],
-                    },
-                },
-            }
-        if payment_type == "INTERNATIONAL_PAYMENT":
-            print("INTERNATIONAL_PAYMENT")
-            payload = {
-                "forwardParameters": [paymentIdempotencyId],
-                "applicationUserId": "john.doe@company.com",
-                "institutionId": f"{bank_id}",
-                "callback": "http://127.0.0.1:8000/api/yapily/create/payment",
-                "paymentRequest": {
-                    "paymentIdempotencyId": f"{paymentIdempotencyId}",
-                    "amount": {"amount": amount, "currency": f"{currency_code}"},
-                    "reference": f"{product_desc}",
-                    "type": f"{payment_type}",
-                    "payee": {
-                        "name": "Jane Doe",
-                        "address": {"country": "GB"},
-                        "accountIdentifications": [
-                            {"type": "BIC", "identification": "RBOSGB2109M"},
-                            {
-                                "type": "IBAN",
-                                "identification": "GB29RBOS83040210126939",
-                            },
-                        ],
-                    },
-                    "internationalPayment": {"currencyOfTransfer": f"{currency_code}"},
-                },
-            }
-
-        headers = {
-            "Content-Type": "application/json;charset=UTF-8",
-            "psu-id": "string",
-            "psu-corporate-id": "string",
-            "psu-ip-address": "string",
-        }
-
-        response = requests.post(
-            url, json=payload, headers=headers, params=query, auth=(user, password)
-        )
-
-        res_data = response.json()
-        print("-------------------------------------")
-        print(res_data)
-        print("----------------------------------------")
-        date = res_data["data"]["createdAt"].split("T")[0]
-        # print(date)
-        obj = YapilyPaymentId.objects.create(
-            payment_idempotency_id=paymentIdempotencyId,
-            amount=amount,
-            currency_code=currency_code,
-            bank_id=bank_id,
-            desc=product_desc,
-            date=date,
-            payment_type=payment_type,
-            country_code=country_code,
-        )
-
-        return Response(
-            {
-                "authorisationUrl": res_data["data"]["authorisationUrl"],
-                "qrcode_url": res_data["data"]["qrCodeUrl"],
-                # "data":res_data,
-            }
-        )
-
-
-class CreateNetPaymentYapily(APIView):
-    def get(self, request):
-        full_url = request.get_full_path()
-        paymentIdempotencyId = full_url.split("&")[-1][:-1]
-        consent = request.GET.get("consent")
-
-        obj = YapilyPaymentId.objects.get(payment_idempotency_id=paymentIdempotencyId)
-        amount = obj.amount
-        currency_code = obj.currency_code
-        product_desc = obj.desc
-
-        url = "https://api.yapily.com/payments"
-
-        headers = {
-            "Content-Type": "application/json;charset=UTF-8",
-            "consent": f"{consent}",
-            "psu-id": "string",
-            "psu-corporate-id": "string",
-            "psu-ip-address": "string",
-        }
-
-        query = {"raw": "true"}
-
-        payload = {
-            "paymentIdempotencyId": f"{paymentIdempotencyId}",
-            "amount": {"amount": amount, "currency": f"{currency_code}"},
-            "reference": f"{product_desc}",
-            "type": "DOMESTIC_PAYMENT",
-            "payee": {
-                "name": "Jane Doe",
-                "address": {"country": "GB"},
-                "accountIdentifications": [
-                    {"type": "SORT_CODE", "identification": "123456"},
-                    {"type": "ACCOUNT_NUMBER", "identification": "12345678"},
-                ],
-            },
-        }
-
-        response = requests.post(
-            url, json=payload, headers=headers, params=query, auth=(user, password)
-        )
-        print("----------------------------------")
-        data = response.json()
-        print(data)
-        print("----------------------------------")
-        id = data["data"]["id"]
-        debtor_name = data["raw"][0]["result"]["Data"]["Debtor"]["Name"]
-        status = data["data"]["status"]
-        obj.payment_id = id
-        obj.consent_token = consent
-        obj.payment_status = status
-        obj.name = debtor_name
-        obj.save()
-        redirect_url = f"https://www.google.com/?payment_id={id}"
-        response = HttpResponseRedirect(redirect_url)
-        return response
+#         return Response(context)
 
 
-class VerifyNetPaymentYapily(APIView):
-    def post(self, request):
-        data = request.data
-        payment_id = data["id"]
+# class InitializeNetPaymentYapily(APIView):
+#     def post(self, request):
+#         data = request.data
+#         amount = data["amount"]
+#         currency_code = data["currency_code"]
+#         bank_id = data["bank_id"]
+#         country_code = data["country_code"]
+#         # email = data["email"]
+#         product_desc = data["product"]
 
-        url = "https://api.yapily.com/payments/" + payment_id + "/details"
+#         unique_id = uuid.uuid4()
+#         paymentIdempotencyId = str(unique_id).replace("-", "")
 
-        headers = {
-            "consent": f"{consent}",
-            "psu-id": "string",
-            "psu-corporate-id": "string",
-            "psu-ip-address": "string",
-        }
+#         headers1 = {"Content-Type": "application/json;charset=UTF-8"}
 
-        query = {"raw": "true"}
+#         url1 = "https://api.yapily.com/institutions"
 
-        obj = YapilyPaymentId.objects.get(payment_id=payment_id)
-        consent = obj.consent_token
+#         response1 = requests.get(url1, headers=headers1, auth=(user, password))
+#         res_data1 = response1.json()
+#         banks = res_data1["data"]
+#         for bank in banks:
+#             # print(bank["name"])
+#             if bank_id == bank["id"]:
+#                 bank_features = bank["features"]
+#                 if (
+#                     "CREATE_DOMESTIC_SINGLE_PAYMENT" in bank_features
+#                     and country_code == "GB"
+#                 ):
+#                     payment_type = "DOMESTIC_PAYMENT"
+#                 if (
+#                     "CREATE_INTERNATIONAL_SINGLE_PAYMENT" in bank_features
+#                     and country_code != "GB"
+#                 ):
+#                     payment_type = "INTERNATIONAL_PAYMENT"
 
-        response = requests.get(
-            url, headers=headers, params=query, auth=(user, password)
-        )
+#                 if (
+#                     "CREATE_DOMESTIC_SINGLE_PAYMENT" in bank_features
+#                     and "CREATE_INTERNATIONAL_SINGLE_PAYMENT" in bank_features
+#                     and country_code == "GB"
+#                 ):
+#                     payment_type = "DOMESTIC_PAYMENT"
 
-        data = response.json()
-        print("--------------------------------")
-        print(data)
-        print("---------------------------------")
-        status = data["data"]["payments"][0]["status"]
-        # debtor_name = data["raw"][0]["result"]["Data"]["Debtor"]["Name"]
+#         url = "https://api.yapily.com/payment-auth-requests"
 
-        if status == "COMPLETED":
-            print("status", status)
-        else:
-            print("status", status)
-        obj.payment_status = status
+#         query = {"raw": "true"}
+#         "modelo-sandbox"
 
-        obj.save()
-        return Response(data)
+#         if payment_type == "DOMESTIC_PAYMENT":
+#             print("DOMESTIC_PAYMENT")
+#             payload = {
+#                 "forwardParameters": [paymentIdempotencyId],
+#                 "applicationUserId": "john.doe@company.com",
+#                 "institutionId": f"{bank_id}",
+#                 "callback": "http://127.0.0.1:8000/api/yapily/create/payment",
+#                 "paymentRequest": {
+#                     "paymentIdempotencyId": f"{paymentIdempotencyId}",
+#                     "amount": {"amount": amount, "currency": f"{currency_code}"},
+#                     "reference": f"{product_desc}",
+#                     "type": f"{payment_type}",
+#                     "payee": {
+#                         "name": "Jane Doe",
+#                         "address": {"country": "GB"},
+#                         "accountIdentifications": [
+#                             {"type": "SORT_CODE", "identification": "123456"},
+#                             {"type": "ACCOUNT_NUMBER", "identification": "12345678"},
+#                         ],
+#                     },
+#                 },
+#             }
+#         if payment_type == "INTERNATIONAL_PAYMENT":
+#             print("INTERNATIONAL_PAYMENT")
+#             payload = {
+#                 "forwardParameters": [paymentIdempotencyId],
+#                 "applicationUserId": "john.doe@company.com",
+#                 "institutionId": f"{bank_id}",
+#                 "callback": "http://127.0.0.1:8000/api/yapily/create/payment",
+#                 "paymentRequest": {
+#                     "paymentIdempotencyId": f"{paymentIdempotencyId}",
+#                     "amount": {"amount": amount, "currency": f"{currency_code}"},
+#                     "reference": f"{product_desc}",
+#                     "type": f"{payment_type}",
+#                     "payee": {
+#                         "name": "Jane Doe",
+#                         "address": {"country": "GB"},
+#                         "accountIdentifications": [
+#                             {"type": "BIC", "identification": "RBOSGB2109M"},
+#                             {
+#                                 "type": "IBAN",
+#                                 "identification": "GB29RBOS83040210126939",
+#                             },
+#                         ],
+#                     },
+#                     "internationalPayment": {"currencyOfTransfer": f"{currency_code}"},
+#                 },
+#             }
+
+#         headers = {
+#             "Content-Type": "application/json;charset=UTF-8",
+#             "psu-id": "string",
+#             "psu-corporate-id": "string",
+#             "psu-ip-address": "string",
+#         }
+
+#         response = requests.post(
+#             url, json=payload, headers=headers, params=query, auth=(user, password)
+#         )
+
+#         res_data = response.json()
+#         print("-------------------------------------")
+#         print(res_data)
+#         print("----------------------------------------")
+#         date = res_data["data"]["createdAt"].split("T")[0]
+#         # print(date)
+#         obj = YapilyPaymentId.objects.create(
+#             payment_idempotency_id=paymentIdempotencyId,
+#             amount=amount,
+#             currency_code=currency_code,
+#             bank_id=bank_id,
+#             desc=product_desc,
+#             date=date,
+#             payment_type=payment_type,
+#             country_code=country_code,
+#         )
+
+#         return Response(
+#             {
+#                 "authorisationUrl": res_data["data"]["authorisationUrl"],
+#                 "qrcode_url": res_data["data"]["qrCodeUrl"],
+#                 # "data":res_data,
+#             }
+#         )
+
+
+# class CreateNetPaymentYapily(APIView):
+#     def get(self, request):
+#         full_url = request.get_full_path()
+#         paymentIdempotencyId = full_url.split("&")[-1][:-1]
+#         consent = request.GET.get("consent")
+
+#         obj = YapilyPaymentId.objects.get(payment_idempotency_id=paymentIdempotencyId)
+#         amount = obj.amount
+#         currency_code = obj.currency_code
+#         product_desc = obj.desc
+
+#         url = "https://api.yapily.com/payments"
+
+#         headers = {
+#             "Content-Type": "application/json;charset=UTF-8",
+#             "consent": f"{consent}",
+#             "psu-id": "string",
+#             "psu-corporate-id": "string",
+#             "psu-ip-address": "string",
+#         }
+
+#         query = {"raw": "true"}
+
+#         payload = {
+#             "paymentIdempotencyId": f"{paymentIdempotencyId}",
+#             "amount": {"amount": amount, "currency": f"{currency_code}"},
+#             "reference": f"{product_desc}",
+#             "type": "DOMESTIC_PAYMENT",
+#             "payee": {
+#                 "name": "Jane Doe",
+#                 "address": {"country": "GB"},
+#                 "accountIdentifications": [
+#                     {"type": "SORT_CODE", "identification": "123456"},
+#                     {"type": "ACCOUNT_NUMBER", "identification": "12345678"},
+#                 ],
+#             },
+#         }
+
+#         response = requests.post(
+#             url, json=payload, headers=headers, params=query, auth=(user, password)
+#         )
+#         print("----------------------------------")
+#         data = response.json()
+#         print(data)
+#         print("----------------------------------")
+#         id = data["data"]["id"]
+#         debtor_name = data["raw"][0]["result"]["Data"]["Debtor"]["Name"]
+#         status = data["data"]["status"]
+#         obj.payment_id = id
+#         obj.consent_token = consent
+#         obj.payment_status = status
+#         obj.name = debtor_name
+#         obj.save()
+#         redirect_url = f"https://www.google.com/?payment_id={id}"
+#         response = HttpResponseRedirect(redirect_url)
+#         return response
+
+
+# class VerifyNetPaymentYapily(APIView):
+#     def post(self, request):
+#         data = request.data
+#         payment_id = data["id"]
+
+#         url = "https://api.yapily.com/payments/" + payment_id + "/details"
+
+#         headers = {
+#             "consent": f"{consent}",
+#             "psu-id": "string",
+#             "psu-corporate-id": "string",
+#             "psu-ip-address": "string",
+#         }
+
+#         query = {"raw": "true"}
+
+#         obj = YapilyPaymentId.objects.get(payment_id=payment_id)
+#         consent = obj.consent_token
+
+#         response = requests.get(
+#             url, headers=headers, params=query, auth=(user, password)
+#         )
+
+#         data = response.json()
+#         print("--------------------------------")
+#         print(data)
+#         print("---------------------------------")
+#         status = data["data"]["payments"][0]["status"]
+#         # debtor_name = data["raw"][0]["result"]["Data"]["Debtor"]["Name"]
+
+#         if status == "COMPLETED":
+#             print("status", status)
+#         else:
+#             print("status", status)
+#         obj.payment_status = status
+
+#         obj.save()
+#         return Response(data)
 
 
 # PLAID_CLIENT_ID = os.getenv("PLAID_CLIENT_ID")
