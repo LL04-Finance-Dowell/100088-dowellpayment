@@ -12,7 +12,7 @@ import {
   TableHead,
   TableRow,
   TableBody,
-  TableCell
+  TableCell,
 } from "@mui/material";
 import Paper from "@mui/material/Paper";
 import { DOWELL_PPP_URL, DOWELL_CURRENCY_NAME } from "../api.config";
@@ -23,7 +23,7 @@ const Home = () => {
     base_price: "",
     base_country: "",
     target_country: "",
-    target_currency: ""
+    target_currency: "",
   });
   const [results, setResults] = useState(null);
   const [error, setError] = useState("");
@@ -46,7 +46,7 @@ const Home = () => {
     const { name, value } = event.target;
     setInputs((prevInputs) => ({
       ...prevInputs,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -64,7 +64,7 @@ const Home = () => {
           base_price: "",
           base_country: "",
           target_country: "",
-          target_currency: ""
+          target_currency: "",
         });
       })
       .catch((error) => {
@@ -74,7 +74,7 @@ const Home = () => {
           base_price: "",
           base_country: "",
           target_country: "",
-          target_currency: ""
+          target_currency: "",
         });
       })
       .finally(() => {
@@ -92,7 +92,7 @@ const Home = () => {
         padding: "24px",
         maxWidth: "600px",
         margin: "0 auto",
-        textAlign: "center"
+        textAlign: "center",
       }}
     >
       <Typography
@@ -100,11 +100,17 @@ const Home = () => {
         style={{
           marginBottom: "24px",
           fontWeight: "bold",
-          textAlign: "center"
+          textAlign: "center",
         }}
       >
         DOWELL PPP
       </Typography>
+      <small>
+        Base currency and base price are reference points for comparing exchange
+        rates with the base country, followed by comparing PPP calculations with
+        the target country, and converting the target currency with exchange
+        rates.
+      </small>
       <TextField
         name="base_currency"
         label="base_currency"
