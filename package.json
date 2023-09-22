@@ -1,28 +1,27 @@
 {
   "name": "100088-dowellpayment",
-  "version": "0.1.0",
   "homepage":"https://LL04-Finance-Dowell.github.io/100088-dowellpayment",
+  "version": "0.1.0",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.11.1",
+    "@emotion/style": "^0.8.0",
     "@emotion/styled": "^11.11.0",
-    "@mui/material": "^5.14.7",
-    "@mui/styled-engine-sc": "^5.14.7",
+    "@mui/material": "^5.14.10",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.5.0",
+    "loader-utils": "^3.2.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.15.0",
     "react-scripts": "5.0.1",
-    "styled-components": "^5.3.11",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
+    "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
