@@ -63,6 +63,7 @@ const Home = () => {
       .post(DOWELL_PPP_URL, inputs)
       .then((response) => {
         setResults(response.data);
+        console.log(response.data);
         setError("");
         setInputs({
           base_currency: "",
@@ -190,7 +191,7 @@ const Home = () => {
         <Typography variant="body2" color="textSecondary">
           <i>
           * Base currency and base price are reference points for comparing
-          exchange rates with the base country, followed by comparing PPP
+          exchange rates with the base country, followed by comparing Purchase Price Parity
           calculations with the target country, and converting the target
           currency with exchange rates.
           </i>
@@ -224,13 +225,13 @@ const Home = () => {
                 </TableHead>
                 <TableBody>
                   <TableRow>
-                    <TableCell style={{fontWeight: "bold"}}>Base currency exchange rate</TableCell>
+                    <TableCell style={{fontWeight: "bold"}}>Price in base currency</TableCell>
                     <TableCell style={{fontWeight: "bold"}}>
                       {results?.base_currency_exchange_rate}
                     </TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell style={{fontWeight: "bold"}}>Purchasing power</TableCell>
+                    <TableCell style={{fontWeight: "bold"}}>Calculated Price based on purchasing power</TableCell>
                     <TableCell style={{fontWeight: "bold"}}>{results?.purchasing_power}</TableCell>
                   </TableRow>
                   <TableRow>

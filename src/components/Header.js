@@ -11,6 +11,7 @@ const Header = () => {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
+    flexDirection: "column",
     padding: "0 20px"
   };
 
@@ -28,15 +29,27 @@ const Header = () => {
     fontWeight: 600,
     lineHeight: "normal"
   };
+  const headerTextsStyle = {
+    color: "#005734",
+    fontFamily: "Inter",
+    fontSize: "10.75px",
+    fontStyle: "normal",
+    fontWeight: 600,
+    lineHeight: "normal"
+  };
 
   return (
     <div style={headerStyle}>
       <div style={logoStyle}>
         <img src={logo} alt="Logo" style={{ height: "40px" }} />
         <Typography variant="h6" style={headerTextStyle}>
-          Dowell PPP
+          DoWell World Price Indicator
         </Typography>
+        <br />
       </div>
+        <Typography variant="h6" style={headerTextsStyle}>
+        Purchase Price Parity Calculator
+        </Typography>
     </div>
   );
 };
