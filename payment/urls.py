@@ -79,7 +79,7 @@ urlpatterns = [
     ),
     path("success", Success.as_view()),
     path("error", Error.as_view()),
-    path("tink/create/payment",TinkCreatePayment.as_view()),
+    path("tink/create/payment", TinkCreatePayment.as_view()),
     # path("yapily/supported-countries", YapilySupportedCountry.as_view()),
     # path("yapily/initialize/payment", InitializeNetPaymentYapily.as_view()),
     # path("yapily/create/payment", CreateNetPaymentYapily.as_view()),

@@ -1303,39 +1303,31 @@ class VerifyPaypalPaymentPublicUse(APIView):
             )
 
 
-
 class TinkCreatePayment(APIView):
-    def post(self,request):
+    def post(self, request):
         url = "https://api.tink.com/api/v1/oauth/token"
 
-       
-        headers = {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        }
+        headers = {"Content-Type": "application/x-www-form-urlencoded"}
         data = {
-            'client_id': f"{os.getenv('CLIENT_ID')}",
-            'client_secret': f"{os.getenv('CLIENT_SECRET')}",
-            'grant_type': 'client_credentials',
-            'scope': 'payment:read,payment:write'
+            "client_id": f"{os.getenv('CLIENT_ID')}",
+            "client_secret": f"{os.getenv('CLIENT_SECRET')}",
+            "grant_type": "client_credentials",
+            "scope": "payment:read,payment:write",
         }
-        
+
         res = requests.post(url, data=data, headers=headers).json()
-        
+
         access_token = res["access_token"]
-        print("access_token",access_token)
+        print("access_token", access_token)
 
         url2 = "https://api.tink.com/api/v1/payments/requests"
-        headers2 ={
-            "Content-Type":"application/json;charset=UTF-8",
-            "Authorization":f"Bearer {access_token}",
-            
+        headers2 = {
+            "Content-Type": "application/json;charset=UTF-8",
+            "Authorization": f"Bearer {access_token}",
         }
-        data2  = {
+        data2 = {
             "destinations": [
-            {
-                "accountNumber": "IT60X0542811101000000123456",
-                "type": "iban"          
-            }
+                {"accountNumber": "IT60X0542811101000000123456", "type": "iban"}
             ],
             "amount": 10,
             "currency": "SEK",
@@ -1344,9 +1336,9 @@ class TinkCreatePayment(APIView):
             "sourceMessage": "Payment for Gym Equipment",
             "remittanceInformation": {
                 "type": "UNSTRUCTURED",
-                "value": "CREDITOR REFERENCE"
+                "value": "CREDITOR REFERENCE",
             },
-            "paymentScheme": "SEPA_CREDIT_TRANSFER"
+            "paymentScheme": "SEPA_CREDIT_TRANSFER",
         }
 
         res2 = requests.post(url2, json=data2, headers=headers2).json()
@@ -1357,54 +1349,12 @@ class TinkCreatePayment(APIView):
         return Response(auth)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # return list of supported country by yapily for the user so that the user can pick one
 # query yapily to get the list of banks and cache it response from yapily
 # base on the country selected return the banks that are in that country to the frontend
 # extract the (bank name, bank id, bank image url and bank country)
 
-# """ 
+# """
 # to initialize the payment, the client side will return to me the BANK ID, AMOUNT and BANK COUNTRY
 # base on the bank id i will query the cache to find out the BANK FEATURES (domestic or international)
 

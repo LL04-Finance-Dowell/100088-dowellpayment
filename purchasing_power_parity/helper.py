@@ -92,9 +92,20 @@ def get_ppp_data(
         {
             "success": True,
             "message": "Expected values",
-            "base_currency_exchange_rate": f"{base_currency_exchange_rate} {base_country_currency_code}",
-            "purchasing_power": f"{purchasing_power} {target_country_currency_code}",
-            "target_currency_exchange_rate": f"{target_currency_exchange_rate} {target_currency_code}",
+            "price_in_base_country": f"{base_currency_exchange_rate} {base_country_currency_code}",
+            "base_country": base_country,
+            "target_country": target_country,
+            "target_price": f"{purchasing_power} {target_country_currency_code}",
+            "calculated_price_base_on_ppp": f"{target_currency_exchange_rate} {target_currency_code}",
         },
         status=status.HTTP_200_OK,
     )
+
+
+# {
+#             "success": True,
+#             "message": "Expected values",
+#             "base_currency_exchange_rate": f"{base_currency_exchange_rate} {base_country_currency_code}",
+#             "purchasing_power": f"{purchasing_power} {target_country_currency_code}",
+#             "target_currency_exchange_rate": f"{target_currency_exchange_rate} {target_currency_code}",
+#         },
