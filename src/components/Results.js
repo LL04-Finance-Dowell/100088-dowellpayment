@@ -5,7 +5,7 @@ import {
   TableHead,
   TableRow,
   TableBody,
-  TableCell
+  TableCell,
 } from "@mui/material";
 import Paper from "@mui/material/Paper";
 
@@ -14,7 +14,7 @@ const ResultComponent = ({ results, error }) => {
     border: "1px solid #ccc", // Add border style here
     borderRadius: "5px", // Add border radius here
     padding: "20px",
-    marginLeft: "10px"
+    marginLeft: "10px",
   };
   return (
     <div style={resultContainerStyle}>
@@ -35,6 +35,22 @@ const ResultComponent = ({ results, error }) => {
                 </TableCell>
                 <TableCell style={{ fontWeight: "bold" }}>
                   {results?.base_country}
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell style={{ fontWeight: "bold" }}>
+                  Base Price In Germany
+                </TableCell>
+                <TableCell style={{ fontWeight: "bold" }}>
+                  {results?.base_country}
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell style={{ fontWeight: "bold" }}>
+                  Calculated Price In USA
+                </TableCell>
+                <TableCell style={{ fontWeight: "bold" }}>
+                  {results?.calculated_price_base_on_ppp}
                 </TableCell>
               </TableRow>
               <TableRow>

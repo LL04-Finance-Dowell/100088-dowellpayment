@@ -7,13 +7,14 @@ import PageLoader from "./Loader";
 import Footer from "./Footer";
 import { bodyStyle, formStyle, resultsStyle } from "../styles";
 
-const DOWELL_PPP_URL = "https://100088.pythonanywhere.com/api/v1/ppp";
+// const DOWELL_PPP_URL = "https://100088.pythonanywhere.com/api/v1/ppp";
+const DOWELL_PPP_URL = "http://127.0.0.1:8000/api/v1/ppp";
 
 const HomePage = () => {
   const homeContainerStyle = {
     marginTop: "20px",
-    display: "flex", 
-    justifyContent: "center" 
+    display: "flex",
+    justifyContent: "center",
   };
 
   const [inputs, setInputs] = useState({
@@ -21,7 +22,7 @@ const HomePage = () => {
     base_price: "",
     base_country: "",
     target_country: "",
-    target_currency: ""
+    target_currency: "",
   });
   const [results, setResults] = useState(null);
   const [error, setError] = useState("");
@@ -43,7 +44,7 @@ const HomePage = () => {
     const { name, value } = event.target;
     setInputs((prevInputs) => ({
       ...prevInputs,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -61,7 +62,7 @@ const HomePage = () => {
           base_price: "",
           base_country: "",
           target_country: "",
-          target_currency: ""
+          target_currency: "",
         });
       })
       .catch((error) => {
@@ -71,7 +72,7 @@ const HomePage = () => {
           base_price: "",
           base_country: "",
           target_country: "",
-          target_currency: ""
+          target_currency: "",
         });
       })
       .finally(() => {
