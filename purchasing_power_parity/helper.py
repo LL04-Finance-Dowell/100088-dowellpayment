@@ -87,11 +87,13 @@ def get_ppp_data(
             },
             status=status.HTTP_422_UNPROCESSABLE_ENTITY,
         )
-
+    
     return Response(
         {
             "success": True,
             "message": "Expected values",
+            f"base_price_in_{base_country}":f"{base_price} {base_currency_code}",
+            f"calculated_price_in_{target_country}":f"{target_currency_exchange_rate} {target_currency_code}",
             "price_in_base_country": f"{base_currency_exchange_rate} {base_country_currency_code}",
             "base_country": base_country,
             "target_country": target_country,
