@@ -1,32 +1,21 @@
 /* PageLoader.css */
 .page-loader-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(
-      0,
-      0,
-      0,
-      0.5
-    );
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999; 
-  }
-  
-  .page-loader {
-    text-align: center;
-    background: rgba(
-      255,
-      255,
-      255,
-      0.8
-    );
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5); 
-  }
-  
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.page-loader {
+  text-align: center;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+}
