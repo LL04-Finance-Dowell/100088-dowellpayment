@@ -7,8 +7,8 @@ import PageLoader from "./Loader";
 import Footer from "./Footer";
 import { bodyStyle, formStyle, resultsStyle } from "../styles";
 
-// const DOWELL_PPP_URL = "https://100088.pythonanywhere.com/api/v1/ppp";
-const DOWELL_PPP_URL = "http://127.0.0.1:8000/api/v1/ppp";
+const DOWELL_PPP_URL = "https://100088.pythonanywhere.com/api/v1/ppp";
+// const DOWELL_PPP_URL = "http://127.0.0.1:8000/api/v1/ppp";
 
 const HomePage = () => {
   const homeContainerStyle = {
