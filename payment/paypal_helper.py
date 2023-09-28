@@ -114,7 +114,8 @@ def paypal_payment(
 
     """GENERATE QRCODE FOR PAYMENT"""
     if generate_qrcode == True:
-        data = payment_qrcode(approve_payment, payment_id)
+        logo_basewidth=30
+        data = payment_qrcode(approve_payment, payment_id,logo_basewidth)
         image_url = data["qr_image_url"]
         return Response(
             {"success": True, "qr_image_url": image_url, "payment_id": payment_id},

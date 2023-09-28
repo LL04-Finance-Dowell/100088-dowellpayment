@@ -3,12 +3,12 @@ import qrcode
 from io import BytesIO
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
-
+from PIL import Image
 
 """GENRATE QRCODE FOR PAYMENT"""
 
 
-def payment_qrcode(approval_url, payment_id):
+def payment_qrcode(approval_url, payment_id,logo_basewidth):
     # Generate the QR code
     qr = qrcode.QRCode(
         version=1,
@@ -18,7 +18,24 @@ def payment_qrcode(approval_url, payment_id):
     )
     qr.add_data(approval_url)
     qr.make(fit=True)
-    qr_image = qr.make_image(fill_color="black", back_color="white")
+    qr_image = qr.make_image(fill_color="black", back_color="white").convert("RGB")
+    
+   
+    
+    logo = Image.open("payment/static/payment/images/Logo_.png")
+    
+    
+    # adjust image size
+    wpercent = (logo_basewidth/float(logo.size[0]))
+    hsize = int((float(logo.size[1])*float(wpercent)))
+    logo = logo.resize((logo_basewidth, hsize), Image.Resampling.LANCZOS)
+   
+    
+    # set size of QR code
+    pos = ((qr_image.size[0] - logo.size[0]) // 2,
+        (qr_image.size[1] - logo.size[1]) // 2)
+    qr_image.paste(logo, pos)
+    
 
     # Save the QR code image to a BytesIO buffer
     qr_buffer = BytesIO()
