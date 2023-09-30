@@ -16,11 +16,26 @@ currency_api_key = os.getenv("CURRENCY_API")
 
 
 def get_latest_rate(from_currency, to_currency):
+    print("called")
     client = currencyapicom.Client(currency_api_key)
     response = client.latest(f"{from_currency}", [f"{to_currency}"])
     print(response)
-    result = response["data"][f"{to_currency}"]["value"]
-    return result
+    try:
+        message = response['message']
+        print(message)
+        return Response(
+        {
+            "success": False,
+            "message": f"{message}"
+        },
+        status=status.HTTP_402_PAYMENT_REQUIRED,
+    )
+        
+    except:
+        result = response["data"][f"{to_currency}"]["value"]
+        return result
+        
+   
 
 
 """GET ALL CURRENCY NAME AND COUNTRY NAME"""
@@ -84,6 +99,7 @@ def get_ppp_data(
                 "success": False,
                 "message": "something went wrong",
                 "details": "Invalid Currency Name",
+                "error":f"{e}"
             },
             status=status.HTTP_422_UNPROCESSABLE_ENTITY,
         )
