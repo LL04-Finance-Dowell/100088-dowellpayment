@@ -1027,7 +1027,7 @@ class VerifyPaypalPaymentPublic(APIView):
 # PAYMENT API FOR PUBLIC USAGE WITHOUT API KEYS
 """INITIALIZE STRIPE ENDPOINT TO GENERATE APPROVAL URL AND PAYMENT ID AS RESPONSE"""
 
-
+#stripe Payment for Public User without API KEYs
 class StripePaymentPublicUse(APIView):
     @swagger_auto_schema(
         request_body=PublicStripeSerializer, responses={200: "approval_url"}
