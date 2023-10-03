@@ -54,3 +54,8 @@ def payment_qrcode(approval_url, payment_id,logo_basewidth):
     qr_image_url = os.path.join(settings.MEDIA_URL, "qrcodes", filename)
 
     return {"qr_image_url": f"http://127.0.0.1:8000{qr_image_url}"}
+
+
+
+
+

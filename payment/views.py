@@ -150,6 +150,7 @@ class StripePayment(APIView):
                 stripe_key=stripe_key,
                 model_instance=model_instance,
                 voucher_code=voucher_code,
+                generate_qrcode=True,
             )
             return res
         except Exception as e:
@@ -162,66 +163,66 @@ class StripePayment(APIView):
 """INITIALIZE STRIPE ENDPOINT TO GENERATE QRCODE IMAGE URL AND PAYMENT ID AS RESPONSE"""
 
 # Stripe qrcode Payment classs
-class StripeQrcodePayment(APIView):
-    @swagger_auto_schema(
-        request_body=PaymentSerializer, responses={200: "approval_url"}
-    )
-    def post(self, request):
-        try:
-            data = request.data
-            serializer = PaymentSerializer(data=data)
-            if serializer.is_valid():
-                validate_data = serializer.to_representation(serializer.validated_data)
-                price = validate_data["price"]
-                product = validate_data["product"]
-                currency_code = validate_data["currency_code"]
-                timezone = validate_data["timezone"]
-                description = validate_data["description"]
-                try:
-                    credit = data["credit"]
-                except:
-                    credit = None
-                callback_url = validate_data["callback_url"]
-            else:
-                errors = serializer.errors
-                return Response(
-                    {"success": False, "errors": errors},
-                    status=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                )
-            voucher_code = None
-            if timezone and description and credit:
-                try:
-                    """GENERATE VOUCHER"""
-                    voucher_response = generate_voucher(timezone, description, credit)
-                    voucher_code = voucher_response["voucher code"]
-                except:
-                    return Response(
-                        {
-                            "success": False,
-                            "message": "something went wrong",
-                            "error": f"Provide correct value for timezone, description and credit",
-                        },
-                        status=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                    )
-            model_instance = CreateDowellTransaction
-            stripe_key = os.getenv("STRIPE_KEY", None)
+# class StripeQrcodePayment(APIView):
+#     @swagger_auto_schema(
+#         request_body=PaymentSerializer, responses={200: "approval_url"}
+#     )
+#     def post(self, request):
+#         try:
+#             data = request.data
+#             serializer = PaymentSerializer(data=data)
+#             if serializer.is_valid():
+#                 validate_data = serializer.to_representation(serializer.validated_data)
+#                 price = validate_data["price"]
+#                 product = validate_data["product"]
+#                 currency_code = validate_data["currency_code"]
+#                 timezone = validate_data["timezone"]
+#                 description = validate_data["description"]
+#                 try:
+#                     credit = data["credit"]
+#                 except:
+#                     credit = None
+#                 callback_url = validate_data["callback_url"]
+#             else:
+#                 errors = serializer.errors
+#                 return Response(
+#                     {"success": False, "errors": errors},
+#                     status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+#                 )
+#             voucher_code = None
+#             if timezone and description and credit:
+#                 try:
+#                     """GENERATE VOUCHER"""
+#                     voucher_response = generate_voucher(timezone, description, credit)
+#                     voucher_code = voucher_response["voucher code"]
+#                 except:
+#                     return Response(
+#                         {
+#                             "success": False,
+#                             "message": "something went wrong",
+#                             "error": f"Provide correct value for timezone, description and credit",
+#                         },
+#                         status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+#                     )
+#             model_instance = CreateDowellTransaction
+#             stripe_key = os.getenv("STRIPE_KEY", None)
 
-            res = stripe_payment(
-                price=price,
-                product=product,
-                currency_code=currency_code,
-                callback_url=callback_url,
-                stripe_key=stripe_key,
-                model_instance=model_instance,
-                voucher_code=voucher_code,
-                generate_qrcode=True,
-            )
-            return res
-        except Exception as e:
-            return Response(
-                {"success": False, "message": "something went wrong", "error": f"{e}"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+#             res = stripe_payment(
+#                 price=price,
+#                 product=product,
+#                 currency_code=currency_code,
+#                 callback_url=callback_url,
+#                 stripe_key=stripe_key,
+#                 model_instance=model_instance,
+#                 voucher_code=voucher_code,
+#                 generate_qrcode=True,
+#             )
+#             return res
+#         except Exception as e:
+#             return Response(
+#                 {"success": False, "message": "something went wrong", "error": f"{e}"},
+#                 status=status.HTTP_400_BAD_REQUEST,
+#             )
 
 
 """VERIFY PAYMENT FOR STRIPE ENDPOINT BY PROVIDING PAYMENT ID AS THE REQUEST BODY"""
@@ -325,6 +326,7 @@ class PaypalPayment(APIView):
                 model_instance=model_instance,
                 paypal_url=dowell_paypal_url,
                 voucher_code=voucher_code,
+                generate_qrcode=True,
             )
             return res
 
@@ -338,72 +340,72 @@ class PaypalPayment(APIView):
 """INITIALIZE PAYPAL ENDPOINT TO GENERATE QRCODE IMAGE URL AND PAYMENT ID AS RESPONSE"""
 
 # Paypal qrcode Payment classs
-class PaypalQrcodePayment(APIView):
-    @swagger_auto_schema(
-        request_body=PaymentSerializer, responses={200: "approval_url"}
-    )
-    def post(self, request):
-        try:
-            data = request.data
-            serializer = PaymentSerializer(data=data)
-            if serializer.is_valid():
-                validate_data = serializer.to_representation(serializer.validated_data)
-                price = validate_data["price"]
-                product_name = validate_data["product"]
-                currency_code = validate_data["currency_code"]
-                timezone = validate_data["timezone"]
-                description = validate_data["description"]
-                try:
-                    credit = data["credit"]
-                except:
-                    credit = None
-                callback_url = validate_data["callback_url"]
-                print(validate_data)
-            else:
-                errors = serializer.errors
-                return Response(
-                    {"success": False, "errors": errors},
-                    status=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                )
+# class PaypalQrcodePayment(APIView):
+#     @swagger_auto_schema(
+#         request_body=PaymentSerializer, responses={200: "approval_url"}
+#     )
+#     def post(self, request):
+#         try:
+#             data = request.data
+#             serializer = PaymentSerializer(data=data)
+#             if serializer.is_valid():
+#                 validate_data = serializer.to_representation(serializer.validated_data)
+#                 price = validate_data["price"]
+#                 product_name = validate_data["product"]
+#                 currency_code = validate_data["currency_code"]
+#                 timezone = validate_data["timezone"]
+#                 description = validate_data["description"]
+#                 try:
+#                     credit = data["credit"]
+#                 except:
+#                     credit = None
+#                 callback_url = validate_data["callback_url"]
+#                 print(validate_data)
+#             else:
+#                 errors = serializer.errors
+#                 return Response(
+#                     {"success": False, "errors": errors},
+#                     status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+#                 )
 
-            voucher_code = None
-            if timezone and description and credit:
-                try:
-                    voucher_response = generate_voucher(timezone, description, credit)
-                    voucher_code = voucher_response["voucher code"]
-                except:
-                    return Response(
-                        {
-                            "success": False,
-                            "message": "something went wrong",
-                            "error": f"Provide correct value for timezone, description and credit",
-                        },
-                        status=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                    )
+#             voucher_code = None
+#             if timezone and description and credit:
+#                 try:
+#                     voucher_response = generate_voucher(timezone, description, credit)
+#                     voucher_code = voucher_response["voucher code"]
+#                 except:
+#                     return Response(
+#                         {
+#                             "success": False,
+#                             "message": "something went wrong",
+#                             "error": f"Provide correct value for timezone, description and credit",
+#                         },
+#                         status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+#                     )
 
-            model_instance = CreateDowellTransaction
-            client_id = os.getenv("PAYPAL_CLIENT_ID", None)
-            client_secret = os.getenv("PAYPAL_SECRET_KEY", None)
+#             model_instance = CreateDowellTransaction
+#             client_id = os.getenv("PAYPAL_CLIENT_ID", None)
+#             client_secret = os.getenv("PAYPAL_SECRET_KEY", None)
 
-            res = paypal_payment(
-                price=price,
-                product_name=product_name,
-                currency_code=currency_code,
-                callback_url=callback_url,
-                client_id=client_id,
-                client_secret=client_secret,
-                model_instance=model_instance,
-                paypal_url=dowell_paypal_url,
-                voucher_code=voucher_code,
-                generate_qrcode=True,
-            )
-            return res
+#             res = paypal_payment(
+#                 price=price,
+#                 product_name=product_name,
+#                 currency_code=currency_code,
+#                 callback_url=callback_url,
+#                 client_id=client_id,
+#                 client_secret=client_secret,
+#                 model_instance=model_instance,
+#                 paypal_url=dowell_paypal_url,
+#                 voucher_code=voucher_code,
+#                 generate_qrcode=True,
+#             )
+#             return res
 
-        except Exception as e:
-            return Response(
-                {"success": False, "message": "something went wrong", "error": f"{e}"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+#         except Exception as e:
+#             return Response(
+#                 {"success": False, "message": "something went wrong", "error": f"{e}"},
+#                 status=status.HTTP_400_BAD_REQUEST,
+#             )
 
 
 """VERIFY PAYMENT FOR PAYPAL ENDPOINT BY PROVIDING PAYMENT ID AS THE REQUEST BODY"""
