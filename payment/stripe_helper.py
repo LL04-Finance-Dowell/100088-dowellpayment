@@ -81,7 +81,7 @@ def stripe_payment(
         data = payment_qrcode(session.url, payment_id,logo_basewidth)
         image_url = data["qr_image_url"]
         return Response(
-            {"success": True, "qr_image_url": image_url, "payment_id": payment_id},
+            {"success": True,"approval_url": f"{session.url}", "qr_image_url": image_url, "payment_id": payment_id},
             status=status.HTTP_200_OK,
         )
     else:
