@@ -8,6 +8,8 @@
 
 html, body {
   font-family: 'Archivo';
+  height: 100vh;
+  width: 100vw;
 }
 
 label {
@@ -25,6 +27,7 @@ select {
   border-radius: 60px;
   background: #FBDDF9;
   padding-inline: 3em;
+  cursor: pointer;
 }
 
 button {
@@ -49,12 +52,14 @@ button {
 
 .left-col {
   width: 100%;
-  padding: 2em;
+  padding: 2.5em;
   text-align: center;
 }
 
 .right-col {
   width: 100%;
+  padding: 2.5em;
+  text-align: center;
 }
 
 .logo {
@@ -83,4 +88,27 @@ button {
 
 .form-group {
   margin-block: 1em;
+}
+
+.faq {
+  text-align: left;
+  padding: 1em 3em;
+}
+
+.section {
+  margin: 1em;
+}
+
+.question {
+  color: #151515;
+  font-size: 28px;
+  font-weight: 400;
+  margin-bottom: 12px;
+}
+
+.answer {
+  color: rgba(21, 21, 21, 0.80);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 22px;
 }
