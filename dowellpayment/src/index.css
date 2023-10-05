@@ -10,12 +10,13 @@ html, body {
   font-family: 'Archivo';
   height: 100vh;
   width: 100vw;
+  font-size: 16px;
 }
 
 label {
   display: block;
   color: #151515;
-  font-size: 18px;
+  font-size: 1.125rem;
   font-style: normal;
   font-weight: 400;
   margin-bottom: 14px;
@@ -40,43 +41,52 @@ button {
   background: #AE43B9;
   border: none;
   color: #FFF;
-  font-size: 24px;
+  font-size: 1.5rem;
   font-weight: 600;
   margin-top: 1em;
+  cursor: pointer;
 }
 
 .container {
-  padding: 1em;
+  padding-inline: 1em;
   display: flex;
   align-items: center;
 }
 
 .left-col {
   width: 100%;
+  height: 100vh;
   padding: 2.5em;
   text-align: center;
+  /* overflow-y: scroll; */
 }
 
 .right-col {
   width: 100%;
+  height: 100vh;
   padding: 2em;
   text-align: center;
+  /* overflow-y: scroll; */
 }
 
 .logo {
   margin: 1em;
 }
 
+.vector {
+  margin: 1em;
+}
+
 .title {
   color: #151515;
-  font-size: 36px;
+  font-size: 2.25rem;
   font-style: normal;
   font-weight: 600;
 }
 
 .desc {
   color: #151515;
-  font-size: 18px;
+  font-size: 1.125rem;
   font-style: normal;
   font-weight: 500;
 }
@@ -102,20 +112,23 @@ button {
 
 .question {
   color: #151515;
-  font-size: 28px;
+  font-size: 1.75rem;
   font-weight: 400;
   margin-bottom: 12px;
 }
 
 .answer {
   color: rgba(21, 21, 21, 0.80);
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 400;
   line-height: 22px;
 }
 
 /* Medium screen */
 @media (max-width: 820px) {
+  body {
+    font-size: 14px;
+  }
   .container {
     flex-direction: column;
   }
@@ -124,17 +137,45 @@ button {
     font-size: 8px;
   }
 
+  .vector {
+    width: 100%
+  }
+
   .left-col {
     padding: 1.5em;
+    width: 100%;
+    min-height: 100vh;
+    overflow-y: scroll
   }
   .right-col {
     padding: 1.5em;
+    width: 100%;
+    min-height: 100vh;
   }
 }
 
 /* Small screen */
 @media (max-width: 450px) {
+  body {
+    font-size: 12px;
+  }
   .container {
     flex-direction: column;
+  }
+
+  .vector {
+    width: 100%
+  }
+
+  .left-col {
+    padding: 1.5em;
+    width: 100%;
+    min-height: 100vh;
+    overflow-y: scroll
+  }
+  .right-col {
+    padding: 1.5em;
+    width: 100%;
+    min-height: 100vh;
   }
 }

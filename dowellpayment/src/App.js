@@ -2,13 +2,63 @@ import { useEffect, useState } from "react";
 
 function App() {
   const [state, setState] = useState(null)
+  const [info, setInfo] = useState({
+    base_currency: "",
+    base_price: 0,
+    base_country: "",
+    target_country: "",
+    target_currency: ""
+  })
 
   useEffect(() => {
     const fetchData = async (url) => {
-      const res = fetch(url)
+      const res = await fetch(url)
       const data = await res.json()
+      setState(data.data)
     }
+
+    fetchData('https://100088.pythonanywhere.com/api/v1/ppp')
   }, [])
+
+  const onChange = (e) => {
+    const { name, value } = e.target
+    setInfo({
+      ...info,
+      [name]: value
+    })
+  }
+
+  const handleCalculation = async (e) => {
+    e.preventDefault()
+
+    const requestOption = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(info)
+    };
+    try {
+      const response = await fetch('https://100088.pythonanywhere.com/api/v1/ppp', requestOption)
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      // const responseData = await response.json();
+      // console.log('Response Data:', responseData);
+      setInfo({
+        base_currency: "",
+        base_price: 0,
+        base_country: "",
+        target_country: "",
+        target_currency: ""
+      })
+
+    } catch (error) {
+      console.error('Fetch Error:', error);
+    }
+  }
+
 
   return (
     <div className="container">
@@ -20,34 +70,63 @@ function App() {
           <p className='desc'>Purchase Price Parity Calculator</p>
         </div>
 
-        <form className="form">
+        <form className="form" onSubmit={handleCalculation}>
           <div className="form-group">
             <label>Base Currency</label>
-            <select>
-              <option>Test</option>
-              <option>Test2</option>
+            <select 
+              onChange={onChange}
+              name='base_currency'
+            >
+              <option>{"Select Currency"}</option>
+              {state?.map((currency, key) => (
+                <option key={key} value={currency?.currency_name}>{currency?.currency_name}</option>
+              ))}
             </select>
           </div>
           <div className="form-group">
             <label>Base Price</label>
-            <input type="number" />
+            <input 
+              type="number" 
+              placeholder="($) Input Price"
+              name='base_price'
+              value={info?.base_price}
+              onChange={onChange}
+            />
           </div>
           <div className="form-group">
             <label>Base Country</label>
-            <select>
-              
+            <select
+              onChange={onChange}
+              name='base_country'
+            >
+              <option>{"Select Country"}</option>
+              {state?.map((country, key) => (
+                <option key={key} value={country?.country_name}>{country?.country_name}</option>
+              ))}
             </select>
           </div>
           <div className="form-group">
             <label>Target Country</label>
-            <select>
-              
+            <select
+              onChange={onChange}
+              name='target_country'
+            >
+              <option>{"Select Country"}</option>
+              {state?.map((country, key) => (
+                <option key={key} value={country?.country_name}>{country?.country_name}</option>
+              ))}
             </select>
           </div>
           <div className="form-group">
             <label>Target Currency</label>
-            <select>
-              
+            <select
+              onChange={onChange}
+              name='target_currency'
+            >
+              <option>{"Select Currency"}</option>
+              {state?.map((currency, key) => (
+                <option key={key} value={currency?.currency_name}>{currency?.currency_name}</option>
+              ))}
             </select>
           </div>
           <button>
@@ -58,7 +137,7 @@ function App() {
 
       {/* right col */}
       <div className="right-col">
-        <img src='/illustration.svg' alt='Company logo' className="logo" />
+        <img src='/illustration.svg' alt='Vector' className="vector" />
         <div className="faq">
           <div className="section">
             <p className="question">How can we help?</p>
