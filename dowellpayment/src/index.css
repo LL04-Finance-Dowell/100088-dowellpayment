@@ -21,13 +21,14 @@ label {
   margin-bottom: 14px;
 }
 
-select {
+select, input {
   width: 100%;
   height: 60px;
   border-radius: 60px;
   background: #FBDDF9;
   padding-inline: 3em;
   cursor: pointer;
+  border: none;
 }
 
 button {

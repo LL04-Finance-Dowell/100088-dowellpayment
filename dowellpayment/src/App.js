@@ -1,5 +1,15 @@
+import { useEffect, useState } from "react";
 
 function App() {
+  const [state, setState] = useState(null)
+
+  useEffect(() => {
+    const fetchData = async (url) => {
+      const res = fetch(url)
+      const data = await res.json()
+    }
+  }, [])
+
   return (
     <div className="container">
       {/* left col */}
@@ -20,9 +30,7 @@ function App() {
           </div>
           <div className="form-group">
             <label>Base Price</label>
-            <select>
-              
-            </select>
+            <input type="number" />
           </div>
           <div className="form-group">
             <label>Base Country</label>
