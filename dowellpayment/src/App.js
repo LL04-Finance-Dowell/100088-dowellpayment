@@ -64,7 +64,11 @@ function App() {
   }
 
   const openModal = () => {
-    setModalOpen(true);
+    if(info.target_currency !== "" && info.target_country !== "" && info.base_country !== "" && info.base_currency !== "") {
+      setModalOpen(true);
+    } else {
+      alert("Kindly complete the form")
+    }
   };
 
   const closeModal = () => {
