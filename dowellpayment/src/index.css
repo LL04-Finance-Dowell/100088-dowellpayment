@@ -27,12 +27,33 @@ select, input {
   height: 60px;
   border-radius: 60px;
   background: #FBDDF9;
-  padding-inline: 3em;
+  padding-inline: 2em;
   cursor: pointer;
   border: none;
+  padding-right: 4em;
 }
 
-button {
+select::after {
+  content: "\25BC";
+  position: absolute;
+  top: 50%;
+  right: 30px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.select {
+  width: 100%;
+  height: 60px;
+  border-radius: 60px;
+  background: #FBDDF9;
+  padding-inline: 2em;
+  cursor: pointer;
+  border: none;
+  padding-right: 4em;
+}
+
+.button {
   width: 100%;
   height: 65px;
   padding: 10px;
@@ -69,8 +90,17 @@ button {
   /* overflow-y: scroll; */
 }
 
+.header {
+  display: flex;
+  flex-direction: column;
+  /* color: #ae40ba */
+}
+
 .logo {
+  display: flex;
   margin: 1em;
+  align-self: center;
+  justify-content: center;
 }
 
 .vector {
@@ -92,7 +122,7 @@ button {
 }
 
 .form {
-  margin-block: 1em;
+  margin: 1em;
   text-align: left;
   padding: 2em;
 }
@@ -142,11 +172,15 @@ button {
   background-color: #fff;
   border-radius: 5px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  padding: 20px;
+  padding: 25px;
   position: relative;
-  max-width: 80%;
-  width: 60%;
+  /* max-width: 80%;
+  width: 60%; */
   z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   text-align: center;
 }
 
@@ -156,14 +190,14 @@ button {
   color: #999;
   font-size: 24px;
   position: absolute;
-  top: 5px;
-  right: 5px;
+  top: 10px;
+  right: 10px;
   cursor: pointer;
 }
 
 table {
   /* background: #999; */
-  width: 100%;
+  width: 80%;
   border-radius: 60px;
   float: left;
   text-align: left;
