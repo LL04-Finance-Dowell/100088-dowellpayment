@@ -5,7 +5,7 @@ from .models import PPPCalculation
 class CurrencyNameSerializer(serializers.ModelSerializer):
     class Meta:
         model = PPPCalculation
-        #get only the currency_name and country_name
+        # get only the currency_name and country_name
         fields = ["currency_name", "country_name"]
 
 
@@ -15,8 +15,6 @@ class PPPSerializer(serializers.Serializer):
     base_country = serializers.CharField()
     target_country = serializers.CharField()
     target_currency = serializers.CharField()
-
-
 
 
 # class CurrencyNameSerializer(serializers.ModelSerializer):
@@ -32,8 +30,5 @@ class PPPSerializer(serializers.Serializer):
 #         # return unique_currency_names
 #          # Format the unique currency names as a list of dictionaries
 #         formatted_currency_names = [{"currency_name": name} for name in unique_currency_names]
-        
+
 #         return formatted_currency_names
-
-
-

@@ -33,8 +33,8 @@ class Command(BaseCommand):
 
         # Show this before loading the data into the database
         print("Loading  data")
-        
-        #Wrtie the csv data to the databases
+
+        # Wrtie the csv data to the databases
         for row in DictReader(open("./PPP_CALCULATION.csv")):
             ppp_data = PPPCalculation(
                 country_name=row["Country Name"],

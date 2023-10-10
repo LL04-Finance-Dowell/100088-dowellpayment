@@ -4,6 +4,7 @@ import requests
 import stripe
 from rest_framework import status
 from rest_framework.response import Response
+from decimal import Decimal,ROUND_HALF_UP
 from .qrcodes import payment_qrcode
 from .sendmail import send_mail_one, send_mail_two
 
@@ -43,6 +44,19 @@ def stripe_payment(
     today = date.today()
     unique_id = uuid.uuid4()
     payment_id = str(unique_id)
+
+   #convert the price to Decimal type
+    price_decimal = Decimal(price)
+
+    print("price_decimal",price_decimal)
+    #make sure the price retains is decimal value
+    rounded_price = price_decimal.quantize(Decimal("0.00"), rounding=ROUND_HALF_UP)
+
+    #convert the price to cent
+    price_in_cents = int(rounded_price * 100)
+    # price_in_cents = 14566
+
+    print("price_in_cents",price_in_cents)
     session = stripe.checkout.Session.create(
         line_items=[
             {
@@ -51,7 +65,8 @@ def stripe_payment(
                     "product_data": {
                         "name": f"{product}",
                     },
-                    "unit_amount": f"{(price) * 100}",
+                    # "unit_amount": f"{(price) * 100}",
+                    "unit_amount": f"{price_in_cents}",
                 },
                 "quantity": 1,
             }

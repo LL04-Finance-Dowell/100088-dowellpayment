@@ -78,14 +78,15 @@ user = os.getenv("USERID")
 password = os.getenv("PASSWORD")
 
 
-#Show Success Page
+# Show Success Page
 class Success(View):
     template_name = "payment/success.html"
 
     def get(self, request):
         return render(request, self.template_name)
 
-#Show error page
+
+# Show error page
 class Error(View):
     template_name = "payment/error.html"
 
@@ -96,6 +97,7 @@ class Error(View):
 # PAYMENT API FOR DOWELL INTERNAL TEAM
 
 """INITIALIZE STRIPE ENDPOINT TO GENERATE APPROVAL URL AND PAYMENT ID AS RESPONSE"""
+
 
 # Stripe Payment classs
 class StripePayment(APIView):
@@ -162,6 +164,7 @@ class StripePayment(APIView):
 
 """VERIFY PAYMENT FOR STRIPE ENDPOINT BY PROVIDING PAYMENT ID AS THE REQUEST BODY"""
 
+
 # Stripe verify Payment classs
 class VerifyStripePayment(APIView):
     @swagger_auto_schema(
@@ -201,6 +204,7 @@ class VerifyStripePayment(APIView):
 
 
 """INITIALIZE PAYPAL ENDPOINT TO GENERATE APPROVAL URL AND PAYMENT ID AS RESPONSE"""
+
 
 # Paypal Payment classs
 class PaypalPayment(APIView):
@@ -274,6 +278,7 @@ class PaypalPayment(APIView):
 
 """VERIFY PAYMENT FOR PAYPAL ENDPOINT BY PROVIDING PAYMENT ID AS THE REQUEST BODY"""
 
+
 # paypal verify Payment classs
 class VerifyPaypalPayment(APIView):
     @swagger_auto_schema(
@@ -315,6 +320,7 @@ class VerifyPaypalPayment(APIView):
 
 # PAYMENT API FOR WORKLOW AI INTERNAL TEAM
 """INITIALIZE STRIPE ENDPOINT TO GENERATE APPROVAL URL AND PAYMENT ID AS RESPONSE"""
+
 
 # stripe payment for workflow
 class WorkflowStripePayment(APIView):
@@ -362,6 +368,7 @@ class WorkflowStripePayment(APIView):
 
 
 """INITIALIZE STRIPE ENDPOINT TO GENERATE QRCODE IMAGE URL AND PAYMENT ID AS RESPONSE"""
+
 
 # stripe qrcode payment for workflow AI team
 class WorkflowStripeQrPayment(APIView):
@@ -411,6 +418,7 @@ class WorkflowStripeQrPayment(APIView):
 
 """VERIFY PAYMENT FOR STRIPE ENDPOINT BY PROVIDING PAYMENT ID AS THE REQUEST BODY"""
 
+
 # verify stripe payment for workflow AI TEAM
 class WorkflowVerifyStripePayment(APIView):
     @swagger_auto_schema(
@@ -452,6 +460,7 @@ class WorkflowVerifyStripePayment(APIView):
 
 
 """INITIALIZE PAYPAL ENDPOINT TO GENERATE APPROVAL URL AND PAYMENT ID AS RESPONSE"""
+
 
 # paypal payment for workflow
 class WorkflowPaypalPayment(APIView):
@@ -559,7 +568,8 @@ class WorkflowPaypalQrPayment(APIView):
 
 """VERIFY PAYMENT FOR PAYPAL ENDPOINT BY PROVIDING PAYMENT ID AS THE REQUEST BODY"""
 
-#verify paypal payment for workflow AI team
+
+# verify paypal payment for workflow AI team
 class WorkflowVerifyPaypalPayment(APIView):
     @swagger_auto_schema(
         request_body=WorkflowVerifyPaypalSerializer, responses={200: "status"}
@@ -605,7 +615,7 @@ class WorkflowVerifyPaypalPayment(APIView):
 """INITIALIZE STRIPE ENDPOINT TO GENERATE APPROVAL URL AND PAYMENT ID AS RESPONSE"""
 
 
-#Stripe Payment for Public User
+# Stripe Payment for Public User
 class StripePaymentPublic(APIView):
     @swagger_auto_schema(
         request_body=PublicStripeSerializer, responses={200: "approval_url"}
@@ -651,7 +661,8 @@ class StripePaymentPublic(APIView):
 
 """INITIALIZE STRIPE ENDPOINT TO GENERATE QRCODE IMAGE URL AND PAYMENT ID AS RESPONSE"""
 
-#Stripe qrcode Payment for Public User
+
+# Stripe qrcode Payment for Public User
 class StripeQrPaymentPublic(APIView):
     @swagger_auto_schema(
         request_body=PublicStripeSerializer, responses={200: "approval_url"}
@@ -698,7 +709,8 @@ class StripeQrPaymentPublic(APIView):
 
 """VERIFY PAYMENT FOR STRIPE ENDPOINT BY PROVIDING PAYMENT ID AS THE REQUEST BODY"""
 
-#verify Stripe Payment for Public User
+
+# verify Stripe Payment for Public User
 class VerifyStripePaymentPublic(APIView):
     @swagger_auto_schema(
         request_body=VerifyPublicStripSerializer, responses={200: "status"}
@@ -741,7 +753,8 @@ class VerifyStripePaymentPublic(APIView):
 
 """INITIALIZE PAYPAL ENDPOINT TO GENERATE APPROVAL URL AND PAYMENT ID AS RESPONSE"""
 
-#paypal Payment for Public User
+
+# paypal Payment for Public User
 class PaypalPaymentPublic(APIView):
     @swagger_auto_schema(
         request_body=PublicPaypalSerializer, responses={200: "approval_url"}
@@ -793,7 +806,8 @@ class PaypalPaymentPublic(APIView):
 
 """INITIALIZE PAYPAL ENDPOINT TO GENERATE QRCODE IMAGE URL AND PAYMENT ID AS RESPONSE"""
 
-#paypal qrcode Payment for Public User
+
+# paypal qrcode Payment for Public User
 class PaypalQrPaymentPublic(APIView):
     @swagger_auto_schema(
         request_body=PublicPaypalSerializer, responses={200: "approval_url"}
@@ -846,7 +860,8 @@ class PaypalQrPaymentPublic(APIView):
 
 """VERIFY PAYMENT FOR PAYPAL ENDPOINT BY PROVIDING PAYMENT ID AS THE REQUEST BODY"""
 
-#verify paypal Payment for Public User
+
+# verify paypal Payment for Public User
 class VerifyPaypalPaymentPublic(APIView):
     @swagger_auto_schema(
         request_body=VerifyPublicPaypalSerializer, responses={200: "status"}
@@ -893,7 +908,8 @@ class VerifyPaypalPaymentPublic(APIView):
 # PAYMENT API FOR PUBLIC USAGE WITHOUT API KEYS
 """INITIALIZE STRIPE ENDPOINT TO GENERATE APPROVAL URL AND PAYMENT ID AS RESPONSE"""
 
-#stripe Payment for Public User without API KEYs
+
+# stripe Payment for Public User without API KEYs
 class StripePaymentPublicUse(APIView):
     @swagger_auto_schema(
         request_body=PublicStripeSerializer, responses={200: "approval_url"}

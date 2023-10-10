@@ -34,7 +34,7 @@ class GetPurchasingPowerParity(APIView):
     def post(self, request):
         try:
             data = request.data
-            #serialize the input data
+            # serialize the input data
             serializer = PPPSerializer(data=data)
             if serializer.is_valid():
                 validate_data = serializer.validated_data
@@ -47,7 +47,7 @@ class GetPurchasingPowerParity(APIView):
             else:
                 errors = serializer.errors
                 return Response(errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
-            
+
             #  call the function to get Purchasing Power Parity
             res = get_ppp_data(
                 base_currency, base_price, base_country, target_country, target_currency
@@ -68,7 +68,7 @@ class GetPurchasingPowerParity(APIView):
 class GetPublicPurchasingPowerParity(APIView):
     def get(self, request, api_key):
         try:
-            #Call the dowell Service key API to verify the user API KEY
+            # Call the dowell Service key API to verify the user API KEY
             validate = processApikey(api_key)
             print(validate)
             if validate["success"] == False:
@@ -98,7 +98,7 @@ class GetPublicPurchasingPowerParity(APIView):
                 )
 
             data = request.data
-            #serialize the input data
+            # serialize the input data
             serializer = PPPSerializer(data=data)
             if serializer.is_valid():
                 validate_data = serializer.validated_data
@@ -111,7 +111,7 @@ class GetPublicPurchasingPowerParity(APIView):
             else:
                 errors = serializer.errors
                 return Response(errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
-            
+
             #  call the function to get Purchasing Power Parity
             res = get_ppp_data(
                 base_currency, base_price, base_country, target_country, target_currency

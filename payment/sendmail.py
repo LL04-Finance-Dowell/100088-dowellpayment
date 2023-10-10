@@ -64,7 +64,7 @@ def send_mail_one(
     files = {"file": html_body}
 
     response = requests.post(url, files=files, data=email_data)
-    print("response mail",response)
+    print("response mail", response)
     return response
 
 
@@ -129,5 +129,5 @@ def send_mail_two(
     files = {"file": html_body}
 
     response = requests.post(url, files=files, data=email_data)
-    print("response mail",response)
+    print("response mail", response)
     return response

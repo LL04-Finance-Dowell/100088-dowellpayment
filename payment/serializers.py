@@ -1,4 +1,3 @@
-from decimal import Decimal
 from rest_framework import serializers
 
 
@@ -28,7 +27,13 @@ class PaymentSerializer(serializers.Serializer):
         data["price"] = int(discount_price)
         """
         # discount_price = round(price - (0.4 * price), 2)
+        """
+        The code checks if the price has no decimal portion (price % 1 == 0) 
+        and converts it to an integer if that's the case. 
+        If it has a decimal portion, it keeps it as is (preserving the decimal part).
 
+        """
+        print("actual price", price)
         if price % 1 == 0:
             data["price"] = int(price)
         else:
