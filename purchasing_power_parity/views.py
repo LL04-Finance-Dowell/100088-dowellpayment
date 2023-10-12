@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .serializers import PPPSerializer
-from .helper import get_all_currency_name, get_ppp_data
+from .helper import get_all_currency_and_country,get_all_currency_name, get_ppp_data
 import requests
 
 
@@ -15,6 +15,23 @@ def processApikey(api_key):
 
 
 # FOR DOWELL INTERNAL TEAM
+
+class GetCurrencyNameAndCountryName(APIView):
+    def get(self, request):
+        try:
+            #  call the function to get all the currency name
+            res = get_all_currency_and_country()
+            return res
+        except Exception as e:
+            return Response(
+                {
+                    "success": False,
+                    "message": "something went wrong",
+                    "error": f"{e}",
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
 class GetPurchasingPowerParity(APIView):
     def get(self, request):
         try:

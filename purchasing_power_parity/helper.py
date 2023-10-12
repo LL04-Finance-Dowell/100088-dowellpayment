@@ -29,6 +29,25 @@ def get_latest_rate(from_currency, to_currency):
         return result
 
 
+def get_all_currency_and_country():
+    obj = PPPCalculation.objects.all()
+    currency_name = []
+    country_name = []
+    for item in obj:
+        if item.currency_name not in currency_name:
+            currency_name.append(item.currency_name)
+        if item.country_name not in country_name:
+            country_name.append(item.country_name)    
+    return Response(
+        {
+            "success": True,
+            "message": "List of country and currency name",
+            "data": {"total_currency":len(currency_name),"total_country":len(country_name),"currency_name":currency_name,"country_name":country_name},
+        },
+        status=status.HTTP_200_OK,
+    )
+
+
 """GET ALL CURRENCY NAME AND COUNTRY NAME"""
 
 
