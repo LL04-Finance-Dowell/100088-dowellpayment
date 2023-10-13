@@ -54,12 +54,12 @@ function Modal({ isOpen, onClose, values, info, loading }) {
                         <td>{info?.base_currency}</td>
                     </tr>
                     <tr className="odd">
-                        <td>{basePriceInBaseCountry}</td>
-                        <td>{basePriceInBaseCountryValue}</td>
+                        <td style={{ fontWeight: 700 }}>{basePriceInBaseCountry}</td>
+                        <td style={{ fontWeight: 700 }}>{basePriceInBaseCountryValue}</td>
                     </tr>
                     <tr className="even">
-                        <td>{calculatedPriceInTargetCountry}</td>
-                        <td>{calculatedPriceInTargetCountryValue}</td>
+                        <td style={{ fontWeight: 700 }}>{calculatedPriceInTargetCountry}</td>
+                        <td style={{ fontWeight: 700 }}>{calculatedPriceInTargetCountryValue}</td>
                     </tr>
                     <tr className="odd">
                         <td>Price in Base Country</td>
