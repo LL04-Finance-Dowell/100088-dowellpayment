@@ -1,4 +1,6 @@
-function Modal({ isOpen, onClose, values, info }) {
+import { Spinner } from "@chakra-ui/react";
+
+function Modal({ isOpen, onClose, values, info, loading }) {
 
     function toTitleCaseWithSpaces(inputString) {
         return inputString
@@ -25,6 +27,10 @@ function Modal({ isOpen, onClose, values, info }) {
     }
 
     return (
+        loading ? 
+        <div className="modal-overlay">
+            <Spinner /> 
+        </div> :
         isOpen && (
         <div className="modal-overlay">
             <div className="modal">
@@ -32,7 +38,7 @@ function Modal({ isOpen, onClose, values, info }) {
                 &times;
             </button>
             <div className="header">
-                <img src='/dowell-logo.svg' alt='Company logo' className="logo" />
+                <img src='/dowell-logo.svg' alt='Company logo' className="modalLogo" />
                 <p className='desc'>Purchase Price Parity Calculator</p>
             </div>
             <table>

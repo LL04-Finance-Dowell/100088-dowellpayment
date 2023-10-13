@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { Button, Icon, Select, Spinner } from '@chakra-ui/react'
-import { MdArrowDropDown } from 'react-icons/md'
+
 
 // component
-import Modal from "./component/Modal";
+import Modal from "./modal/Modal";
+import Form from "./component/Form";
 
 function App() {
   const [isModalOpen, setModalOpen] = useState(false);
@@ -26,7 +26,7 @@ function App() {
       setState(data.data)
     }
 
-    fetchData('https://100088.pythonanywhere.com/api/v1/ppp')
+    fetchData('https://100088.pythonanywhere.com/api/v1/country-currency')
   }, [])
 
   const onChange = (e) => {
@@ -40,7 +40,7 @@ function App() {
   const handleCalculation = async (e) => {
     e.preventDefault()
 
-    setLoading(true)
+    info.target_currency && setLoading(true)
 
     const requestOption = {
       method: 'POST',
@@ -58,10 +58,11 @@ function App() {
       const responseData = await response.json();
       setResult(responseData)
 
-      openModal()
-      setLoading(false)
-      // if(responseData.success === true) {
-      // }
+      if(responseData.success === true) {
+        openModal()
+        setLoading(false)
+      }
+
     } catch (error) {
       console.error('Fetch Error:', error);
     }
@@ -69,15 +70,17 @@ function App() {
 
   const openModal = () => {
     if(info.target_currency !== "" && info.target_country !== "" && info.base_country !== "" && info.base_currency !== "") {
-      if(result !== null) {
+      setTimeout(() => {
         setModalOpen(true);
-      }
+      }, 1600)
     } else {
       alert("Kindly complete the form")
+      setLoading(false)
     }
   };
 
   const closeModal = () => {
+    setLoading(false)
     setModalOpen(false);
     setInfo({
       base_currency: "",
@@ -96,133 +99,18 @@ function App() {
         onClose={closeModal} 
         values={result}
         info={info}
+        loading={loading}
       />
       <div className="container">
         {/* left col */}
-        <div className="left-col">
-          <div className="header">
-            <img src='/dowell-logo.svg' alt='Company logo' className="logo" />
-            <h1 className="title">DoWell World Price Indicator</h1>
-            <p className='desc'>Purchase Price Parity Calculator</p>
-          </div>
-
-          <form className="form" onSubmit={handleCalculation}>
-            <div className="form-group">
-              <label>Base Currency</label>
-              <Select 
-                onChange={onChange}
-                name='base_currency'
-                style={{ borderRadius: '60px', height: '60px', textIndent: '10px' }}
-                placeholder="Select Currency"
-                bg='#FBDDF9'
-                border='none'
-                icon={
-                  <Icon
-                    as={MdArrowDropDown} 
-                    color='#972EA2'
-                    boxSize={6}
-                    mr={4}
-                  />
-                }
-              >
-                {state?.map((currency, key) => (
-                  <option key={key} value={currency?.currency_name}>{currency?.currency_name}</option>
-                ))}
-              </Select>
-            </div>
-            <div className="form-group">
-              <label>Base Price</label>
-              <input 
-                type="number" 
-                placeholder="($) Input Price"
-                name='base_price'
-                value={info?.base_price}
-                onChange={onChange}
-              />
-            </div>
-            <div className="form-group">
-              <label>Base Country</label>
-              <Select
-                onChange={onChange}
-                name='base_country'
-                style={{ borderRadius: '60px', height: '60px', textIndent: '10px' }}
-                placeholder="Select Country"
-                bg='#FBDDF9'
-                border='none'
-                icon={
-                  <Icon
-                    as={MdArrowDropDown} 
-                    color='#972EA2'
-                    boxSize={6}
-                    mr={4}
-                  />
-                }
-              >
-                {state?.map((country, key) => (
-                  <option key={key} value={country?.country_name}>{country?.country_name}</option>
-                ))}
-              </Select>
-            </div>
-            <div className="form-group">
-              <label>Target Country</label>
-              <Select
-                onChange={onChange}
-                name='target_country'
-                style={{ borderRadius: '60px', height: '60px', textIndent: '10px' }}
-                placeholder="Select Country"
-                bg='#FBDDF9'
-                border='none'
-                icon={
-                  <Icon
-                    as={MdArrowDropDown} 
-                    color='#972EA2'
-                    boxSize={6}
-                    mr={4}
-                  />
-                }
-              >
-                {state?.map((country, key) => (
-                  <option key={key} value={country?.country_name}>{country?.country_name}</option>
-                ))}
-              </Select>
-            </div>
-            <div className="form-group">
-              <label>Target Currency</label>
-              <Select
-                onChange={onChange}
-                name='target_currency'
-                style={{ borderRadius: '60px', height: '60px', textIndent: '10px' }}
-                placeholder="Select Currency"
-                bg='#FBDDF9'
-                border='none'
-                icon={
-                  <Icon
-                    as={MdArrowDropDown} 
-                    color='#972EA2'
-                    boxSize={6}
-                    mr={4}
-                  />
-                }
-              >
-                {state?.map((currency, key) => (
-                  <option key={key} value={currency?.currency_name}>{currency?.currency_name}</option>
-                ))}
-              </Select>
-            </div>
-            <Button 
-              type="submit"
-              onClick={openModal}
-              width='100%'
-              color='white'
-              bg='#972EA2'
-              mt={4}
-              style={{ borderRadius: '60px', height: '60px', fontSize: '1.5rem' }}
-              _hover={{ background: '#ae40ba'}}
-            >
-              {loading ? <Spinner /> : 'Calculate'}
-            </Button>
-          </form>
-        </div>
+        <Form 
+          onChange={onChange}
+          state={state}
+          info={info}
+          handleCalculation={handleCalculation}
+          openModal={openModal}
+          loading={loading}
+        />
 
         {/* right col */}
         <div className="right-col">
