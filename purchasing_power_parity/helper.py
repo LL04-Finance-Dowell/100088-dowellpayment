@@ -59,7 +59,9 @@ def get_all_currency_name():
         if item.currency_name not in currency_name:
             currency_name.append(item.currency_name)
         if item.country_name not in country_name:
-            country_name.append(item.country_name)    
+            country_name.append(item.country_name)  
+    currency_name.sort() 
+    country_name.sort()
     return Response(
         {
             "success": True,
@@ -68,17 +70,7 @@ def get_all_currency_name():
         },
         status=status.HTTP_200_OK,
     )
-    # serializer = CurrencyNameSerializer(obj, many=True)
-    # return Response(
-    #     {
-    #         "success": True,
-    #         "message": "List of country and currency name",
-    #         "data": serializer.data,
-    #     },
-    #     status=status.HTTP_200_OK,
-    # )
-
-
+  
 """CALCULATE THE PURCHASING POWER PARITY"""
 
 
@@ -158,12 +150,12 @@ def get_ppp_data(
             "success": True,
             "message": "Expected values",
             f"base_price_in_{base_country}": f"{base_price} {base_currency_code}",
-            f"calculated_price_in_{target_country}": f"{target_currency_exchange_rate} {target_currency_code}",
-            "price_in_base_country": f"{base_currency_exchange_rate} {base_country_currency_code}",
+            f"calculated_price_in_{target_country}": f"{target_currency_exchange_rate:.2f} {target_currency_code}",
+            "price_in_base_country": f"{base_currency_exchange_rate:.2f} {base_country_currency_code}",
             "base_country": base_country,
             "target_country": target_country,
-            "target_price": f"{purchasing_power} {target_country_currency_code}",
-            "calculated_price_base_on_ppp": f"{target_currency_exchange_rate} {target_currency_code}",
+            "target_price": f"{purchasing_power:.2f} {target_country_currency_code}",
+            "calculated_price_base_on_ppp": f"{target_currency_exchange_rate:.2f} {target_currency_code}",
         },
         status=status.HTTP_200_OK,
     )
