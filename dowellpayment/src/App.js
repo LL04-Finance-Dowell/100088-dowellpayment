@@ -133,7 +133,7 @@ function App() {
             <div className="section">
               <p className="question">Powered By</p>
               <p className="answer">
-              Dowell Living lab.....
+              DoWell UX Living lab.....
               </p>
             </div>
           </div>
