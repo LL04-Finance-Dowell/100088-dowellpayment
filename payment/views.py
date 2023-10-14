@@ -13,7 +13,7 @@ from drf_yasg import openapi
 import requests
 
 
-from .dowellconnection import (
+from .utils.dowellconnection import (
     CreateDowellTransaction,
     UpdateDowellTransaction,
     GetDowellTransaction,
@@ -36,9 +36,9 @@ from .serializers import (
     PublicPaypalSerializer,
     VerifyPublicPaypalSerializer,
 )
-from .stripe_helper import stripe_payment, verify_stripe
-from .paypal_helper import paypal_payment, verify_paypal
-from .voucher import generate_voucher
+from .utils.stripe_helper import stripe_payment, verify_stripe
+from .utils.paypal_helper import paypal_payment, verify_paypal
+from .utils.voucher import generate_voucher
 import os
 from dotenv import load_dotenv
 
@@ -357,54 +357,6 @@ class WorkflowStripePayment(APIView):
                 stripe_key=stripe_key,
                 model_instance=model_instance,
                 template_id=template_id,
-            )
-            return res
-
-        except Exception as e:
-            return Response(
-                {"success": False, "message": "something went wrong", "error": f"{e}"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-
-"""INITIALIZE STRIPE ENDPOINT TO GENERATE QRCODE IMAGE URL AND PAYMENT ID AS RESPONSE"""
-
-
-# stripe qrcode payment for workflow AI team
-class WorkflowStripeQrPayment(APIView):
-    @swagger_auto_schema(
-        request_body=WorkflowStripeSerializer, responses={200: "approval_url"}
-    )
-    def post(self, request):
-        try:
-            data = request.data
-            serializer = WorkflowStripeSerializer(data=data)
-            if serializer.is_valid():
-                validate_data = serializer.to_representation(serializer.validated_data)
-                stripe_key = validate_data["stripe_key"]
-                template_id = validate_data["template_id"]
-                price = validate_data["price"]
-                product = validate_data["product"]
-                currency_code = validate_data["currency_code"]
-                callback_url = validate_data["callback_url"]
-            else:
-                errors = serializer.errors
-                return Response(
-                    {"success": False, "errors": errors},
-                    status=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                )
-
-            model_instance = CreateWorkflowPublicTransaction
-            stripe_key = stripe_key
-
-            res = stripe_payment(
-                price=price,
-                product=product,
-                currency_code=currency_code,
-                callback_url=callback_url,
-                stripe_key=stripe_key,
-                model_instance=model_instance,
-                template_id=template_id,
                 generate_qrcode=True,
             )
             return res
@@ -464,59 +416,6 @@ class WorkflowVerifyStripePayment(APIView):
 
 # paypal payment for workflow
 class WorkflowPaypalPayment(APIView):
-    @swagger_auto_schema(
-        request_body=WorkflowPaypalSerializer, responses={200: "approval_url"}
-    )
-    def post(self, request):
-        try:
-            data = request.data
-
-            serializer = WorkflowPaypalSerializer(data=data)
-            if serializer.is_valid():
-                validate_data = serializer.to_representation(serializer.validated_data)
-                client_id = validate_data["paypal_client_id"]
-                client_secret = validate_data["paypal_secret_key"]
-                template_id = validate_data["template_id"]
-                price = validate_data["price"]
-                product_name = validate_data["product"]
-                currency_code = validate_data["currency_code"]
-                callback_url = validate_data["callback_url"]
-            else:
-                errors = serializer.errors
-                return Response(
-                    {"success": False, "errors": errors},
-                    status=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                )
-
-            model_instance = CreateWorkflowPublicTransaction
-            client_id = client_id
-            client_secret = client_secret
-
-            res = paypal_payment(
-                price=price,
-                product_name=product_name,
-                currency_code=currency_code,
-                callback_url=callback_url,
-                client_id=client_id,
-                client_secret=client_secret,
-                model_instance=model_instance,
-                paypal_url=workflow_paypal_url,
-                template_id=template_id,
-            )
-            return res
-
-        except Exception as e:
-            return Response(
-                {"success": False, "message": "something went wrong", "error": f"{e}"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-
-"""INITIALIZE PAYPAL ENDPOINT TO GENERATE QRCODE IMAGE URL AND PAYMENT ID AS RESPONSE"""
-
-
-# paypal qrcode payment for workflow
-class WorkflowPaypalQrPayment(APIView):
     @swagger_auto_schema(
         request_body=WorkflowPaypalSerializer, responses={200: "approval_url"}
     )
@@ -649,53 +548,6 @@ class StripePaymentPublic(APIView):
                 stripe_key=stripe_key,
                 model_instance=model_instance,
                 api_key=api_key,
-            )
-            return res
-
-        except Exception as e:
-            return Response(
-                {"success": False, "message": "something went wrong", "error": f"{e}"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-
-"""INITIALIZE STRIPE ENDPOINT TO GENERATE QRCODE IMAGE URL AND PAYMENT ID AS RESPONSE"""
-
-
-# Stripe qrcode Payment for Public User
-class StripeQrPaymentPublic(APIView):
-    @swagger_auto_schema(
-        request_body=PublicStripeSerializer, responses={200: "approval_url"}
-    )
-    def post(self, request, api_key):
-        try:
-            data = request.data
-            serializer = PublicStripeSerializer(data=data)
-            if serializer.is_valid():
-                validate_data = serializer.to_representation(serializer.validated_data)
-                stripe_key = validate_data["stripe_key"]
-                price = validate_data["price"]
-                product = validate_data["product"]
-                currency_code = validate_data["currency_code"]
-                callback_url = validate_data["callback_url"]
-            else:
-                errors = serializer.errors
-                return Response(
-                    {"success": False, "errors": errors},
-                    status=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                )
-
-            model_instance = CreatePublicTransaction
-            stripe_key = stripe_key
-
-            res = stripe_payment(
-                price=price,
-                product=product,
-                currency_code=currency_code,
-                callback_url=callback_url,
-                stripe_key=stripe_key,
-                model_instance=model_instance,
-                api_key=api_key,
                 generate_qrcode=True,
             )
             return res
@@ -756,59 +608,6 @@ class VerifyStripePaymentPublic(APIView):
 
 # paypal Payment for Public User
 class PaypalPaymentPublic(APIView):
-    @swagger_auto_schema(
-        request_body=PublicPaypalSerializer, responses={200: "approval_url"}
-    )
-    def post(self, request, api_key):
-        try:
-            data = request.data
-
-            serializer = PublicPaypalSerializer(data=data)
-            if serializer.is_valid():
-                validate_data = serializer.to_representation(serializer.validated_data)
-                client_id = validate_data["paypal_client_id"]
-                client_secret = validate_data["paypal_secret_key"]
-                price = validate_data["price"]
-                product_name = validate_data["product"]
-                currency_code = validate_data["currency_code"]
-                callback_url = validate_data["callback_url"]
-                public_paypal_url = validate_data["public_paypal_url"]
-            else:
-                errors = serializer.errors
-                return Response(
-                    {"success": False, "errors": errors},
-                    status=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                )
-
-            model_instance = CreatePublicTransaction
-            client_id = client_id
-            client_secret = client_secret
-
-            res = paypal_payment(
-                price=price,
-                product_name=product_name,
-                currency_code=currency_code,
-                callback_url=callback_url,
-                client_id=client_id,
-                client_secret=client_secret,
-                model_instance=model_instance,
-                paypal_url=public_paypal_url,
-                api_key=api_key,
-            )
-            return res
-
-        except Exception as e:
-            return Response(
-                {"success": False, "message": "something went wrong", "error": f"{e}"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-
-"""INITIALIZE PAYPAL ENDPOINT TO GENERATE QRCODE IMAGE URL AND PAYMENT ID AS RESPONSE"""
-
-
-# paypal qrcode Payment for Public User
-class PaypalQrPaymentPublic(APIView):
     @swagger_auto_schema(
         request_body=PublicPaypalSerializer, responses={200: "approval_url"}
     )
@@ -942,51 +741,6 @@ class StripePaymentPublicUse(APIView):
                 callback_url=callback_url,
                 stripe_key=stripe_key,
                 model_instance=model_instance,
-            )
-            return res
-
-        except Exception as e:
-            return Response(
-                {"success": False, "message": "something went wrong", "error": f"{e}"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-
-"""INITIALIZE STRIPE ENDPOINT TO GENERATE QRCODE IMAGE URL AND PAYMENT ID AS RESPONSE"""
-
-
-class StripeQrPaymentPublicUse(APIView):
-    @swagger_auto_schema(
-        request_body=PublicStripeSerializer, responses={200: "approval_url"}
-    )
-    def post(self, request):
-        try:
-            data = request.data
-            serializer = PublicStripeSerializer(data=data)
-            if serializer.is_valid():
-                validate_data = serializer.to_representation(serializer.validated_data)
-                stripe_key = validate_data["stripe_key"]
-                price = validate_data["price"]
-                product = validate_data["product"]
-                currency_code = validate_data["currency_code"]
-                callback_url = validate_data["callback_url"]
-            else:
-                errors = serializer.errors
-                return Response(
-                    {"success": False, "errors": errors},
-                    status=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                )
-
-            model_instance = CreatePublicTransaction
-            stripe_key = stripe_key
-
-            res = stripe_payment(
-                price=price,
-                product=product,
-                currency_code=currency_code,
-                callback_url=callback_url,
-                stripe_key=stripe_key,
-                model_instance=model_instance,
                 generate_qrcode=True,
             )
             return res
@@ -1044,57 +798,6 @@ class VerifyStripePaymentPublicUse(APIView):
 
 
 class PaypalPaymentPublicUse(APIView):
-    @swagger_auto_schema(
-        request_body=PublicPaypalSerializer, responses={200: "approval_url"}
-    )
-    def post(self, request):
-        try:
-            data = request.data
-
-            serializer = PublicPaypalSerializer(data=data)
-            if serializer.is_valid():
-                validate_data = serializer.to_representation(serializer.validated_data)
-                client_id = validate_data["paypal_client_id"]
-                client_secret = validate_data["paypal_secret_key"]
-                price = validate_data["price"]
-                product_name = validate_data["product"]
-                currency_code = validate_data["currency_code"]
-                callback_url = validate_data["callback_url"]
-                public_paypal_url = validate_data["public_paypal_url"]
-            else:
-                errors = serializer.errors
-                return Response(
-                    {"success": False, "errors": errors},
-                    status=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                )
-
-            model_instance = CreatePublicTransaction
-            client_id = client_id
-            client_secret = client_secret
-
-            res = paypal_payment(
-                price=price,
-                product_name=product_name,
-                currency_code=currency_code,
-                callback_url=callback_url,
-                client_id=client_id,
-                client_secret=client_secret,
-                model_instance=model_instance,
-                paypal_url=public_paypal_url,
-            )
-            return res
-
-        except Exception as e:
-            return Response(
-                {"success": False, "message": "something went wrong", "error": f"{e}"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-
-"""INITIALIZE PAYPAL ENDPOINT TO GENERATE QRCODE IMAGE URL AND PAYMENT ID AS RESPONSE"""
-
-
-class PaypalQrPaymentPublicUse(APIView):
     @swagger_auto_schema(
         request_body=PublicPaypalSerializer, responses={200: "approval_url"}
     )

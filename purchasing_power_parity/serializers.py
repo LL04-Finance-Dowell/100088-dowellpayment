@@ -8,6 +8,7 @@ class CurrencyNameSerializer(serializers.ModelSerializer):
         # get only the currency_name and country_name
         fields = ["currency_name", "country_name"]
 
+
 # class CurrencyNameSerializer(serializers.ModelSerializer):
 #     class Meta:
 #         model = PPPCalculation

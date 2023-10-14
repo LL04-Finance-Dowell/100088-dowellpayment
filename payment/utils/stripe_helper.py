@@ -4,7 +4,7 @@ import requests
 import stripe
 from rest_framework import status
 from rest_framework.response import Response
-from decimal import Decimal,ROUND_HALF_UP
+from decimal import Decimal, ROUND_HALF_UP
 from .qrcodes import payment_qrcode
 from .sendmail import send_mail_one, send_mail_two
 
@@ -45,18 +45,18 @@ def stripe_payment(
     unique_id = uuid.uuid4()
     payment_id = str(unique_id)
 
-   #convert the price to Decimal type
+    # convert the price to Decimal type
     price_decimal = Decimal(price)
 
-    print("price_decimal",price_decimal)
-    #make sure the price retains is decimal value
+    print("price_decimal", price_decimal)
+    # make sure the price retains is decimal value
     rounded_price = price_decimal.quantize(Decimal("0.00"), rounding=ROUND_HALF_UP)
 
-    #convert the price to cent
+    # convert the price to cent
     price_in_cents = int(rounded_price * 100)
     # price_in_cents = 14566
 
-    print("price_in_cents",price_in_cents)
+    print("price_in_cents", price_in_cents)
     session = stripe.checkout.Session.create(
         line_items=[
             {
@@ -93,10 +93,15 @@ def stripe_payment(
 
     if generate_qrcode == True:
         logo_basewidth = 50
-        data = payment_qrcode(session.url, payment_id,logo_basewidth)
+        data = payment_qrcode(session.url, payment_id, logo_basewidth)
         image_url = data["qr_image_url"]
         return Response(
-            {"success": True,"approval_url": f"{session.url}", "qr_image_url": image_url, "payment_id": payment_id},
+            {
+                "success": True,
+                "approval_url": f"{session.url}",
+                "qr_image_url": image_url,
+                "payment_id": payment_id,
+            },
             status=status.HTTP_200_OK,
         )
     else:

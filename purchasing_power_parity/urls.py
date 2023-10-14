@@ -1,5 +1,9 @@
 from django.urls import path
-from .views import GetCurrencyNameAndCountryName, GetPurchasingPowerParity, GetPublicPurchasingPowerParity
+from .views import (
+    GetCurrencyNameAndCountryName,
+    GetPurchasingPowerParity,
+    GetPublicPurchasingPowerParity,
+)
 
 
 urlpatterns = [
