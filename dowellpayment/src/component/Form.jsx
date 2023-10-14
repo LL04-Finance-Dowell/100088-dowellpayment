@@ -1,14 +1,17 @@
 import React from 'react'
-import { Button, Icon, Select, Spinner } from '@chakra-ui/react'
+import { Button, Icon, Spinner, Select } from '@chakra-ui/react'
 import { MdArrowDropDown } from 'react-icons/md'
+import logo from '../assets/dowell-logo.svg'
+// import Select from "react-select"
+
 
 const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) => {
-    // console.log(state)
+
     return (
         <>
             <div className="left-col">
                 <div className="header">
-                    <img src='/dowell-logo.svg' alt='Company logo' className="logo" />
+                    <img src={logo} alt='Company logo' className="logo" />
                     <h1 className="title">DoWell World Price Indicator</h1>
                     <p className='desc'>Purchase Price Parity Calculator</p>
                 </div>
@@ -16,11 +19,17 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                 <form className="form" onSubmit={handleCalculation}>
                     <div className="form-group">
                     <label>Base Currency</label>
+                    {/* <Select 
+                        options={state?.currency_name}
+                        value={info.base_currency}
+                        onChange={onChange}
+                        name="base_currency"
+                    /> */}
                     <Select 
                         onChange={onChange}
                         name='base_currency'
                         style={{ borderRadius: '60px', height: '60px', textIndent: '10px' }}
-                        placeholder="Select Currency"
+                        // placeholder="Select Currency"
                         bg='#FBDDF9'
                         border='none'
                         icon={
@@ -32,6 +41,7 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                         />
                         }
                     >
+                        <option value="" selected={info.base_currency === ""}>Select Currency</option>
                         {state?.currency_name?.map((currency, key) => (
                             <option key={key} value={currency}>{currency}</option>
                         ))}
@@ -41,7 +51,7 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                     <label>Base Price</label>
                     <input 
                         type="number" 
-                        placeholder="($) Input Price"
+                        placeholder="Input Price"
                         name='base_price'
                         value={info?.base_price}
                         onChange={onChange}
@@ -53,7 +63,7 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                         onChange={onChange}
                         name='base_country'
                         style={{ borderRadius: '60px', height: '60px', textIndent: '10px' }}
-                        placeholder="Select Country"
+                        // placeholder="Select Country"
                         bg='#FBDDF9'
                         border='none'
                         icon={
@@ -65,6 +75,7 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                         />
                         }
                     >
+                        <option value="" selected={info.base_country === ""}>Select Country</option>
                         {state?.country_name?.map((country, key) => (
                             <option key={key} value={country}>{country}</option>
                         ))}
@@ -76,7 +87,7 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                         onChange={onChange}
                         name='target_country'
                         style={{ borderRadius: '60px', height: '60px', textIndent: '10px' }}
-                        placeholder="Select Country"
+                        // placeholder="Select Country"
                         bg='#FBDDF9'
                         border='none'
                         icon={
@@ -88,6 +99,7 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                         />
                         }
                     >
+                        <option value="" selected={info.target_country === ""}>Select Country</option>
                         {state?.country_name?.map((country, key) => (
                             <option key={key} value={country}>{country}</option>
                         ))}
@@ -99,7 +111,7 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                         onChange={onChange}
                         name='target_currency'
                         style={{ borderRadius: '60px', height: '60px', textIndent: '10px' }}
-                        placeholder="Select Currency"
+                        // placeholder="Select Currency"
                         bg='#FBDDF9'
                         border='none'
                         icon={
@@ -111,6 +123,7 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                         />
                         }
                     >
+                        <option value="" selected={info.target_currency === ""}>Select Currency</option>
                         {state?.currency_name?.map((currency, key) => (
                             <option key={key} value={currency}>{currency}</option>
                         ))}

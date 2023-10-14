@@ -1,4 +1,5 @@
 import { Spinner } from "@chakra-ui/react";
+import logo from '../assets/dowell-logo.svg'
 
 function Modal({ isOpen, onClose, values, info, loading }) {
 
@@ -38,7 +39,7 @@ function Modal({ isOpen, onClose, values, info, loading }) {
                 &times;
             </button>
             <div className="header">
-                <img src='/dowell-logo.svg' alt='Company logo' className="modalLogo" />
+                <img src={logo} alt='Company logo' className="modalLogo" />
                 <p className='desc'>Purchase Price Parity Calculator</p>
             </div>
             <table>
