@@ -38,6 +38,8 @@ def get_all_currency_and_country():
             currency_name.append(item.currency_name)
         if item.country_name not in country_name:
             country_name.append(item.country_name)
+    currency_name.sort()
+    country_name.sort()
     return Response(
         {
             "success": True,
@@ -58,25 +60,28 @@ def get_all_currency_and_country():
 
 def get_all_currency_name():
     obj = PPPCalculation.objects.all()
-    currency_name = []
-    country_name = []
+    currency_name_list = []
+    country_name_list = []
     for item in obj:
-        if item.currency_name not in currency_name:
-            currency_name.append(item.currency_name)
-        if item.country_name not in country_name:
-            country_name.append(item.country_name)
-    currency_name.sort()
-    country_name.sort()
+        if item.currency_name not in currency_name_list:
+            currency_name_list.append(item.currency_name)
+        if item.country_name not in country_name_list:
+            country_name_list.append(item.country_name)
+    
+    currency_name_list.sort()
+    country_name_list.sort()
+    currency_name =[]
+    country_name=[]
+    for currency in currency_name_list:
+        currency_name.append({"currency_name":currency})
+    for country in country_name_list:
+        country_name.append({"country_name":country})
     return Response(
         {
             "success": True,
             "message": "List of country and currency name",
-            "data": {
-                "total_currency": len(currency_name),
-                "total_country": len(country_name),
-                "currency_name": currency_name,
-                "country_name": country_name,
-            },
+            "currency_name": currency_name,
+            "country_name": country_name,
         },
         status=status.HTTP_200_OK,
     )
