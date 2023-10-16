@@ -24,10 +24,10 @@ function App() {
     const fetchData = async (url) => {
       const res = await fetch(url)
       const data = await res.json()
-      setState(data.data)
+      setState(data)
     }
 
-    fetchData('https://100088.pythonanywhere.com/api/v1/country-currency')
+    fetchData('https://100088.pythonanywhere.com/api/v1/ppp')
   }, [])
 
   const onChange = (e) => {

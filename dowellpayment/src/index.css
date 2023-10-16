@@ -290,6 +290,18 @@ tbody .last-row {
   }
 }
 
+@media (width: 1366px) {
+  .logo {
+    width: 25%;
+  }
+  .title {
+    font-size: 1.7em;
+  }
+  tr, td {
+    font-size: .85em;
+  }
+}
+
 @media (width: 1024px) {
   .logo {
     width: 25%;

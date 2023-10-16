@@ -6,6 +6,7 @@ import logo from '../assets/dowell-logo.svg'
 
 
 const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) => {
+    console.log('State: ', state)
 
     return (
         <>
@@ -42,7 +43,7 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                         }
                     >
                         <option value="" selected={info.base_currency === ""}>Select Currency</option>
-                        {state?.currency_name?.map((currency, key) => (
+                        {state?.currency?.map((currency, key) => (
                             <option key={key} value={currency}>{currency}</option>
                         ))}
                     </Select>
@@ -76,7 +77,7 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                         }
                     >
                         <option value="" selected={info.base_country === ""}>Select Country</option>
-                        {state?.country_name?.map((country, key) => (
+                        {state?.country?.map((country, key) => (
                             <option key={key} value={country}>{country}</option>
                         ))}
                     </Select>
@@ -100,7 +101,7 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                         }
                     >
                         <option value="" selected={info.target_country === ""}>Select Country</option>
-                        {state?.country_name?.map((country, key) => (
+                        {state?.country?.map((country, key) => (
                             <option key={key} value={country}>{country}</option>
                         ))}
                     </Select>
@@ -124,7 +125,7 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                         }
                     >
                         <option value="" selected={info.target_currency === ""}>Select Currency</option>
-                        {state?.currency_name?.map((currency, key) => (
+                        {state?.currency?.map((currency, key) => (
                             <option key={key} value={currency}>{currency}</option>
                         ))}
                     </Select>
