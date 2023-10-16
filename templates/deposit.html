@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stripe Deposit</title>
+</head>
+<body>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+<div class="container mx-auto mt-8 p-4 bg-white shadow-md rounded-lg">
+    <h1 class="text-2xl font-semibold mb-4">Make a Payment</h1>
+    <form action="" method="post" id="payment-form">
+        {% csrf_token %}
+        <div class="mb-4">
+            <label for="amount" class="block text-gray-700 text-sm font-bold">Deposit Amount:</label>
+            <input type="number" name="amount" id="amount" class="w-full border border-gray-300 p-2 rounded">
+        </div>
+        <div class="mb-4">
+            <label for="card-element" class="block text-gray-700 text-sm font-bold">Card Information:</label>
+            <div id="card-element" class="border border-gray-300 p-2 rounded">
+                <!-- Card element code -->
+            </div>
+            <div id="card-errors" role="alert" class="text-red-600 text-sm"></div>
+        </div>
+        <button id="payment-button" class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
+            Make Payment
+        </button>
+    </form>
+</div>
+
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+    var stripe = Stripe('{{ stripe_key }}');
+    var elements = stripe.elements();
+
+    var style = {
+        base: {
+            fontSize: '16px',
+            color: '#32325d',
+            fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+            fontSmoothing: 'antialiased',
+            '::placeholder': {
+                color: '#aab7c4',
+            },
+        },
+        invalid: {
+            color: '#fa755a',
+            iconColor: '#fa755a',
+        },
+    };
+
+    var card = elements.create('card', { style: style });
+    card.mount('#card-element');
+
+    card.addEventListener('change', function(event) {
+        var displayError = document.getElementById('card-errors');
+        if (event.error) {
+            displayError.textContent = event.error.message;
+        } else {
+            displayError.textContent = '';
+        }
+    });
+
+    var form = document.querySelector('#payment-form');
+    form.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        stripe.createToken(card).then(function(result) {
+            if (result.error) {
+                var errorElement = document.getElementById('card-errors');
+                errorElement.textContent = result.error.message;
+            } else {
+                stripeTokenHandler(result.token);
+            }
+        });
+    });
+
+    function stripeTokenHandler(token) {
+        var form = document.querySelector('#payment-form');
+        var hiddenInput = document.createElement('input');
+        hiddenInput.setAttribute('type', 'hidden');
+        hiddenInput.setAttribute('name', 'stripeToken');
+        hiddenInput.setAttribute('value', token.id);
+        form.appendChild(hiddenInput);
+        form.submit();
+    }
+</script>
+
+
+</body>
+</html>
+

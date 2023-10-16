@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallet Detail</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 font-sans">
+    <!-- Header -->
+    <header class="bg-blue-600 text-white py-4">
+        <div class="container mx-auto">
+            <div class="flex justify-between items-center">
+                <div>
+                    <img src="paypal_logo.png" alt="Logo" class="h-8 w-auto">
+                </div>
+                <div class="relative inline-block text-left">
+                    <div>
+                        <button type="button" class="hover:underline" id="dropdown-toggle">
+                            {{ request.user.username }}
+                            <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="dropdown-menu" class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none hidden">
+                        <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Profile</a>
+                            <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Logout</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Wallet Balance -->
+    <section class="container mx-auto mt-8 p-4 bg-white shadow-md rounded-lg">
+        <h1 class="text-2xl font-semibold mb-4">Wallet Balance</h1>
+        <div class="flex items-center">
+            <div class="text-3xl font-bold text-green-600 mr-4">{{ wallet.balance }}</div>
+            <a href="{% url 'stripe-deposit' %}"><button class="bg-blue-600 text-white py-2 px-4 rounded-full hover:bg-blue-700">Top Up</button></a>
+        </div>
+    </section>
+
+    <!-- Recent Transactions -->
+    <section class="container mx-auto mt-8 p-4 bg-white shadow-md rounded-lg">
+        <h2 class="text-xl font-semibold mb-4">Recent Transactions</h2>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="py-2">Date</th>
+                        <th class="py-2">Description</th>
+                        <th class="py-2">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transaction in transactions %}
+                    <tr>
+                        <td class="py-2">{{ transaction.timestamp }}</td>
+                        <td class="py-2">{{ transaction.transaction_type }}</td>
+                        <td class="py-2">{{ transaction.amount }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+
+    <script>
+        // JavaScript to toggle the dropdown menu
+        document.getElementById("dropdown-toggle").addEventListener("click", function () {
+            var dropdownMenu = document.getElementById("dropdown-menu");
+            if (dropdownMenu.style.display === "block") {
+                dropdownMenu.style.display = "none";
+            } else {
+                dropdownMenu.style.display = "block";
+            }
+        });
+    </script>
+</body>
+</html>
