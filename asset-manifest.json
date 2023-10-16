@@ -1,13 +1,15 @@
 {
   "files": {
     "main.css": "/100088-dowellpayment/static/css/main.e442ac3e.css",
-    "main.js": "/100088-dowellpayment/static/js/main.2ada2986.js",
+    "main.js": "/100088-dowellpayment/static/js/main.4d32d451.js",
+    "static/media/illustration.svg": "/100088-dowellpayment/static/media/illustration.fab6274ef42c34fc0aaa118e8129c842.svg",
+    "static/media/dowell-logo.svg": "/100088-dowellpayment/static/media/dowell-logo.6f56e98ecd0d7a8f95c55aff4d9a67ce.svg",
     "index.html": "/100088-dowellpayment/index.html",
     "main.e442ac3e.css.map": "/100088-dowellpayment/static/css/main.e442ac3e.css.map",
-    "main.2ada2986.js.map": "/100088-dowellpayment/static/js/main.2ada2986.js.map"
+    "main.4d32d451.js.map": "/100088-dowellpayment/static/js/main.4d32d451.js.map"
   },
   "entrypoints": [
     "static/css/main.e442ac3e.css",
-    "static/js/main.2ada2986.js"
+    "static/js/main.4d32d451.js"
   ]
 }
