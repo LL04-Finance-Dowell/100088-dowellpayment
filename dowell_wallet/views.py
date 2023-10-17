@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate, login,logout
-from .serializers import UserRegistrationSerializer,UserSerializer
+from .serializers import UserRegistrationSerializer,UserSerializer,WalletDetailSerializer, TransactionSerializer
 from django.contrib.auth.models import User
 from django.shortcuts import render,redirect, get_object_or_404,HttpResponse
 from django.http import HttpResponseRedirect
@@ -15,20 +15,108 @@ from django.views.decorators.csrf import csrf_exempt
 from .models import Wallet,Transaction
 from django.urls import reverse
 from django.conf import settings
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
+from django.contrib.sites.shortcuts import get_current_site
+from django.template.loader import render_to_string
+from django.utils.encoding import force_bytes
+from django.utils.encoding import force_str
+from django.utils.http import urlsafe_base64_decode
 
-@login_required(login_url='signup')
-def WalletDetail(request):
-    # Retrieve wallet balance and other data here
-    wallet = get_object_or_404(Wallet, user=request.user)
-    transactions = wallet.transaction_set.all()
-    print(f"Logged-in user: {request.user.username}")
-    print(wallet)
-    print(transactions)
-    context = {
-        'wallet': wallet,
-        'transactions':transactions
-    }
-    return render(request,'wallet-detail.html',context)
+
+
+
+
+class LoginView(APIView):
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+        user = authenticate(username=username, password=password)
+
+        if user is not None:
+            refresh = RefreshToken.for_user(user)
+            access_token = str(refresh.access_token)
+            return Response({'access_token': access_token})
+        else:
+            return Response({'error': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
+
+def logoutuser(request):
+    logout(request)
+    return redirect(reverse('signin'))
+
+class UserRegistrationView(APIView):
+    def post(self, request):
+        serializer = UserRegistrationSerializer(data=request.data)
+        if serializer.is_valid():
+            user = User.objects.create_user(
+                username=serializer.validated_data['username'],
+                email=serializer.validated_data['email'],
+                password=serializer.validated_data['password'],
+                is_active=False  # Set the user as inactive until they verify their email.
+            )
+            user.save()
+            print('account created for user')
+
+            # Generate a verification token for the user
+            verification_token = default_token_generator.make_token(user)
+            print(verification_token)
+            # Send a verification email to the user
+            self.send_verification_email(user, verification_token, request)
+             # Check if a Wallet already exists for the user
+            wallet, created = Wallet.objects.get_or_create(user=user)
+            if created:
+                # Wallet was created
+                pass
+            refresh = RefreshToken.for_user(user)
+            access_token = str(refresh.access_token)
+            return Response({'message': 'Please check your email for verification instructions.','access_token': access_token}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def send_verification_email(self, user, token, request):
+        current_site = get_current_site(request)
+        print(current_site)
+        mail_subject = 'Activate your account'
+        message = render_to_string('verification_email.html', {
+            'user': user,
+            'domain': current_site.domain,
+            'token': token,
+        })
+        from_email = settings.EMAIL_HOST_USER
+        print(from_email)
+        to_email = user.email
+        send_mail(mail_subject, message, from_email, [to_email])
+
+class EmailVerificationView(APIView):
+    def get(self, request, uidb64, token):
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+            if default_token_generator.check_token(user, token):
+                user.is_active = True
+                user.save()
+                return Response({'message': 'Your email has been verified.'}, status=status.HTTP_200_OK)
+            return Response({'message': 'Invalid token.'}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'message': 'Invalid token.'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class WalletDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        wallet = Wallet.objects.get(user=request.user)
+        transactions = Transaction.objects.filter(wallet=wallet)
+        wallet_serializer = WalletDetailSerializer(wallet)
+        transactions_serializer = TransactionSerializer(transactions, many=True)
+
+        data = {
+            'wallet': wallet_serializer.data,
+            'transactions': transactions_serializer.data
+        }
+
+        return Response(data, status=status.HTTP_200_OK)
 
 def stripe_deposit(request):
     stripe_key = settings.STRIPE_KEY
@@ -45,89 +133,4 @@ def stripe_deposit(request):
         "stripe_key":stripe_key
     }
     return render(request,'deposit.html',context)
-
-
-
-def signin(request):
-    if request.method == "POST":
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        url = "http://127.0.0.1:8000/wallet/login_api/"
-        try:
-            response = requests.post(url, data={
-                'username': username,
-                'password': password,
-            })
-            if response.status_code == 200:
-                response_data = response.json()
-                user_data = response_data.get('user')
-                token = response_data.get('token')
-                
-                if user_data and 'username' in user_data:
-                    try:
-                        user = User.objects.get(username=user_data['username'])
-                        login(request, user)
-                        return redirect('wallet_detail')
-                    except User.DoesNotExist:
-                        return HttpResponse("User does not exist", status=400)
-                else:
-                    return HttpResponse("Invalid response from the login API", status=400)
-        except RequestException as e:
-            return HttpResponse("Error connecting to the login API", status=500)
-
-    return render(request, 'signin.html')
-
-class LoginView(APIView):
-    def post(self, request):
-        username = request.data.get('username')
-        password = request.data.get('password')
-        user = authenticate(username=username, password=password)
-        if user is not None:
-            login(request, user)
-            token, created = Token.objects.get_or_create(user=user)
-            user_data = UserSerializer(user).data
-            return Response({'user': user_data, 'token': token.key})
-        else:
-            return Response({'error': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
-        
-def logoutuser(request):
-    logout(request)
-    return redirect(reverse('signin'))
-
-def sign_up(request):
-    if request.method == "POST":
-        username = request.POST.get('username')
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-        url ="http://127.0.0.1:8000/wallet/signup_api/" 
-        response = requests.post(url, data={
-            'username':username,
-            'password':password,
-            'email':email,
-        })
-        if response.status_code == 201:
-            # Registration was successful
-            login_url = response.json().get('login_url')
-            return redirect(reverse('signin'))
-    return render(request, 'signup.html')
-
-class UserRegistrationView(APIView):
-    def post(self, request):
-        serializer = UserRegistrationSerializer(data=request.data)
-        if serializer.is_valid():
-            user = User.objects.create_user(
-                username=serializer.validated_data['username'],
-                email=serializer.validated_data['email'],
-                password=serializer.validated_data['password']
-            )
-            user.save()
-            # Check if a Wallet already exists for the user
-            wallet, created = Wallet.objects.get_or_create(user=user)
-            if created:
-                # Wallet was created
-                pass
-            return Response({"detail": "Registration successful"}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
     
