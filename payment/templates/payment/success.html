@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>success</title>
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+   <style>
+        *{
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        .success__msg__cover{
+            height: 100vh;
+            display: grid;
+            place-items: center;
+        }
+        .success__msg{
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border: 1px solid #e3e3e3;
+            padding: 70px;
+        }
+        .success__msg img{
+            width: 130px;
+            height: 130px;
+        }
+        .success__msg h3{
+           font-size: 22px;
+        }
+        #success__btn{
+            margin-top: 20px;
+            padding: 15px 50px;
+            background-color: #006400;
+            color: #fff;
+            border: 0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 22px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+  <div class="success__msg__cover">
+        <div class="success__msg">
+            <img src="{% static 'payment/images/verified.gif' %}" alt="">
+            <h3>your payment was successfull</h3>
+            <!--<button id="success__btn"><span><i class="fa-sharp fa-solid fa-arrow-left"></i></span> back to shop </button>-->
+        </div>
+    </div>
+</body>
+</html>
