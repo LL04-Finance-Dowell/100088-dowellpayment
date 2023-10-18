@@ -12,10 +12,12 @@
         <h1 class="text-2xl font-semibold text-center mb-4">Email Verification</h1>
         <p>Hello {{ user.username }},</p>
         <p>Thank you for signing up on our platform. To verify your email address, please click the button below:</p>
-        <a href="{{ domain }}/wallet/verify-email/?token={{ token }}"
-           class="mt-4 inline-block bg-blue-500 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-full">
-            Verify Email
-        </a>
+        <a href="http://127.0.0.1:8000/wallet/email-verify/{{ uidb64 }}/{{ token }}">
+            <button class="mt-4 inline-block bg-blue-500 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-full">
+                Verify Email
+            </button>
+        </a>   
+        
         <p class="mt-4">If you didn't create an account on our platform, you can ignore this email.</p>
     </div>
 </body>

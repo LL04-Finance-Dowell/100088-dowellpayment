@@ -33,7 +33,7 @@ STRIPE_KEY = os.getenv('STRIPE_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = []
 
 
 #email smtp for wallet
@@ -106,6 +106,7 @@ INSTALLED_APPS = [
     "apscheduler",
     "django_apscheduler",
     'rest_framework.authtoken',
+    'django_otp',
     # Internal package
     "payment",
     "purchasing_power_parity",
