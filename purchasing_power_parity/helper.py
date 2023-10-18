@@ -38,15 +38,15 @@ def get_all_currency_and_country():
             currency_name_list.append(item.currency_name)
         if item.country_name not in country_name_list:
             country_name_list.append(item.country_name)
-    
+
     currency_name_list.sort()
     country_name_list.sort()
-    currency_name =[]
-    country_name=[]
+    currency_name = []
+    country_name = []
     for currency in currency_name_list:
-        currency_name.append({"value":currency,"label":currency})
+        currency_name.append({"value": currency, "label": currency})
     for country in country_name_list:
-        country_name.append({"value":country,"label":country})
+        country_name.append({"value": country, "label": country})
     return Response(
         {
             "success": True,
@@ -56,6 +56,7 @@ def get_all_currency_and_country():
         },
         status=status.HTTP_200_OK,
     )
+
 
 """GET ALL CURRENCY NAME AND COUNTRY NAME"""
 
@@ -69,15 +70,15 @@ def get_all_currency_name():
             currency_name_list.append(item.currency_name)
         if item.country_name not in country_name_list:
             country_name_list.append(item.country_name)
-    
+
     currency_name_list.sort()
     country_name_list.sort()
-    currency_name =[]
-    country_name=[]
+    currency_name = []
+    country_name = []
     for currency in currency_name_list:
-        currency_name.append({"currency_name":currency})
+        currency_name.append({"currency_name": currency})
     for country in country_name_list:
-        country_name.append({"country_name":country})
+        country_name.append({"country_name": country})
     return Response(
         {
             "success": True,

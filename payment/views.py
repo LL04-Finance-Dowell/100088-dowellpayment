@@ -2,7 +2,8 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.views import View
 from rest_framework.views import APIView
-from rest_framework_api_key.permissions import HasAPIKey
+
+# from rest_framework_api_key.permissions import HasAPIKey
 from rest_framework import status
 from rest_framework.response import Response
 from django.http import HttpResponse
