@@ -121,7 +121,7 @@ class WalletDetailView(APIView):
 def stripe_deposit(request):
     stripe_key = settings.STRIPE_KEY
     if request.method == "POST":
-        amount = request.POST.get("amount")
+        amount = request.POST.get("amount.")
         # Update the wallet balance after a successful payment
         user_wallet = Wallet.objects.get(user=request.user)
         user_wallet.balance += int(amount)
