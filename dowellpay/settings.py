@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     # Internal package
     "payment",
     "purchasing_power_parity",
+    "wallet",
 ]
 
 MIDDLEWARE = [
