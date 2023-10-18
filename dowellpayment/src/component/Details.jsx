@@ -26,6 +26,7 @@ const Details = () => {
               </p>
             </div>
           </div>
+          <img src={vector} alt='Vector' className="vector2" />
         </div>
     )
 }

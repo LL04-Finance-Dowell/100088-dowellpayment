@@ -107,6 +107,11 @@ select::after {
   margin: 1em;
 }
 
+.vector2 {
+  margin: 1em;
+  display: none;
+}
+
 .title {
   color: #151515;
   font-size: 2rem;
@@ -277,6 +282,11 @@ tbody .last-row {
     width: 100%;
     min-height: 100vh;
   }
+
+  .form-group {
+    margin-block: .5em;
+  }
+
   .modal {  
     width: auto;
   }
@@ -287,6 +297,16 @@ tbody .last-row {
   }
   tr, td {
     font-size: .9em;
+  }
+
+  .vector {
+    margin: 1em;
+    display: none;
+  }
+  
+  .vector2 {
+    margin: 1em;
+    display: block;
   }
 }
 
@@ -299,6 +319,9 @@ tbody .last-row {
   }
   tr, td {
     font-size: .85em;
+  }
+  .form-group {
+    margin-block: .5em;
   }
 }
 
@@ -314,6 +337,33 @@ tbody .last-row {
   }
   tr, td {
     font-size: .85em;
+  }
+  .form-group {
+    margin-block: .5em;
+  }
+}
+
+@media (width: 280px) {
+  .logo {
+    width: 30%;
+  }
+  .left-col {
+    padding: 2em .5em;
+  }
+  .title {
+    font-size: 1.7em;
+  }
+  tr, td {
+    font-size: .85em;
+  }
+  .form-group {
+    margin-block: .5em;
+  }
+  .form {
+    padding: .5em;
+  }
+  .faq {
+    padding: 1em;
   }
 }
 
@@ -375,6 +425,9 @@ tbody .last-row {
     min-height: 100vh;
     text-align: center;
   }
+  .form-group {
+    margin-block: .5em;
+  }
 
   .modal {
     width: auto;
@@ -387,21 +440,15 @@ tbody .last-row {
   tr, td {
     font-size: .9em;
   }
-}
 
-
-/* Hide the scrollbar */
-.element-with-scroll {
-  overflow-y: scroll;
-  scrollbar-width: thin; /* Firefox only */
-  scrollbar-color: transparent transparent; /* Firefox only */
-
-  /* WebKit (Chrome and Safari) */
-  &::-webkit-scrollbar {
-    width: 0.1em;
+  .vector {
+    margin: 1em;
+    display: none;
   }
-
-  &::-webkit-scrollbar-thumb {
-    background-color: transparent;
+  
+  .vector2 {
+    margin: 1em;
+    display: block;
   }
 }
+
