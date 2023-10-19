@@ -130,6 +130,16 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                         ))}
                     </Select>
                     </div>
+                    <div className="form-group">
+                    <label>Email Address</label>
+                    <input 
+                        type="text" 
+                        placeholder="admin@example.com"
+                        name='email'
+                        value={info?.email}
+                        onChange={onChange}
+                    />
+                    </div>
                     <Button 
                     type="submit"
                     onClick={openModal}
@@ -137,8 +147,10 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                     color='white'
                     bg='#972EA2'
                     mt={4}
+                    className='button'
                     fontSize={{ sm: '1em', md: '1.2em', lg: '1.2em' }}
                     style={{ borderRadius: '60px', height: '60px' }}
+                    h={{ sm: "45px", md: "45px" }}
                     _hover={{ background: '#ae40ba'}}
                     >
                         {loading ? <Spinner /> : 'Calculate'}

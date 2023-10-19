@@ -15,7 +15,8 @@ function App() {
     base_price: 0,
     base_country: "",
     target_country: "",
-    target_currency: ""
+    target_currency: "",
+    email: ""
   })
 
   const [result, setResult] = useState(null)
