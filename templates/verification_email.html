@@ -1,24 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Email Verification</title>
-    <!-- Add Tailwind CSS styles -->
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <title>OTP Verification Email</title>
 </head>
-<body class="bg-gray-100 p-4">
-    <div class="max-w-sm mx-auto bg-white p-4 rounded-lg shadow-md">
-        <h1 class="text-2xl font-semibold text-center mb-4">Email Verification</h1>
-        <p>Hello {{ user.username }},</p>
-        <p>Thank you for signing up on our platform. To verify your email address, please click the button below:</p>
-        <a href="http://127.0.0.1:8000/wallet/email-verify/{{ uidb64 }}/{{ token }}">
-            <button class="mt-4 inline-block bg-blue-500 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-full">
-                Verify Email
-            </button>
-        </a>   
-        
-        <p class="mt-4">If you didn't create an account on our platform, you can ignore this email.</p>
+<body>
+    <div>
+        <h2>OTP Verification</h2>
+        <p>Hello {{ name }},</p>
+        <p>Your OTP for verification is: <strong>{{ totp }}</strong></p>
+        <p>Please use this OTP to verify your account.</p>
     </div>
 </body>
 </html>

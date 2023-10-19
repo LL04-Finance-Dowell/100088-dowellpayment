@@ -38,7 +38,6 @@ class LoginView(APIView):
         username = request.data.get('username')
         password = request.data.get('password')
         user = authenticate(username=username, password=password)
-
         if user is not None:
             refresh = RefreshToken.for_user(user)
             access_token = str(refresh.access_token)
@@ -54,24 +53,33 @@ class UserRegistrationView(APIView):
     def post(self, request):
         serializer = UserRegistrationSerializer(data=request.data)
         if serializer.is_valid():
+            # Generate a TOTP key for the user
+            totp_key = self.generate_totp_key()
+            # Create a new user with the User model
             user = User.objects.create_user(
                 username=serializer.validated_data['username'],
                 email=serializer.validated_data['email'],
                 password=serializer.validated_data['password'],
-                is_active = False,
+                is_active=False,  # User starts as inactive
             )
             user.save()
+
+            # Create a UserProfile for the new user
+            user_profile = UserProfile(
+                user=user,
+                firstname=serializer.validated_data['firstname'],
+                lastname=serializer.validated_data['lastname'],
+                phone_number=serializer.validated_data['phone_number'],
+                totp_key=totp_key
+                # You can handle profile picture separately, depending on your requirements
+            )
+            user_profile.save()
+
             print(f'account created for {user}')
             # Generate a verification token for the user
             verification_token = default_token_generator.make_token(user)
-            print(verification_token)
             # Encode the user's ID
             uidb64 = urlsafe_base64_encode(force_bytes(user.id))
-            # Generate a TOTP key for the user
-            totp_key = self.generate_totp_key()
-            # Create the user profile with totp_key
-            UserProfile.objects.create(user=user, totp_key=totp_key)
-            print(totp_key)
             # Send the TOTP key to the user via email (for one-time use)
             self.send_verification_email(user, totp_key, request)
             # Check if a Wallet already exists for the user
@@ -80,11 +88,12 @@ class UserRegistrationView(APIView):
             if created:
                 # Wallet was created
                 pass
-            
+
             refresh = RefreshToken.for_user(user)
             access_token = str(refresh.access_token)
-            return Response({'message': 'Please check your email for verification instructions.', 'access_token': access_token,"uidb64":uidb64,"verification_token":verification_token}, status=status.HTTP_201_CREATED)
+            return Response({'message': 'Please check your email for verification instructions.', 'access_token': access_token, "uidb64": uidb64, "verification_token": verification_token}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     
     def generate_totp_key(self):
         # Generate a random secret key as bytes
@@ -95,21 +104,49 @@ class UserRegistrationView(APIView):
         totp = TOTP(secret_key, interval=30)  # Replace 'your-secret-key' with your secret key
         # Generate the TOTP token
         totp_key = totp.now()
+        print(totp_key)
         return totp_key
 
-    def send_verification_email(self, user, totp_key, request):
-        current_site = get_current_site(request)
-        mail_subject = 'Activate your account'
-        domain = current_site.domain
-        message = (
-            f'Hello {user.username},\n\n'
-            f'Thank you for signing up on our platform. To verify your email address, please use the following one-time code within 30 minutes:\n'
-            f'{totp_key}\n\n'
-            f'If you didn\'t create an account on our platform, you can ignore this email.'
-        )
-        from_email = settings.EMAIL_HOST_USER
-        to_email = user.email
-        send_mail(mail_subject, message, from_email, [to_email])
+    def send_verification_email(self, user, totp_key, email):
+            email_template = "verification_email.html"
+            # API endpoint to send the email
+            url = f"https://100085.pythonanywhere.com/api/email/"
+            name = user.username
+            EMAIL_FROM_WEBSITE = """
+                    <!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta http-equiv="X-UA-Compatible" content="IE=edge">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                            <title>Samanta Content Evaluator</title>
+                        </head>
+                        <body>
+                            <div style="font-family: Helvetica, Arial, sans-serif; min-width: 100px; overflow: auto; line-height: 2; margin: 50px auto; width: 70%; padding: 20px 0; border-bottom: 1px solid #eee;">
+                                <a href="#" style="font-size: 1.2em; color: #00466a; text-decoration: none; font-weight: 600; display: block; text-align: center;">Dowell UX Living Lab Wallet</a>
+                                <p style="font-size: 1.1em; text-align: center;">Dear {name}, thank you for registering to our platform. Enter the OTP below to verify your email.</p>
+                                <p style="font-size: 1.1em; text-align: center;">Your OTP for verification is: {totp}</p>
+                                <p style="font-size: 1.1em; text-align: center;">If you did not create an account with us, you can ignore this email.</p>
+                            </div>
+                        </body>
+                        </html>
+                    """
+            context = {
+                "name":name,
+                "totp":totp_key
+            }
+
+            email_content = EMAIL_FROM_WEBSITE.format(name=name, totp=totp_key, email=email)
+            payload = {
+                "toname": name,
+                "toemail": user.email,
+                "subject": "OTP Verification",
+                "email_content": email_content,
+            }
+            response = requests.post(url, json=payload)
+            print(totp_key)
+            print(response.text)
+            return response.text
 
 @method_decorator(csrf_exempt, name='dispatch')
 class OTPVerificationView(APIView):
@@ -162,3 +199,43 @@ def stripe_deposit(request):
     }
     return render(request,'deposit.html',context)
     
+
+
+
+
+
+
+
+import os
+import requests
+from django.template.loader import render_to_string
+from io import BytesIO
+from dotenv import load_dotenv
+
+load_dotenv()
+
+
+
+# def send_mail_one():
+#     order_template = "payment/order.html"
+
+#     # API endpoint to send the email
+#     url = f"https://100085.pythonanywhere.com/api/payment-status/"
+
+#     context = {
+        
+#     }
+
+#     # Email data
+#     email_data = {
+#         "toemail": email,
+#         "toname": name,
+#         "topic": "memberinvitation",
+#     }
+
+#     html_body = BytesIO(render_to_string(order_template, context).encode("utf-8"))
+#     files = {"file": html_body}
+
+#     response = requests.post(url, files=files, data=email_data)
+#     print("response mail", response)
+#     return response
