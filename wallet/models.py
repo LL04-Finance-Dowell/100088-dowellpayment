@@ -1,14 +1,38 @@
 from django.db import models
 from django.contrib.auth.models import User
+from PIL import Image
 
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     firstname = models.CharField(max_length=100)
     lastname = models.CharField(max_length=100)
-    profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
+    profile_picture = models.ImageField(
+        default='avatar.jpg', 
+        upload_to='profile_images', # dir to store the image
+        null=True,
+        blank=True
+    )
+    updated = models.DateTimeField(auto_now=True,null=True,blank=True)
+    created = models.DateTimeField(auto_now_add=True,null=True,blank=True)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     totp_key = models.CharField(max_length=16)
+
+    def save(self, *args, **kwargs):
+    # Call the super method to save the profile
+        super().save(*args, **kwargs)
+
+    # Resize the image after saving and use the URL-based file path
+        if self.avatar:
+            img = Image.open(self.avatar.path)
+            if img.height > 300 or img.width > 300:
+                output_size = (300, 300)
+                img.thumbnail(output_size)
+                img.save(self.avatar.path)
+
+
+
+
 
 class Wallet(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
