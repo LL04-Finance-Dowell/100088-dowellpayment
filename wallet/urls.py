@@ -16,4 +16,7 @@ urlpatterns = [
         views.StripePaymentCallback.as_view(),
         name="verify-stripe-payment",
     ),
+    #transfer url
+    path("transfer",views.SendMoney.as_view(),name="transfer"),
+
 ]

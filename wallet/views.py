@@ -189,6 +189,32 @@ class OTPVerificationView(APIView):
         else:
             return Response({'message': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
 
+@method_decorator(csrf_exempt, name='dispatch')
+class SendMoney(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+        sender = request.user
+        recipient_username = request.data.get("recipient_username")
+        amount = request.data.get("amount")
+        try:
+            recipient = User.objects.get(username=recipient_username)
+        except User.DoesNotExist:
+            return Response({"message": "Recipient not found"}, status=status.HTTP_400_BAD_REQUEST)
+        if sender == recipient:
+            return Response({"message": "You cannot send money to yourself"}, status=status.HTTP_400_BAD_REQUEST)
+        if amount <= 0:
+            return Response({"message": "Invalid amount"}, status=status.HTTP_400_BAD_REQUEST)
+        sender_wallet = sender.wallet
+        if sender_wallet.balance < amount:
+            return Response({"message": "Insufficient balance"}, status=status.HTTP_400_BAD_REQUEST)
+        sender_wallet.balance -= amount
+        sender_wallet.save()
+        recipient_wallet = recipient.wallet
+        recipient_wallet.balance += amount
+        recipient_wallet.save()
+        transaction = Transaction(wallet=sender.wallet, transaction_type="Transfer", amount=amount, status="Completed")
+        transaction.save()
+        return Response({"message": "Money sent successfully"}, status=status.HTTP_200_OK)
 
 class WalletDetailView(APIView):
     permission_classes = [IsAuthenticated]
