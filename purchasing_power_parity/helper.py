@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from django.db.models import Q
 from .models import PPPCalculation
 from .serializers import CurrencyNameSerializer
+from .sendmail import send_mail
 import currencyapicom
 from dotenv import load_dotenv
 
@@ -94,7 +95,7 @@ def get_all_currency_name():
 
 
 def get_ppp_data(
-    base_currency, base_price, base_country, target_country, target_currency
+    base_currency, base_price, base_country, target_country, target_currency,email
 ):
     # BASE COUNTRY
     # get base country object from the database base
@@ -163,7 +164,31 @@ def get_ppp_data(
             },
             status=status.HTTP_422_UNPROCESSABLE_ENTITY,
         )
+    email = email
+    base_price_in_country = f"{base_price} {base_currency_code}"
+    calculated_price_in_target_country = (
+        f"{target_currency_exchange_rate:.2f} {target_currency_code}"
+    )
+    price_in_base_country = (
+        f"{base_currency_exchange_rate:.2f} {base_country_currency_code}"
+    )
+    basecountry = base_country
+    targetcountry = target_country
+    target_price = f"{purchasing_power:.2f} {target_country_currency_code}"
+    calculated_price_base_on_ppp = (
+        f"{target_currency_exchange_rate:.2f} {target_currency_code}"
+    )
 
+    send_mail(
+        email,
+        base_price_in_country,
+        calculated_price_in_target_country,
+        price_in_base_country,
+        basecountry,
+        targetcountry,
+        target_price,
+        calculated_price_base_on_ppp,
+    )
     return Response(
         {
             "success": True,

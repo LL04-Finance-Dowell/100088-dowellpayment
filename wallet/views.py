@@ -246,11 +246,10 @@ class StripePaymentCallback(APIView):
 
             # Check the payment status
             if payment_status == "paid" and state == "complete":
-                
                 amount = payment_session["amount_total"] / 100
                 # Access the associated wallet
                 wallet = transaction.wallet
-                
+
                 if transaction.status == "Failed":
                     wallet.balance += Decimal(amount)
                     wallet.save()
@@ -262,7 +261,7 @@ class StripePaymentCallback(APIView):
             response = HttpResponseRedirect(redirect_url)
             return response
         except Exception as e:
-            print("error",e)
+            print("error", e)
             redirect_url = f"https://100088.pythonanywhere.com/api/success"
             response = HttpResponseRedirect(redirect_url)
             return response

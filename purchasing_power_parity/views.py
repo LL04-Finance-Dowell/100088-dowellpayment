@@ -66,10 +66,24 @@ class GetPurchasingPowerParity(APIView):
             else:
                 errors = serializer.errors
                 return Response(errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
-
+            
+            try:
+                email = data["email"]
+            except:
+                email = None
+            
+            if email == None:
+                return Response(
+                {
+                    "success": False,
+                    "message": "something went wrong",
+                    "details": "Email Field cannot be empty",
+                },
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
             #  call the function to get Purchasing Power Parity
             res = get_ppp_data(
-                base_currency, base_price, base_country, target_country, target_currency
+                base_currency, base_price, base_country, target_country, target_currency,email
             )
             return res
         except Exception as e:
