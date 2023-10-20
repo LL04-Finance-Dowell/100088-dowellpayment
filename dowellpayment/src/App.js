@@ -68,7 +68,8 @@ function App() {
           base_price: 0,
           base_country: "",
           target_country: "",
-          target_currency: ""
+          target_currency: "",
+          email: ""
         })
       }
 
@@ -78,7 +79,7 @@ function App() {
   }
 
   const openModal = () => {
-    if(info.target_currency !== "" && info.target_country !== "" && info.base_country !== "" && info.base_currency !== "") {
+    if(info.target_currency !== "" && info.target_country !== "" && info.base_country !== "" && info.base_currency !== "" && info.email !== "") {
       setTimeout(() => {
         setModalOpen(true);
       }, 1600)
@@ -96,7 +97,8 @@ function App() {
       base_price: 0,
       base_country: "",
       target_country: "",
-      target_currency: ""
+      target_currency: "",
+      email: ""
     })
   };
 

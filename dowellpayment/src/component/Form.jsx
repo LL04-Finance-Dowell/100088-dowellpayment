@@ -133,6 +133,7 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                     <div className="form-group">
                     <label>Email Address</label>
                     <input 
+                        required
                         type="text" 
                         placeholder="admin@example.com"
                         name='email'
