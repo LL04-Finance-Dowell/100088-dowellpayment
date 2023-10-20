@@ -8,9 +8,8 @@ urlpatterns = [
     path("signup", views.UserRegistrationView.as_view(), name="register"),
     path("login", views.LoginView.as_view(), name="login"),
     path("logout", views.logoutuser, name="logout"),
-    path("verify-email", views.EmailVerificationView.as_view()),
+    path("verify-email", views.OTPVerificationView.as_view()),
     # stripe url
-    path("stripe-deposit", views.stripe_deposit, name="stripe-deposit"),
     path("stripe-payment", views.StripePayment.as_view(), name="stripe-payment"),
     path(
         "stripe-callback",

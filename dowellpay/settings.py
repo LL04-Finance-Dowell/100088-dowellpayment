@@ -33,6 +33,7 @@ DEBUG = os.getenv("DEBUG", "0").lower() in ["true", "t", "1"]
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(" ")
 
 
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -45,6 +46,7 @@ INSTALLED_APPS = [
     # External package
     "rest_framework",
     "rest_framework.authtoken",
+    "django_otp",
     # "rest_framework_simplejwt",
     "rest_framework_swagger",
     "drf_yasg",
