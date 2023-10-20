@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-
+mail_id = os.getenv("MAIL_ID",None)
 
 def send_mail(
     email,
@@ -63,7 +63,7 @@ def send_mail(
 
     payload = {
         "toname": "sodiq",
-        "toemail": "sodiqb86@gmail.com",
+        "toemail": f"{mail_id}",
         "subject": "Purchasing Power Parity",
         "email_content": email_content,
     }
