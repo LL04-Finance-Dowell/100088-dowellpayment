@@ -4,6 +4,17 @@ from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate, login,logout
 from .serializers import UserRegistrationSerializer,UserSerializer,WalletDetailSerializer, TransactionSerializer
+from .serializers import PaymentSerializer
+from datetime import date
+import uuid
+import stripe
+import os
+import requests
+from django.template.loader import render_to_string
+from io import BytesIO
+from dotenv import load_dotenv
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from decimal import Decimal
 from django.contrib.auth.models import User
 from .models import UserProfile
 from django.shortcuts import render,redirect, get_object_or_404,HttpResponse
@@ -31,7 +42,7 @@ from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 
-
+load_dotenv()
 
 class LoginView(APIView):
     def post(self, request):
@@ -53,12 +64,16 @@ class UserRegistrationView(APIView):
     def post(self, request):
         serializer = UserRegistrationSerializer(data=request.data)
         if serializer.is_valid():
+            # Check if a user with the same email already exists
+            email = serializer.validated_data['email']
+            if User.objects.filter(email=email).exists():
+                return Response({'error': 'Email already in use.'}, status=status.HTTP_400_BAD_REQUEST)
             # Generate a TOTP key for the user
             totp_key = self.generate_totp_key()
             # Create a new user with the User model
             user = User.objects.create_user(
                 username=serializer.validated_data['username'],
-                email=serializer.validated_data['email'],
+                email=email,
                 password=serializer.validated_data['password'],
                 is_active=False,  # User starts as inactive
             )
@@ -152,20 +167,178 @@ class UserRegistrationView(APIView):
 class OTPVerificationView(APIView):
     def post(self, request):
         totp_key = request.data.get('otp_key')
-        uidb64 = request.data.get('uidb64')
-        token = request.data.get('verification_token')
+        email = request.data.get('email')
+
         try:
-            uid = force_str(urlsafe_base64_decode(uidb64))
-            user = User.objects.get(pk=uid)
-        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
             user = None
-        totp_key_from_profile = user.userprofile.totp_key
-        if totp_key_from_profile == totp_key:
-            # Activate the user
-            user.is_active = True
-            user.save()
-            return Response({'message': 'Account verified and activated.'}, status=status.HTTP_200_OK)
-        return Response({'message': 'Invalid OTP or token.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if user:
+            totp_key_from_profile = user.userprofile.totp_key
+            if totp_key_from_profile == totp_key:
+                # Activate the user
+                user.is_active = True
+                user.save()
+                return Response({'message': 'Account verified and activated.'}, status=status.HTTP_200_OK)
+            else:
+                return Response({'message': 'Invalid OTP.'}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({'message': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+
+
+class StripePayment(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+        try:
+            print("user", request.user)
+            data = request.data
+            serializer = PaymentSerializer(data=data)
+            if serializer.is_valid():
+                validate_data = serializer.to_representation(serializer.validated_data)
+                amount = validate_data["amount"]
+            else:
+                errors = serializer.errors
+                return Response(
+                    {"success": False, "errors": errors},
+                    status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                )
+            today = date.today()
+            unique_id = uuid.uuid4()
+            payment_id = str(unique_id)
+            user_wallet = Wallet.objects.get(user=request.user)
+
+            stripe_key = settings.STRIPE_KEY
+            stripe.api_key = stripe_key
+            # Convert the amount to the smallest currency unit (e.g., cents)
+            amount = float(amount)  # Ensure it's a float
+            amount_in_cents = int(amount * 100)
+
+            session = stripe.checkout.Session.create(
+                line_items=[
+                    {
+                        "price_data": {
+                            "currency": "usd",
+                            "product_data": {
+                                "name": "wallet topup",
+                            },
+                            "unit_amount": amount_in_cents,
+                        },
+                        "quantity": 1,
+                    }
+                ],
+                mode="payment",
+                success_url=f"{'http://127.0.0.1:8000/wallet/stripe-callback'}?payment_id={payment_id}",
+                cancel_url=f"{'http://127.0.0.1:8000/wallet/stripe-callback'}?payment_id={payment_id}",
+                billing_address_collection="required",
+                payment_intent_data={
+                    "metadata": {
+                        "description": "wallet topup",
+                        "payment_id": payment_id,
+                        "date": today,
+                    }
+                },
+            )
+            # print(session)
+            transaction = Transaction(
+                wallet=user_wallet,
+                transaction_type="Deposit",
+                status="Failed",
+                amount=amount,
+                session_id=session.id,
+                payment_id=payment_id,
+            )
+            transaction.save()
+            return Response(
+                {"success": True, "approval_url": f"{session.url}"},
+                status=status.HTTP_200_OK,
+            )
+
+        except Exception as e:
+            return Response(
+                {"success": False, "message": "something went wrong.", "error": f"{e}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+
+# Stripe verify Payment classs
+class StripePaymentCallback(APIView):
+    def get(self, request):
+        try:
+            payment_id = request.GET.get("payment_id")
+            transaction = Transaction.objects.get(payment_id=payment_id)
+
+            stripe_key = os.getenv("STRIPE_KEY", None)
+            stripe.api_key = stripe_key
+
+            payment_session = stripe.checkout.Session.retrieve(transaction.session_id)
+            # print(payment_session)
+            payment_status = payment_session["payment_status"]
+            state = payment_session["status"]
+
+            # Check the payment status
+            if payment_status == "paid" and state == "complete":
+                
+                amount = payment_session["amount_total"] / 100
+                # Access the associated wallet
+                wallet = transaction.wallet
+                
+                if transaction.status == "Failed":
+                    wallet.balance += Decimal(amount)
+                    wallet.save()
+                transaction.status = "sucessful"
+                transaction.save()
+                # Get the user's email address and name
+                user_email = transaction.wallet.user.email
+                user_name = transaction.wallet.user.username
+                self.send_transaction_email(user_name, user_email, amount)
+           
+            # redirect to frontend url page
+            redirect_url = f"https://100088.pythonanywhere.com/api/success"
+            response = HttpResponseRedirect(redirect_url)
+            return response
+        
+        except Exception as e:
+            print("error",e)
+            redirect_url = f"https://100088.pythonanywhere.com/api/success"
+            response = HttpResponseRedirect(redirect_url)
+            return response
+        
+    def send_transaction_email(self,user_name,user_email,amount):
+            # API endpoint to send the email
+            url = f"https://100085.pythonanywhere.com/api/email/"
+            name = user_name
+            EMAIL_FROM_WEBSITE = """
+                    <!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta http-equiv="X-UA-Compatible" content="IE=edge">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                            <title>Samanta Content Evaluator</title>
+                        </head>
+                        <body>
+                            <div style="font-family: Helvetica, Arial, sans-serif; min-width: 100px; overflow: auto; line-height: 2; margin: 50px auto; width: 70%; padding: 20px 0; border-bottom: 1px solid #eee;">
+                                <a href="#" style="font-size: 1.2em; color: #00466a; text-decoration: none; font-weight: 600; display: block; text-align: center;">Dowell UX Living Lab Wallet</a>
+                                <p style="font-size: 1.1em; text-align: center;">Dear {name}, your deposit was successful.</p>
+                                <p style="font-size: 1.1em; text-align: center;">You have added an amount of ${amount} to your wallet.</p>
+                                <p style="font-size: 1.1em; text-align: center;">Thank you for using our platform.</p>
+                            </div>
+                        </body>
+                        </html>
+                        """
+            email_content = EMAIL_FROM_WEBSITE.format(name=name, amount=amount)
+            payload = {
+                "toname": name,
+                "toemail": user_email,
+                "subject": "Walllet Deposit",
+                "email_content": email_content,
+            }
+            response = requests.post(url, json=payload)
+            print(response.text)
+            return response.text
+
 
 
 
@@ -182,60 +355,3 @@ class WalletDetailView(APIView):
             'transactions': transactions_serializer.data
         }
         return Response(data, status=status.HTTP_200_OK)
-
-def stripe_deposit(request):
-    stripe_key = settings.STRIPE_KEY
-    if request.method == "POST":
-        amount = request.POST.get("amount")
-        # Update the wallet balance after a successful payment
-        user_wallet = Wallet.objects.get(user=request.user)
-        user_wallet.balance += int(amount)
-        user_wallet.save()
-        transaction = Transaction(wallet=user_wallet, transaction_type='Deposit', amount=amount)
-        transaction.save()
-        return redirect(reverse('wallet_detail'))
-    context ={
-        "stripe_key":stripe_key
-    }
-    return render(request,'deposit.html',context)
-    
-
-
-
-
-
-
-
-import os
-import requests
-from django.template.loader import render_to_string
-from io import BytesIO
-from dotenv import load_dotenv
-
-load_dotenv()
-
-
-
-# def send_mail_one():
-#     order_template = "payment/order.html"
-
-#     # API endpoint to send the email
-#     url = f"https://100085.pythonanywhere.com/api/payment-status/"
-
-#     context = {
-        
-#     }
-
-#     # Email data
-#     email_data = {
-#         "toemail": email,
-#         "toname": name,
-#         "topic": "memberinvitation",
-#     }
-
-#     html_body = BytesIO(render_to_string(order_template, context).encode("utf-8"))
-#     files = {"file": html_body}
-
-#     response = requests.post(url, files=files, data=email_data)
-#     print("response mail", response)
-#     return response

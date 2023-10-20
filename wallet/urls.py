@@ -10,5 +10,6 @@ urlpatterns = [
     path('logout',views.logoutuser,name='logout'),
     path('verify-otp/', views.OTPVerificationView.as_view(), name='verify-otp'),
     #stripe url
-    path('stripe-deposit', views.stripe_deposit,name="stripe-deposit"),
+    path('stripe-deposit/', views.StripePayment.as_view(),name="stripe-deposit"),
+    path('stripe-callback',views.StripePaymentCallback.as_view())
 ]
