@@ -319,15 +319,17 @@ class StripePaymentCallback(APIView):
                             <title>Samanta Content Evaluator</title>
                         </head>
                         <body>
-                            <div style="font-family: Helvetica, Arial, sans-serif; min-width: 100px; overflow: auto; line-height: 2; margin: 50px auto; width: 70%; padding: 20px 0; border-bottom: 1px solid #eee;">
+                            <div style="font-family: Helvetica, Arial, sans-serif; min-width: 100px; overflow: auto; line-height: 1.6; margin: 50px auto; width: 70%; padding: 20px 0; border-bottom: 1px solid #eee;">
                                 <a href="#" style="font-size: 1.2em; color: #00466a; text-decoration: none; font-weight: 600; display: block; text-align: center;">Dowell UX Living Lab Wallet</a>
-                                <p style="font-size: 1.1em; text-align: center;">Dear {name}, your deposit was successful.</p>
+                                <p style="font-size: 1.1em; text-align: center;">Dear {name},</p>
+                                <p style="font-size: 1.1em; text-align: center;">Your deposit was successful.</p>
                                 <p style="font-size: 1.1em; text-align: center;">You have added an amount of ${amount} to your wallet.</p>
                                 <p style="font-size: 1.1em; text-align: center;">Thank you for using our platform.</p>
                             </div>
                         </body>
                         </html>
                         """
+
             email_content = EMAIL_FROM_WEBSITE.format(name=name, amount=amount)
             payload = {
                 "toname": name,
