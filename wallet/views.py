@@ -194,10 +194,12 @@ class SendMoney(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request):
         sender = request.user
+        sender_email = sender.email  # Access sender's email
         recipient_username = request.data.get("recipient_username")
         amount = request.data.get("amount")
         try:
             recipient = User.objects.get(username=recipient_username)
+            recipient_email = recipient.email  # Access recipient's email
         except User.DoesNotExist:
             return Response({"message": "Recipient not found"}, status=status.HTTP_400_BAD_REQUEST)
         if sender == recipient:
@@ -214,7 +216,85 @@ class SendMoney(APIView):
         recipient_wallet.save()
         transaction = Transaction(wallet=sender.wallet, transaction_type="Transfer", amount=amount, status="Completed")
         transaction.save()
+        transaction_time = transaction.timestamp
+        #send sender the email
+        self.sender_transaction_email(amount,sender,recipient_username,sender_email,transaction_time)
+        self.recepient_transaction_email(amount,sender,recipient_username,recipient_email,transaction_time)
         return Response({"message": "Money sent successfully"}, status=status.HTTP_200_OK)
+    
+    def sender_transaction_email(self,amount,sender,recipient_username,sender_email,transaction_time):
+            # API endpoint to send the email
+            url = f"https://100085.pythonanywhere.com/api/email/"
+            sender_name = sender.username
+            EMAIL_FROM_WEBSITE = """
+                    <!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta http-equiv="X-UA-Compatible" content="IE-edge">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                            <title>Your Wallet Transaction Confirmation</title>
+                        </head>
+                        <body>
+                            <div style="font-family: Helvetica, Arial, sans-serif; min-width: 100px; overflow: auto; line-height: 1.6; margin: 50px auto; width: 70%; padding: 20px 0; border-bottom: 1px solid #eee;">
+                                <a href="#" style="font-size: 1.2em; color: #00466a; text-decoration: none; font-weight: 600; display: block; text-align: center;">Dowell UX Living Lab Wallet</a>
+                                <p style="font-size: 1.1em; text-align: center;">Dear {sender_name},</p>
+                                <p style="font-size: 1.1em; text-align: center;">You have successfully sent ${amount} to {recipient_username}.</p>
+                                <p style="font-size: 1.1em; text-align: center;">Transaction time: {transaction_time}</p>
+                                <p style="font-size: 1.1em; text-align: center;">Thank you for using our platform.</p>
+                            </div>
+                        </body>
+                        </html>
+                        """
+
+            email_content = EMAIL_FROM_WEBSITE.format(sender_name=sender_name, amount=amount,recipient_username=recipient_username,transaction_time=transaction_time)
+            payload = {
+                "toname": sender_name,
+                "toemail": sender_email,
+                "subject": f"Transfer Money to {recipient_username}",
+                "email_content": email_content,
+            }
+            response = requests.post(url, json=payload)
+            print(response.text)
+            return response.text
+    
+    def recepient_transaction_email(self,amount,sender,recipient_username,recipient_email,transaction_time):
+            # API endpoint to send the email
+            url = f"https://100085.pythonanywhere.com/api/email/"
+            sender_name = sender.username
+            EMAIL_FROM_WEBSITE = """
+                    <!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta http-equiv="X-UA-Compatible" content="IE-edge">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                            <title>Your Wallet Transaction Confirmation</title>
+                        </head>
+                        <body>
+                            <div style="font-family: Helvetica, Arial, sans-serif; min-width: 100px; overflow: auto; line-height: 1.6; margin: 50px auto; width: 70%; padding: 20px 0; border-bottom: 1px solid #eee;">
+                                <a href="#" style="font-size: 1.2em; color: #00466a; text-decoration: none; font-weight: 600; display: block; text-align: center;">Dowell UX Living Lab Wallet</a>
+                                <p style="font-size: 1.1em; text-align: center;">Dear {recipient_username},</p>
+                                <p style="font-size: 1.1em; text-align: center;">You have received ${amount} from {sender_name}.</p>
+                                <p style="font-size: 1.1em; text-align: center;">Transaction time: {transaction_time}</p>
+                                <p style="font-size: 1.1em; text-align: center;">Thank you for using our platform.</p>
+                            </div>
+                        </body>
+                        </html>
+
+
+                        """
+
+            email_content = EMAIL_FROM_WEBSITE.format(sender_name=sender_name, amount=amount,recipient_username=recipient_username,transaction_time=transaction_time)
+            payload = {
+                "toname": sender_name,
+                "toemail": recipient_email,
+                "subject": f"Received Money from {sender_name}",
+                "email_content": email_content,
+            }
+            response = requests.post(url, json=payload)
+            print(response.text)
+            return response.text
 
 class WalletDetailView(APIView):
     permission_classes = [IsAuthenticated]
