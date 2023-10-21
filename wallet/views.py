@@ -193,33 +193,57 @@ class OTPVerificationView(APIView):
 class SendMoney(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request):
+        # Get the user who is sending money (sender)
         sender = request.user
         sender_email = sender.email  # Access sender's email
+
+        # Get the recipient's username and amount from the request data
         recipient_username = request.data.get("recipient_username")
         amount = request.data.get("amount")
+
         try:
+            # Try to find the recipient in the database
             recipient = User.objects.get(username=recipient_username)
             recipient_email = recipient.email  # Access recipient's email
+
         except User.DoesNotExist:
+            # If recipient doesn't exist, return an error response
             return Response({"message": "Recipient not found"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Check if the sender is trying to send money to themselves
         if sender == recipient:
             return Response({"message": "You cannot send money to yourself"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Check if the amount is valid
         if amount <= 0:
             return Response({"message": "Invalid amount"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Update the sender's wallet balance
         sender_wallet = sender.wallet
         if sender_wallet.balance < amount:
             return Response({"message": "Insufficient balance"}, status=status.HTTP_400_BAD_REQUEST)
         sender_wallet.balance -= amount
         sender_wallet.save()
+
+        # Update the recipient's wallet balance
         recipient_wallet = recipient.wallet
         recipient_wallet.balance += amount
         recipient_wallet.save()
+
+        # Create a transaction record for the sender
         transaction = Transaction(wallet=sender.wallet, transaction_type="Transfer", amount=amount, status="Completed")
         transaction.save()
         transaction_time = transaction.timestamp
-        #send sender the email
-        self.sender_transaction_email(amount,sender,recipient_username,sender_email,transaction_time)
-        self.recepient_transaction_email(amount,sender,recipient_username,recipient_email,transaction_time)
+
+        # Create a transaction record for the recipient
+        recipient_transaction = Transaction(wallet=recipient.wallet, transaction_type="Received", amount=amount, status="Completed")
+        recipient_transaction.save()
+
+        # Send transaction confirmation emails to the sender and recipient
+        self.sender_transaction_email(amount, sender, recipient_username, sender_email, transaction_time)
+        self.recipient_transaction_email(amount, sender, recipient_username, recipient_email, transaction_time)
+
+        # Return a success response
         return Response({"message": "Money sent successfully"}, status=status.HTTP_200_OK)
     
     def sender_transaction_email(self,amount,sender,recipient_username,sender_email,transaction_time):
@@ -258,7 +282,7 @@ class SendMoney(APIView):
             print(response.text)
             return response.text
     
-    def recepient_transaction_email(self,amount,sender,recipient_username,recipient_email,transaction_time):
+    def recipient_transaction_email(self,amount,sender,recipient_username,recipient_email,transaction_time):
             # API endpoint to send the email
             url = f"https://100085.pythonanywhere.com/api/email/"
             sender_name = sender.username
@@ -302,7 +326,7 @@ class WalletDetailView(APIView):
     def get(self, request):
         print(request)
         wallet = Wallet.objects.get(user=request.user)
-        transactions = Transaction.objects.filter(wallet=wallet)
+        transactions = Transaction.objects.filter(wallet=wallet).order_by('-timestamp')
         wallet_serializer = WalletDetailSerializer(wallet)
         transactions_serializer = TransactionSerializer(transactions, many=True)
 
