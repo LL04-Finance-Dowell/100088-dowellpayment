@@ -428,8 +428,8 @@ tbody .last-row {
   }
 
   label {
-    margin-bottom: 5px;
-    margin-top: 5px;
+    margin-bottom: 3px;
+    margin-top: 1px;
   }
 
   select, input {
@@ -449,7 +449,7 @@ tbody .last-row {
     margin-bottom: -20;
   }
   .logo {
-    width: 50%;
+    width: 35%;
     margin: 1em 1em 1em 0;
     margin-top: 0;
     padding-top: 0;
@@ -495,7 +495,7 @@ tbody .last-row {
     text-align: center;
   }
   .form-group {
-    margin-block: 1em;
+    margin-block: .5em;
   }
 
   .modal {
