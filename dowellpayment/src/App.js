@@ -12,7 +12,7 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [info, setInfo] = useState({
     base_currency: "",
-    base_price: 0,
+    base_price: "",
     base_country: "",
     target_country: "",
     target_currency: "",
@@ -65,13 +65,34 @@ function App() {
         setLoading(false)
         setInfo({
           ...info,
-          base_price: 0,
+          base_price: "",
           base_country: "",
           target_country: "",
           target_currency: "",
           email: ""
         })
       }
+
+    } catch (error) {
+      console.error('Fetch Error:', error);
+    }
+  }
+
+  const handleMailing = async () => {
+    const reqOption = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(result)
+    };
+
+    try {
+      const response = await fetch('https://100088.pythonanywhere.com/api/v1/ppp/client-mail', reqOption)
+      if(response.ok) {
+        alert('Mail sent successfully')
+      }
+      closeModal()
 
     } catch (error) {
       console.error('Fetch Error:', error);
@@ -94,7 +115,7 @@ function App() {
     setModalOpen(false);
     setInfo({
       base_currency: "",
-      base_price: 0,
+      base_price: "",
       base_country: "",
       target_country: "",
       target_currency: "",
@@ -111,6 +132,7 @@ function App() {
         values={result}
         info={info}
         loading={loading}
+        handleMailing={handleMailing} 
       />
       <div className="container">
         {/* left col */}

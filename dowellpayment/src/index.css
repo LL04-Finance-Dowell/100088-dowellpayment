@@ -205,6 +205,19 @@ select::after {
   height: 100px;
 }
 
+.mailPrompt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .8em;
+}
+
+.mailPrompt > p {
+  font-size: .9em;
+  color: #444343;
+  font-weight: 500;
+}
+
 table {
   /* background: #999; */
   width: 80%;

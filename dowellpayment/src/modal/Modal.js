@@ -1,7 +1,7 @@
-import { Spinner } from "@chakra-ui/react";
+import { Button, Spinner } from "@chakra-ui/react";
 import logo from '../assets/dowell-logo.svg'
 
-function Modal({ isOpen, onClose, values, info, loading }) {
+function Modal({ isOpen, onClose, values, info, loading, handleMailing }) {
 
     function toTitleCaseWithSpaces(inputString) {
         return inputString
@@ -51,35 +51,56 @@ function Modal({ isOpen, onClose, values, info, loading }) {
                 </thead> */}
                 <tbody>
                     <tr className="odd">
-                        <td style={{ fontWeight: 700 }}>{basePriceInBaseCountry}</td>
-                        <td style={{ fontWeight: 700 }}>{basePriceInBaseCountryValue}</td>
+                        <td id='head-left' style={{ fontWeight: 700 }}>{basePriceInBaseCountry}</td>
+                        <td id='head-right' style={{ fontWeight: 700 }}>{basePriceInBaseCountryValue}</td>
                     </tr>
                     <tr className="even">
                         <td style={{ fontWeight: 700 }}>{calculatedPriceInTargetCountry}</td>
                         <td style={{ fontWeight: 700 }}>{calculatedPriceInTargetCountryValue}</td>
                     </tr>
-                    <tr className="even">
+                    <tr className="odd">
                         <td>Base Currency</td>
                         <td>{info?.base_currency}</td>
                     </tr>
-                    <tr className="odd">
+                    <tr className="even">
                         <td>Price in Base Country</td>
                         <td>{values?.price_in_base_country}</td>
                     </tr>
-                    <tr className="even">
+                    <tr className="odd">
                         <td>Target Country</td>
                         <td>{values?.target_country}</td>
                     </tr>
-                    <tr className="odd">
+                    <tr className="even">
                         <td>Target Country Exchange Rate</td>
                         <td>{values?.target_price}</td>
                     </tr>
-                    <tr className="even" style={{ borderRadius: '0 0 60px 60px'}}>
+                    <tr className="odd" style={{ borderRadius: '0 0 60px 60px'}}>
                         <td style={{ borderRadius: '0 0 0 60px'}}>Calculated Price based on Purchasing Power</td>
                         <td style={{ borderRadius: '0 0 60px 0'}}>{values?.calculated_price_base_on_ppp}</td>
                     </tr>
                 </tbody>
             </table>
+            <div className="mailPrompt">
+                <p>Do you want to mail this?</p>
+                <Button
+                    color="white"
+                    bg="#972EA2"
+                    p={2}
+                    fontSize={{ sm: '1em', md: '1.2em', lg: '1.2em' }}
+                    _hover={{ background: '#ae40ba'}}
+                    onClick={handleMailing}
+                >
+                    Yes
+                </Button>
+                {/* <Button
+                    color="#972EA2"
+                    bg="#FBEFFA"
+                    p={1}
+                    _hover={{ background: '#FBDDF9'}}
+                >
+                    No
+                </Button> */}
+            </div>
             </div>
         </div>
         )
