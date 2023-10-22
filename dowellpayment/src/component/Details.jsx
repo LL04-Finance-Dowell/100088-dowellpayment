@@ -21,9 +21,8 @@ const Details = () => {
 
             <div className="section">
               <p className="question">Powered By</p>
-              <p className="answer">
-              Dowell Living lab.....
-              </p>
+              <p className="answer">DoWell UX Living Lab</p> <br />
+              <a className= "answer" href="https://visitorbadge.io/status?path=https%3A%2F%2Fll04-finance-dowell.github.io%2F100088-dowellpayment%2F"><img src="https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fll04-finance-dowell.github.io%2F100088-dowellpayment%2F&labelColor=%2337d67a&countColor=%23d9e3f0&labelStyle=upper" /></a>
             </div>
           </div>
           <img src={vector} alt='Vector' className="vector2" />

@@ -43,17 +43,13 @@ function Modal({ isOpen, onClose, values, info, loading }) {
                 <p className='desc'>Purchase Price Parity Calculator</p>
             </div>
             <table>
-                <thead>
+                {/* <thead>
                     <tr>
                         <th id='head-left'>Items</th>
                         <th id='head-right'>Values</th>
                     </tr>
-                </thead>
+                </thead> */}
                 <tbody>
-                    <tr className="even">
-                        <td>Base Currency</td>
-                        <td>{info?.base_currency}</td>
-                    </tr>
                     <tr className="odd">
                         <td style={{ fontWeight: 700 }}>{basePriceInBaseCountry}</td>
                         <td style={{ fontWeight: 700 }}>{basePriceInBaseCountryValue}</td>
@@ -61,6 +57,10 @@ function Modal({ isOpen, onClose, values, info, loading }) {
                     <tr className="even">
                         <td style={{ fontWeight: 700 }}>{calculatedPriceInTargetCountry}</td>
                         <td style={{ fontWeight: 700 }}>{calculatedPriceInTargetCountryValue}</td>
+                    </tr>
+                    <tr className="even">
+                        <td>Base Currency</td>
+                        <td>{info?.base_currency}</td>
                     </tr>
                     <tr className="odd">
                         <td>Price in Base Country</td>
