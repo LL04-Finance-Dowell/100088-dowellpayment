@@ -150,9 +150,10 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                         bg='#61B84C'
                         mt={{ sm: 1, md: 2, lg: 4 }}
                         className='button'
-                        fontSize={{ sm: '1em', md: '1.2em', lg: '1.2em' }}
-                        style={{ borderRadius: '60px', height: '60px' }}
-                        h={{ sm: "35px", md: "45px" }}
+                        fontSize={{ sm: '.8em', md: '1.2em', lg: '1.2em' }}
+                        style={{ borderRadius: '20px' }}
+                        // h={{ sm: "35px", md: "45px" }}
+                        h={45}
                         _hover={{ background: '#62b84cda'}}
                     >
                         {loading ? <Spinner /> : 'Calculate'}
