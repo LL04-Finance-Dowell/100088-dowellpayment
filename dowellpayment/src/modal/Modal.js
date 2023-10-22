@@ -49,16 +49,19 @@ function Modal({ isOpen, onClose, values, info, loading, handleMailing }) {
                         <th id='head-right'>Values</th>
                     </tr>
                 </thead> */}
-                <tbody>
+                <tbody style={{ border: ".2px solid #cccccc84", borderRadius: "10px" }}>
                     <tr className="odd">
                         <td id='head-left' style={{ fontWeight: 700 }}>{basePriceInBaseCountry}</td>
                         <td id='head-right' style={{ fontWeight: 700 }}>{basePriceInBaseCountryValue}</td>
                     </tr>
-                    <tr className="even">
+                    <tr className="odd">
                         <td style={{ fontWeight: 700 }}>{calculatedPriceInTargetCountry}</td>
                         <td style={{ fontWeight: 700 }}>{calculatedPriceInTargetCountryValue}</td>
                     </tr>
-                    <tr className="odd">
+                    <tr className="separation">
+
+                    </tr>
+                    <tr className="even">
                         <td>Base Currency</td>
                         <td>{info?.base_currency}</td>
                     </tr>
@@ -66,17 +69,17 @@ function Modal({ isOpen, onClose, values, info, loading, handleMailing }) {
                         <td>Price in Base Country</td>
                         <td>{values?.price_in_base_country}</td>
                     </tr>
-                    <tr className="odd">
+                    <tr className="even">
                         <td>Target Country</td>
                         <td>{values?.target_country}</td>
                     </tr>
                     <tr className="even">
-                        <td>Target Country Exchange Rate</td>
+                        <td>Price in target country</td>
                         <td>{values?.target_price}</td>
                     </tr>
-                    <tr className="odd" style={{ borderRadius: '0 0 60px 60px'}}>
-                        <td style={{ borderRadius: '0 0 0 60px'}}>Calculated Price based on Purchasing Power</td>
-                        <td style={{ borderRadius: '0 0 60px 0'}}>{values?.calculated_price_base_on_ppp}</td>
+                    <tr className="even" style={{ borderRadius: '0 0 10px 10px'}}>
+                        <td style={{ borderRadius: '0 0 0 10px'}}>Calculated price in targeted country based on purchasing power</td>
+                        <td style={{ borderRadius: '0 0 10px 0'}}>{values?.calculated_price_base_on_ppp}</td>
                     </tr>
                 </tbody>
             </table>
@@ -84,10 +87,10 @@ function Modal({ isOpen, onClose, values, info, loading, handleMailing }) {
                 <p>Do you want to mail this?</p>
                 <Button
                     color="white"
-                    bg="#972EA2"
+                    bg="#61B84C"
                     p={2}
                     fontSize={{ sm: '1em', md: '1.2em', lg: '1.2em' }}
-                    _hover={{ background: '#ae40ba'}}
+                    _hover={{ background: '#62b84cda'}}
                     onClick={handleMailing}
                 >
                     Yes

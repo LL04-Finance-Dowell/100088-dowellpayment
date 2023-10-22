@@ -16,17 +16,18 @@ html, body {
 label {
   display: block;
   color: #151515;
-  font-size: 1.125rem;
+  font-size: 1rem;
   font-style: normal;
   font-weight: 400;
-  margin-bottom: 14px;
+  margin-top: 0;
+  margin-bottom: 7px;
 }
 
 select, input {
   width: 100%;
-  height: 60px;
-  border-radius: 60px;
-  background: #FBDDF9;
+  height: 50px;
+  border-radius: 20px;
+  background: #cccccc84;
   padding-inline: 2em;
   cursor: pointer;
   border: none;
@@ -42,7 +43,7 @@ select::after {
   pointer-events: none;
 }
 
-.select {
+/* .select {
   width: 100%;
   height: 60px;
   border-radius: 60px;
@@ -51,7 +52,7 @@ select::after {
   cursor: pointer;
   border: none;
   padding-right: 4em;
-}
+} */
 
 .button {
   width: 100%;
@@ -101,15 +102,13 @@ select::after {
   align-self: center;
   justify-content: center;
   width: 20%;
+  margin-top: 0;
+  padding-top: 0;
 }
 
 .vector {
   margin: 1em;
-}
-
-.vector2 {
-  margin: 1em;
-  display: none;
+  width: 60%;
 }
 
 .title {
@@ -121,7 +120,7 @@ select::after {
 
 .desc {
   color: #151515;
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-style: normal;
   font-weight: 500;
 }
@@ -130,26 +129,27 @@ select::after {
   margin: 0 1em;
   text-align: left;
   padding: 2em;
+  padding-top: 0;
 }
 
 .form-group {
-  margin-block: 1em;
+  margin-block: .5em;
 }
 
 .faq {
   text-align: left;
-  padding: 1em 3em;
+  padding: 0em 3em;
 }
 
 .section {
-  margin: 1em;
+  margin: .5em;
 }
 
 .question {
   color: #151515;
   font-size: 1.75rem;
   font-weight: 400;
-  margin-bottom: 12px;
+  margin-bottom: 5px;
 }
 
 .answer {
@@ -221,7 +221,7 @@ select::after {
 table {
   /* background: #999; */
   width: 80%;
-  border-radius: 60px;
+  border-radius: 5px;
   float: left;
   text-align: left;
   margin-block: 1.5em;
@@ -241,23 +241,29 @@ th, td {
 }
 
 table .even {
-  background: #FBEFFA; /* Color for even rows */
+  background: rgba(251, 239, 250, 0.114)84; /* Color for even rows */
+  border: .2px solid #cccccc84;
+  border-radius: 10px;
 }
 
 table .odd {
-  background: #FBDDF9; /* Color for odd rows */
+  background: #cccccc84; /* Color for odd rows */
 }
 
 tbody .last-row {
   border-radius: 0 0 60px 60px; /* Apply border radius to the bottom corners */
 }
 
+.separation {
+  background: #FFF;
+}
+
 #head-left {
-  border-radius: 60px 0 0 0;
+  border-radius: 10px 0 0 0;
 }
 
 #head-right {
-  border-radius: 0 60px 0 0;
+  border-radius: 0 10px 0 0;
 }
 
 
@@ -272,19 +278,24 @@ tbody .last-row {
   }
 
   label {
-    margin-bottom: 8px;
-    margin-top: 2px;
+    margin-bottom: 4px;
+    margin-top: 1px;
   }
 
   select, input {
     width: 100%;
     height: 45px !important;
     border-radius: 60px;
-    background: #FBDDF9;
+    background: #cccccc84;
     padding-inline: 2em;
     cursor: pointer;
     border: none;
     padding-right: 4em;
+  }
+  .header {
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-bottom: -20;
   }
 
   desc {
@@ -303,13 +314,11 @@ tbody .last-row {
   .left-col {
     padding: 1.5em;
     width: 100%;
-    min-height: 100vh;
-    overflow-y: scroll
   }
   .right-col {
     padding: 1.5em;
+    padding-top: 0;
     width: 100%;
-    min-height: 100vh;
   }
 
   .form-group {
@@ -330,12 +339,6 @@ tbody .last-row {
 
   .vector {
     margin: 1em;
-    display: none;
-  }
-  
-  .vector2 {
-    margin: 1em;
-    display: block;
   }
 }
 
@@ -392,7 +395,7 @@ tbody .last-row {
     padding: 2em .5em;
   }
   .title {
-    font-size: 1.7em;
+    font-size: .8em;
   }
   tr, td {
     font-size: .85em;
@@ -406,6 +409,12 @@ tbody .last-row {
   .faq {
     padding: 1em;
   }
+  .question {
+    font-size: 1rem;
+  }
+  .answer {
+    font-size: .8em;
+  }
 }
 
 /* Small screen */
@@ -415,27 +424,36 @@ tbody .last-row {
   }
   .container {
     flex-direction: column;
+    /* gap: 6em */
   }
 
   label {
-    margin-bottom: 8px;
-    margin-top: 2px;
+    margin-bottom: 5px;
+    margin-top: 5px;
   }
 
   select, input {
     width: 100%;
     height: 45px !important;
     border-radius: 60px;
-    background: #FBDDF9;
+    background: #cccccc84;
     padding-inline: 2em;
     cursor: pointer;
     border: none;
     padding-right: 4em;
   }
 
+  .header {
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-bottom: -20;
+  }
   .logo {
     width: 50%;
-    margin: 1em;
+    margin: 1em 1em 1em 0;
+    /* margin-top: 0;
+    padding-top: 0;
+    margin-bottom: 0; */
   }
 
   .vector {
@@ -443,11 +461,11 @@ tbody .last-row {
   }
 
   .title {
-    font-size: 1.9em;
+    font-size: 1.5em;
   }
 
   .desc {
-    font-size: 1.1em;
+    font-size: .8em;
   }
 
   label {
@@ -456,34 +474,28 @@ tbody .last-row {
   .left-col {
     padding: 1em;
     width: 100%;
-    min-height: 100vh;
-    overflow-y: scroll;
-    scrollbar-width: thin;
-    scrollbar-color: transparent transparent;
-    /* overflow-y: hidden; */
-
-    /* WebKit (Chrome and Safari) */
-    &::-webkit-scrollbar {
-      width: 0.1em;
-    }
-
-    &::-webkit-scrollbar-thumb {
-      background-color: transparent;
-    }
+    height: 100%;
+    /* padding-bottom: 0;
+    margin-bottom: 0; */
   }
 
   .button {
     font-size: 1.2em;
   }
 
+  /* .form {
+    padding-top: 0;
+  } */
+
   .right-col {
     padding: 1em;
+    padding-top: 0;
+    margin-top: 0;
     width: 100%;
-    min-height: 100vh;
     text-align: center;
   }
   .form-group {
-    margin-block: .5em;
+    margin-block: 1em;
   }
 
   .modal {
@@ -500,12 +512,12 @@ tbody .last-row {
 
   .vector {
     margin: 1em;
-    display: none;
   }
-  
-  .vector2 {
-    margin: 1em;
-    display: block;
+  .question {
+    font-size: 1.3rem;
+  }
+  .answer {
+    font-size: 1em;
   }
 }
 

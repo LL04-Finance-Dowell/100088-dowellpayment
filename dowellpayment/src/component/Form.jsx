@@ -6,7 +6,7 @@ import logo from '../assets/dowell-logo.svg'
 
 
 const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) => {
-    console.log('State: ', state)
+    // console.log('State: ', state)
 
     return (
         <>
@@ -29,9 +29,9 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                     <Select 
                         onChange={onChange}
                         name='base_currency'
-                        style={{ borderRadius: '60px', height: '60px', textIndent: '10px' }}
+                        style={{ borderRadius: '20px', height: '50px', textIndent: '10px' }}
                         // placeholder="Select Currency"
-                        bg='#FBDDF9'
+                        bg='#cccccc84'
                         border='none'
                         icon={
                         <Icon
@@ -63,9 +63,9 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                     <Select
                         onChange={onChange}
                         name='base_country'
-                        style={{ borderRadius: '60px', height: '60px', textIndent: '10px' }}
+                        style={{ borderRadius: '20px', height: '50px', textIndent: '10px' }}
                         // placeholder="Select Country"
-                        bg='#FBDDF9'
+                        bg='#cccccc84'
                         border='none'
                         icon={
                         <Icon
@@ -87,9 +87,9 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                     <Select
                         onChange={onChange}
                         name='target_country'
-                        style={{ borderRadius: '60px', height: '60px', textIndent: '10px' }}
+                        style={{ borderRadius: '20px', height: '50px', textIndent: '10px' }}
                         // placeholder="Select Country"
-                        bg='#FBDDF9'
+                        bg='#cccccc84'
                         border='none'
                         icon={
                         <Icon
@@ -111,9 +111,9 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                     <Select
                         onChange={onChange}
                         name='target_currency'
-                        style={{ borderRadius: '60px', height: '60px', textIndent: '10px' }}
+                        style={{ borderRadius: '20px', height: '50px', textIndent: '10px' }}
                         // placeholder="Select Currency"
-                        bg='#FBDDF9'
+                        bg='#cccccc84'
                         border='none'
                         icon={
                         <Icon
@@ -131,7 +131,7 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                     </Select>
                     </div>
                     <div className="form-group">
-                    <label>Email Address</label>
+                    <label>Your Email Address</label>
                     <input 
                         required
                         type="text" 
@@ -139,20 +139,21 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                         name='email'
                         value={info?.email}
                         onChange={onChange}
+                        style={{ marginBottom: -10 }}
                     />
                     </div>
                     <Button 
-                    type="submit"
-                    onClick={openModal}
-                    width='100%'
-                    color='white'
-                    bg='#972EA2'
-                    mt={4}
-                    className='button'
-                    fontSize={{ sm: '1em', md: '1.2em', lg: '1.2em' }}
-                    style={{ borderRadius: '60px', height: '60px' }}
-                    h={{ sm: "45px", md: "45px" }}
-                    _hover={{ background: '#ae40ba'}}
+                        type="submit"
+                        onClick={openModal}
+                        width='100%'
+                        color='white'
+                        bg='#61B84C'
+                        mt={{ sm: 2, md: 2, lg: 4 }}
+                        className='button'
+                        fontSize={{ sm: '1em', md: '1.2em', lg: '1.2em' }}
+                        style={{ borderRadius: '60px', height: '60px' }}
+                        h={{ sm: "35px", md: "45px" }}
+                        _hover={{ background: '#62b84cda'}}
                     >
                         {loading ? <Spinner /> : 'Calculate'}
                     </Button>
