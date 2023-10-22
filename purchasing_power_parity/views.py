@@ -4,6 +4,7 @@ from rest_framework import status
 from .serializers import PPPSerializer
 from .helper import get_all_currency_and_country, get_all_currency_name, get_ppp_data
 import requests
+import re
 
 
 # Create your views here.
@@ -96,7 +97,104 @@ class GetPurchasingPowerParity(APIView):
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
 
+class SendResponseToClient(APIView):
+    def post(self,request):
+        try:
+            data = request.data
+            pattern1 = r"base_price_in_\w+"
+            pattern2 = r"calculated_price_in_\w+"
+            
+            base_price_in_base_country =""
+            calculated_price_in_target_country = ""
+            for key, value in data.items():
+                if re.match(pattern1, key):
+                    base_price_in_base_country = value
+                    
+            for key, value in data.items():
+                if re.match(pattern2, key):
+                    calculated_price_in_target_country = value
+                    
+                    
+            print("base_price_in_base_country",base_price_in_base_country)
+            print("calculated_price_in_target_country",calculated_price_in_target_country)
+            
+            
+            email = data["email"]
+            # base_price_in_base_country = data["base_price_in_base_country"] 
+            # calculated_price_in_target_country = data["calculated_price_in_target_country"]
+            price_in_base_country = data["price_in_base_country"]
+            base_country = data["base_country"]
+            target_country = data["target_country"]
+            target_price = data["target_price"]
+            calculated_price_base_on_ppp = data["calculated_price_base_on_ppp"]
+            
+            url = "https://100085.pythonanywhere.com/api/email/"
 
+            EMAIL_FROM_WEBSITE = """
+                        <!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta http-equiv="X-UA-Compatible" content="IE=edge">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                            <title>Samanta Content Evaluator</title>
+                        </head>
+                        <body>
+                            <div style="font-family: Helvetica,Arial,sans-serif;min-width:100px;overflow:auto;line-height:2">
+                                <div style="margin:50px auto;width:70%;padding:20px 0">
+                                <div style="border-bottom:1px solid #eee">
+                                    <a href="#" style="font-size:1.2em;color: #00466a;text-decoration:none;font-weight:600">Dowell UX Living Lab</a>
+                                </div>
+                                <p style="font-size:1.1em">Base Country : {base_country}</p>
+                                <p style="font-size:1.1em">Target Country : {target_country}</p>
+                                <p style="font-size:1.1em">Price In Base Country : {price_in_base_country}</p>
+                                <p style="font-size:1.1em">Base Price In {base_country} : {base_price_in_base_country},</p>
+                                <p style="font-size:1.1em">Calculated Price In {target_country} : {calculated_price_in_target_country}</p>
+                                <p style="font-size:1.1em">Target Price : {target_price}</p>
+                                <p style="font-size:1.1em">Calculated Price Based On PPP : {calculated_price_base_on_ppp}</p>
+                                </div>
+                            </div>
+                        </body>
+                        </html>
+                      """
+            email_content = EMAIL_FROM_WEBSITE.format(
+                base_country=base_country,
+                base_price_in_base_country=base_price_in_base_country,
+                target_country=target_country,
+                calculated_price_in_target_country=calculated_price_in_target_country,
+                price_in_base_country=price_in_base_country,
+                target_price=target_price,
+                calculated_price_base_on_ppp=calculated_price_base_on_ppp,
+            )
+
+            payload = {
+                "toname": f"{email}",
+                "toemail": f"{email}",
+                "subject": "Purchasing Power Parity",
+                "email_content": email_content,
+            }
+            response = requests.post(url, json=payload)
+            print(response.text)
+            return Response(
+        {
+            "success": True,
+            "message": "Mail sent successfully"
+        },
+        status=status.HTTP_200_OK,
+    )
+        except Exception as e:
+            return Response(
+                {
+                    "success": False,
+                    "message": "something went wrong",
+                    "error": f"{e}",
+                },
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
+       
+        
+        
+        
 # FOR PUBLIC USAGE
 class GetPublicPurchasingPowerParity(APIView):
     def get(self, request, api_key):

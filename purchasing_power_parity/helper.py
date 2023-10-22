@@ -193,6 +193,7 @@ def get_ppp_data(
         {
             "success": True,
             "message": "Expected values",
+            "email":email,
             f"base_price_in_{base_country}": f"{base_price} {base_currency_code}",
             f"calculated_price_in_{target_country}": f"{target_currency_exchange_rate:.2f} {target_currency_code}",
             "price_in_base_country": f"{base_currency_exchange_rate:.2f} {base_country_currency_code}",
