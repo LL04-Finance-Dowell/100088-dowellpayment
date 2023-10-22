@@ -1,4 +1,4 @@
-import vector from '../assets/illustration.svg'
+import vector from '../assets/images.svg'
 
 const Details = () => {
     return (
