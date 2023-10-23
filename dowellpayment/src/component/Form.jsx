@@ -8,6 +8,10 @@ import logo from '../assets/dowell-logo.svg'
 const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) => {
     // console.log('State: ', state)
 
+    const handleClosePage = () => {
+        window.close()
+    }
+
     return (
         <>
             <div className="left-col">
@@ -142,22 +146,48 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                         style={{ marginBottom: -10 }}
                     />
                     </div>
-                    <Button 
-                        type="submit"
-                        onClick={openModal}
-                        width='100%'
-                        color='white'
-                        bg='#61B84C'
-                        mt={{ sm: 1, md: 2, lg: 4 }}
-                        className='button'
-                        fontSize={{ sm: '.8em', md: '1.2em', lg: '1.2em' }}
-                        style={{ borderRadius: '20px' }}
-                        // h={{ sm: "35px", md: "45px" }}
-                        h={45}
-                        _hover={{ background: '#62b84cda'}}
+                    <div
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            width: '100%',
+                            justifyContent: 'space-between',
+                            marginTop: '2rem'
+                        }}
                     >
-                        {loading ? <Spinner /> : 'Calculate'}
-                    </Button>
+                        <Button 
+                            type="button"
+                            onClick={handleClosePage}
+                            width='30%'
+                            color='white'
+                            bg='#b8b8b8'
+                            mt={{ sm: 1, md: 2, lg: 4 }}
+                            className='button'
+                            fontSize={{ sm: '.8em', md: '1.2em', lg: '1.2em' }}
+                            style={{ borderRadius: '20px' }}
+                            // h={{ sm: "35px", md: "45px" }}
+                            h={45}
+                            _hover={{ background: '#808080'}}
+                        >
+                            {'Close'}
+                        </Button>
+                        <Button 
+                            type="submit"
+                            onClick={openModal}
+                            width='65%'
+                            color='white'
+                            bg='#61B84C'
+                            mt={{ sm: 1, md: 2, lg: 4 }}
+                            className='button'
+                            fontSize={{ sm: '.8em', md: '1.2em', lg: '1.2em' }}
+                            style={{ borderRadius: '20px' }}
+                            // h={{ sm: "35px", md: "45px" }}
+                            h={45}
+                            _hover={{ background: '#62b84cda'}}
+                        >
+                            {loading ? <Spinner /> : 'Calculate'}
+                        </Button>
+                    </div>
                 </form>
             </div>
         </>

@@ -134,6 +134,7 @@ select::after {
 
 .form-group {
   margin-block: .5em;
+  margin-bottom: 1em;
 }
 
 .faq {
@@ -220,7 +221,7 @@ select::after {
 
 table {
   /* background: #999; */
-  width: 80%;
+  width: 100%;
   border-radius: 5px;
   float: left;
   text-align: left;
@@ -237,7 +238,7 @@ th, td {
   /* text-align: left; */
   padding: 1em 2em;
   margin: 2em;
-  font-size: 1.125rem;
+  font-size: 1rem;
 }
 
 table .even {
@@ -326,11 +327,11 @@ tbody .last-row {
   }
 
   .modal {  
-    width: auto;
+    width: 90%;
   }
 
   table {
-    width: 80% !important;
+    width: 100%;
     height: auto;
   }
   tr, td {
@@ -339,6 +340,11 @@ tbody .last-row {
 
   .vector {
     margin: 1em;
+  }
+
+  .faq {
+    padding-left: 0;
+    padding-right: 0;
   }
 }
 
@@ -404,7 +410,7 @@ tbody .last-row {
     margin-block: .5em;
   }
   .form {
-    padding: .5em;
+    padding: .5em 0;
   }
   .faq {
     padding: 1em;
@@ -490,9 +496,10 @@ tbody .last-row {
     height: 30px;
   }
 
-  /* .form {
-    padding-top: 0;
-  } */
+  .form {
+    padding-left: 0;
+    padding-right: 0;
+  }
 
   .right-col {
     padding: 1em;
@@ -506,11 +513,11 @@ tbody .last-row {
   }
 
   .modal {
-    width: auto;
+    width: 90%;
   }
   
   table {
-    width: 80% !important;
+    width: 100%;
     height: auto;
   }
   tr, td {
