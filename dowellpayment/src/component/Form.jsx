@@ -47,11 +47,11 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                         // }
                         options={
                             !state?.currency || !state ? [
-                                {label: 'Select Currency', value: ''},
+                                // {label: 'Select Currency', value: ''},
                             ]
                             :
                             [
-                                {label: 'Select Currency', value: ''},
+                                // {label: 'Select Currency', value: ''},
                                 ...state?.currency?.map((currency) => {
                                     return {
                                         label: currency,
@@ -97,11 +97,11 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                         // }
                         options={
                             !state?.country || !state ? [
-                                {label: 'Select country', value: ''},
+                                // {label: 'Select country', value: ''},
                             ]
                             :
                             [
-                                {label: 'Select country', value: ''},
+                                // {label: 'Select country', value: ''},
                                 ...state?.country?.map((country) => {
                                     return {
                                         label: country,
@@ -137,11 +137,11 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                         // }
                         options={
                             !state?.country || !state ? [
-                                {label: 'Select country', value: ''},
+                                // {label: 'Select country', value: ''},
                             ]
                             :
                             [
-                                {label: 'Select country', value: ''},
+                                // {label: 'Select country', value: ''},
                                 ...state?.country?.map((country) => {
                                     return {
                                         label: country,
@@ -177,11 +177,11 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                         // }
                         options={
                             !state?.currency || !state ? [
-                                {label: 'Select Currency', value: ''},
+                                // {label: 'Select Currency', value: ''},
                             ]
                             :
                             [
-                                {label: 'Select Currency', value: ''},
+                                // {label: 'Select Currency', value: ''},
                                 ...state?.currency?.map((currency) => {
                                     return {
                                         label: currency,
