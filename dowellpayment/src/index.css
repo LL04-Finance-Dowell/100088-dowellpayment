@@ -136,7 +136,7 @@ select::after {
 
 .form-group {
   margin-block: .5em;
-  margin-bottom: 1.4em;
+  margin-bottom: .8em;
 }
 
 .faq {
@@ -244,7 +244,7 @@ thead {
 th, td {
   width: 400px;
   /* text-align: left; */
-  padding: 1em 2em;
+  padding: .7em 2em;
   margin: 2em;
   font-size: 1rem;
 }
@@ -278,6 +278,13 @@ tbody .last-row {
 .info__Price {
   margin: 2rem 0 0.5rem;
   width: 100%;
+  border: 1px solid rgba(204, 204, 204, 0.518);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
 }
 
 .info__Price p {
