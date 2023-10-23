@@ -41,6 +41,7 @@ import stripe
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from decimal import Decimal
 import os
+from django.db.models import Q
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -57,10 +58,176 @@ class LoginView(APIView):
             return Response({'access_token': access_token})
         else:
             return Response({'error': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
+        
+class PasswordResetRequestView(APIView):
+    def post(self, request):
+        email = request.data.get('email')
+        print(email)
+        try:
+            user = User.objects.get(email=email)
+            # Generate a TOTP key for the user
+            totp_key = self.generate_totp_key()
+            # Save the TOTP key to the user's profile
+            user_profile, created = UserProfile.objects.get_or_create(user=user)
+            user_profile.totp_key = totp_key
+            user_profile.save()
+            # Send the TOTP key to the user via email or other communication method
+            self.send_password_reset_email(user, totp_key)
 
-def logoutuser(request):
-    logout(request)
-    return redirect(reverse('signin'))
+            return Response({'message': 'TOTP key sent to your email'})
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    
+    def send_password_reset_email(self, user,totp_key):
+        # API endpoint to send the email
+        url = f"https://100085.pythonanywhere.com/api/email/"
+        name = user.username
+        EMAIL_FROM_WEBSITE = """
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta http-equiv="X-UA-Compatible" content="IE edge">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Samanta Content Evaluator</title>
+                </head>
+                <body>
+                    <div style="font-family: Helvetica, Arial, sans-serif; min-width: 100px; overflow: auto; line-height: 2; margin: 50px auto; width: 70%; padding: 20px 0; border-bottom: 1px solid #eee;">
+                        <a href="#" style="font-size: 1.2em; color: #00466a; text-decoration: none; font-weight: 600; display: block; text-align: center;">Dowell UX Living Lab Wallet</a>
+                        <p style="font-size: 1.1em; text-align: center;">Dear {name}, you have requested a password reset.</p>
+                        <p style="font-size: 1.1em; text-align: center;">To reset your password, click the link below:</p>
+                        <p style="font-size: 1.1em; text-align: center;">Your OTP is: {totp_key}</p>
+                        <p style="font-size: 1.1em; text-align: center;">If you did not request this password reset, you can ignore this email.</p>
+                        
+                    </div>
+                </body>
+                </html>
+            """
+        email_content = EMAIL_FROM_WEBSITE.format(name=name, totp_key=totp_key)
+        payload = {
+            "toname": name,
+            "toemail": user.email,
+            "subject": "Password Reset",
+            "email_content": email_content,
+        }
+        response = requests.post(url, json=payload)
+        return response.text
+    
+    def generate_totp_key(self):
+        # Generate a random secret key as bytes
+        secret_key_bytes = secrets.token_bytes(20)  # 20 bytes (160 bits)
+        # Convert the bytes to a base32-encoded string
+        secret_key = base64.b32encode(secret_key_bytes).decode('utf-8')
+        # Create a TOTP instance
+        totp = TOTP(secret_key, interval=30)  # Replace 'your-secret-key' with your secret key
+        # Generate the TOTP token
+        totp_key = totp.now()
+        print(totp_key)
+        return totp_key
+
+class ResetPasswordOtpVerify(APIView):
+    def post(self, request):
+        email = request.data.get('email')
+        otp = request.data.get('otp_key')
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        try:
+            user_profile = UserProfile.objects.get(user=user)
+        except UserProfile.DoesNotExist:
+            return Response({'error': 'User profile not found'}, status=status.HTTP_404_NOT_FOUND)
+        stored_otp_key = user_profile.totp_key
+        if otp == stored_otp_key:
+            return Response({'message': 'OTP verification successful'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        """AFTER THIS THE USER SHOULD BE REDIRECTED TO THE RESET PASSWORD TO ENTER A NEW PASSWORD"""
+
+class PasswordResetView(APIView):
+    def post(self, request):
+        email = request.data.get('email')
+        try:
+            user = User.objects.get(email=email)
+            # Validate the token with default_token_generator
+            if user is not None:
+                new_password = request.data.get('new_password')
+                user.set_password(new_password)
+                user.save()
+                return Response({'message': 'Password reset successful'})
+            else:
+                return Response({'error': 'user does not exist'}, status=status.HTTP_400_BAD_REQUEST)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+class ResendOTPView(APIView):
+    def post(self, request):
+        email = request.data.get('email')
+        try:
+            user = User.objects.get(email=email)
+            user_profile, created = UserProfile.objects.get_or_create(user=user)
+            # Generate a TOTP key for the user
+            totp_key = self.generate_totp_key()
+            # Save the TOTP key to the user's profile
+            user_profile.totp_key = totp_key
+            user_profile.save()
+            # Send the TOTP key to the user via email or other communication method
+            self.send_otp_email(user, totp_key)
+
+            return Response({'message': 'OTP sent to your email'}, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    def send_otp_email(self, user, totp_key):
+            # API endpoint to send the email
+            url = f"https://100085.pythonanywhere.com/api/email/"
+            name = user.username
+            EMAIL_FROM_WEBSITE = """
+                    <!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta http-equiv="X-UA-Compatible" content="IE=edge">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                            <title>Samanta Content Evaluator</title>
+                        </head>
+                        <body>
+                            <div style="font-family: Helvetica, Arial, sans-serif; min-width: 100px; overflow: auto; line-height: 2; margin: 50px auto; width: 70%; padding: 20px 0; border-bottom: 1px solid #eee;">
+                                <a href="#" style="font-size: 1.2em; color: #00466a; text-decoration: none; font-weight: 600; display: block; text-align: center;">Dowell UX Living Lab Wallet</a>
+                                <p style="font-size: 1.1em; text-align: center;">Dear {name},</p>
+                                <p style="font-size: 1.1em; text-align: center;">Your OTP for verification is: {totp}</p>
+                                <p style="font-size: 1.1em; text-align: center;">If you did not request an OTP with us, you can ignore this email.</p>
+                            </div>
+                        </body>
+                        </html>
+                    """
+
+            email_content = EMAIL_FROM_WEBSITE.format(name=name, totp=totp_key)
+            payload = {
+                "toname": name,
+                "toemail": user.email,
+                "subject": "OTP Verification",
+                "email_content": email_content,
+            }
+            response = requests.post(url, json=payload)
+            print(totp_key)
+            print(response.text)
+            return response.text
+
+    def generate_totp_key(self):
+        # Generate a random secret key as bytes
+        secret_key_bytes = secrets.token_bytes(20)  # 20 bytes (160 bits)
+        # Convert the bytes to a base32-encoded string
+        secret_key = base64.b32encode(secret_key_bytes).decode('utf-8')
+        # Create a TOTP instance
+        totp = TOTP(secret_key, interval=30)  # Replace 'your-secret-key' with your secret key
+        # Generate the TOTP token
+        totp_key = totp.now()
+        return totp_key
 
 class UserRegistrationView(APIView):
     def post(self, request):
@@ -125,7 +292,6 @@ class UserRegistrationView(APIView):
         return totp_key
 
     def send_verification_email(self, user, totp_key, email):
-            email_template = "verification_email.html"
             # API endpoint to send the email
             url = f"https://100085.pythonanywhere.com/api/email/"
             name = user.username
