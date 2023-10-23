@@ -283,11 +283,10 @@ tbody .last-row {
   width: 100%;
 }
 
-.select___ .css-1fdsijx-ValueContainer {
+.select___ > div:first-of-type > div:first-child {
   font-size: 0.875rem;
   height: 20px;
 }
-
 
 @media screen and (max-width: 991px) {
   .left-col {
