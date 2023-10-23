@@ -107,7 +107,7 @@ select::after {
 }
 
 .vector {
-  margin: 1em;
+  margin: 1em auto;
   width: 46%;
   display: block;
 }
@@ -282,6 +282,12 @@ tbody .last-row {
 .info__Price p {
   width: 100%;
 }
+
+.select___ .css-1fdsijx-ValueContainer {
+  font-size: 0.875rem;
+  height: 20px;
+}
+
 
 @media screen and (max-width: 991px) {
   .left-col {

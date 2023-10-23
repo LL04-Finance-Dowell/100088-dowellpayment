@@ -32,11 +32,11 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                     /> */}
                     <Select
                         onChange={(val) => onChange({ target: { value: val.value, name: 'base_currency' }})}
-                        name='base_currency'
+                        // name='base_currency'
                         // style={{ borderRadius: '20px', height: '50px', textIndent: '10px' }}
                         // placeholder="Select Currency"
-                        bg='#cccccc84'
-                        border='none'
+                        // bg='#cccccc84'
+                        // border='none'
                         // icon={
                         // <Icon
                         //     as={MdArrowDropDown} 
@@ -60,6 +60,7 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                                 })
                             ]
                         }
+                        className='select___'
                     >
                         {/* <option value="" selected={info.base_currency === ""}>Select Currency</option>
                         {state?.currency?.map((currency, key) => (
@@ -109,6 +110,7 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                                 })
                             ]    
                         }
+                        className='select___'
                     >
                         {/* <option value="" selected={info.base_country === ""}>Select Country</option>
                         {state?.country?.map((country, key) => (
@@ -148,6 +150,7 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                                 })
                             ]
                         }
+                        className='select___'
                     >
                         {/* <option value="" selected={info.target_country === ""}>Select Country</option>
                         {state?.country?.map((country, key) => (
@@ -187,6 +190,7 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                                 })
                             ]
                         }
+                        className='select___'
                     >
                         {/* <option value="" selected={info.target_currency === ""}>Select Currency</option>
                         {state?.currency?.map((currency, key) => (
