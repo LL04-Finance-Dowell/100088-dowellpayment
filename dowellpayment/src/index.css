@@ -108,7 +108,8 @@ select::after {
 
 .vector {
   margin: 1em;
-  width: 66%;
+  width: 62%;
+  display: block;
 }
 
 .title {
@@ -144,6 +145,12 @@ select::after {
 
 .section {
   margin: .5em;
+}
+
+.section.flex {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .question {
@@ -267,7 +274,20 @@ tbody .last-row {
   border-radius: 0 10px 0 0;
 }
 
+.info__Price {
+  margin: 2rem 0 0.5rem;
+  width: 100%;
+}
 
+.info__Price p {
+  width: 100%;
+}
+
+@media screen and (max-width: 991px) {
+  .left-col {
+    height: max-content;
+  }
+}
 
 /* Medium screen */
 @media (max-width: 820px) {
@@ -309,7 +329,9 @@ tbody .last-row {
   }
 
   .vector {
-    width: 100%
+    width: 60%;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .left-col {
@@ -340,6 +362,8 @@ tbody .last-row {
 
   .vector {
     margin: 1em;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .faq {

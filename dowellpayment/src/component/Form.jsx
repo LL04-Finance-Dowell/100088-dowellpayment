@@ -1,8 +1,8 @@
 import React from 'react'
-import { Button, Icon, Spinner, Select } from '@chakra-ui/react'
+import { Button, Icon, Spinner } from '@chakra-ui/react'
 import { MdArrowDropDown } from 'react-icons/md'
 import logo from '../assets/dowell-logo.svg'
-// import Select from "react-select"
+import Select from "react-select"
 
 
 const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) => {
@@ -30,26 +30,41 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                         onChange={onChange}
                         name="base_currency"
                     /> */}
-                    <Select 
-                        onChange={onChange}
+                    <Select
+                        onChange={(val) => onChange({ target: { value: val.value, name: 'base_currency' }})}
                         name='base_currency'
-                        style={{ borderRadius: '20px', height: '50px', textIndent: '10px' }}
+                        // style={{ borderRadius: '20px', height: '50px', textIndent: '10px' }}
                         // placeholder="Select Currency"
                         bg='#cccccc84'
                         border='none'
-                        icon={
-                        <Icon
-                            as={MdArrowDropDown} 
-                            color='#972EA2'
-                            boxSize={6}
-                            mr={4}
-                        />
+                        // icon={
+                        // <Icon
+                        //     as={MdArrowDropDown} 
+                        //     color='#972EA2'
+                        //     boxSize={6}
+                        //     mr={4}
+                        // />
+                        // }
+                        options={
+                            !state?.currency || !state ? [
+                                {label: 'Select Currency', value: ''},
+                            ]
+                            :
+                            [
+                                {label: 'Select Currency', value: ''},
+                                ...state?.currency?.map((currency) => {
+                                    return {
+                                        label: currency,
+                                        value: currency,
+                                    }
+                                })
+                            ]
                         }
                     >
-                        <option value="" selected={info.base_currency === ""}>Select Currency</option>
+                        {/* <option value="" selected={info.base_currency === ""}>Select Currency</option>
                         {state?.currency?.map((currency, key) => (
                             <option key={key} value={currency}>{currency}</option>
-                        ))}
+                        ))} */}
                     </Select>
                     </div>
                     <div className="form-group">
@@ -65,73 +80,118 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                     <div className="form-group">
                     <label>Base Country</label>
                     <Select
-                        onChange={onChange}
+                        onChange={(val) => onChange({ target: { value: val.value, name: 'base_country' }})}
                         name='base_country'
-                        style={{ borderRadius: '20px', height: '50px', textIndent: '10px' }}
+                        // style={{ borderRadius: '20px', height: '50px', textIndent: '10px' }}
                         // placeholder="Select Country"
                         bg='#cccccc84'
                         border='none'
-                        icon={
-                        <Icon
-                            as={MdArrowDropDown} 
-                            color='#972EA2'
-                            boxSize={6}
-                            mr={4}
-                        />
+                        // icon={
+                        // <Icon
+                        //     as={MdArrowDropDown} 
+                        //     color='#972EA2'
+                        //     boxSize={6}
+                        //     mr={4}
+                        // />
+                        // }
+                        options={
+                            !state?.country || !state ? [
+                                {label: 'Select country', value: ''},
+                            ]
+                            :
+                            [
+                                {label: 'Select country', value: ''},
+                                ...state?.country?.map((country) => {
+                                    return {
+                                        label: country,
+                                        value: country,
+                                    }
+                                })
+                            ]    
                         }
                     >
-                        <option value="" selected={info.base_country === ""}>Select Country</option>
+                        {/* <option value="" selected={info.base_country === ""}>Select Country</option>
                         {state?.country?.map((country, key) => (
                             <option key={key} value={country}>{country}</option>
-                        ))}
+                        ))} */}
                     </Select>
                     </div>
                     <div className="form-group">
                     <label>Target Country</label>
                     <Select
-                        onChange={onChange}
+                        onChange={(val) => onChange({ target: { value: val.value, name: 'target_country' }})}
                         name='target_country'
-                        style={{ borderRadius: '20px', height: '50px', textIndent: '10px' }}
+                        // style={{ borderRadius: '20px', height: '50px', textIndent: '10px' }}
                         // placeholder="Select Country"
                         bg='#cccccc84'
                         border='none'
-                        icon={
-                        <Icon
-                            as={MdArrowDropDown} 
-                            color='#972EA2'
-                            boxSize={6}
-                            mr={4}
-                        />
+                        // icon={
+                        // <Icon
+                        //     as={MdArrowDropDown} 
+                        //     color='#972EA2'
+                        //     boxSize={6}
+                        //     mr={4}
+                        // />
+                        // }
+                        options={
+                            !state?.country || !state ? [
+                                {label: 'Select country', value: ''},
+                            ]
+                            :
+                            [
+                                {label: 'Select country', value: ''},
+                                ...state?.country?.map((country) => {
+                                    return {
+                                        label: country,
+                                        value: country,
+                                    }
+                                })
+                            ]
                         }
                     >
-                        <option value="" selected={info.target_country === ""}>Select Country</option>
+                        {/* <option value="" selected={info.target_country === ""}>Select Country</option>
                         {state?.country?.map((country, key) => (
                             <option key={key} value={country}>{country}</option>
-                        ))}
+                        ))} */}
                     </Select>
                     </div>
                     <div className="form-group">
                     <label>Target Currency</label>
                     <Select
-                        onChange={onChange}
+                        onChange={(val) => onChange({ target: { value: val.value, name: 'target_currency' }})}
                         name='target_currency'
-                        style={{ borderRadius: '20px', height: '50px', textIndent: '10px' }}
+                        // style={{ borderRadius: '20px', height: '50px', textIndent: '10px' }}
                         // placeholder="Select Currency"
                         bg='#cccccc84'
                         border='none'
-                        icon={
-                        <Icon
-                            as={MdArrowDropDown} 
-                            color='#972EA2'
-                            boxSize={6}
-                            mr={4}
-                        />
+                        // icon={
+                        // <Icon
+                        //     as={MdArrowDropDown} 
+                        //     color='#972EA2'
+                        //     boxSize={6}
+                        //     mr={4}
+                        // />
+                        // }
+                        options={
+                            !state?.currency || !state ? [
+                                {label: 'Select Currency', value: ''},
+                            ]
+                            :
+                            [
+                                {label: 'Select Currency', value: ''},
+                                ...state?.currency?.map((currency) => {
+                                    return {
+                                        label: currency,
+                                        value: currency,
+                                    }
+                                })
+                            ]
                         }
                     >
-                        <option value="" selected={info.target_currency === ""}>Select Currency</option>
+                        {/* <option value="" selected={info.target_currency === ""}>Select Currency</option>
                         {state?.currency?.map((currency, key) => (
                             <option key={key} value={currency}>{currency}</option>
-                        ))}
+                        ))} */}
                     </Select>
                     </div>
                     <div className="form-group">

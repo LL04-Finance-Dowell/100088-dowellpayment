@@ -42,6 +42,16 @@ function Modal({ isOpen, onClose, values, info, loading, handleMailing }) {
                 <img src={logo} alt='Company logo' className="modalLogo" />
                 <p className='desc'>Purchase Price Parity Calculator</p>
             </div>
+            
+            <div className="info__Price">
+                <p>
+                    {basePriceInBaseCountry}: {basePriceInBaseCountryValue}
+                </p>
+                <p>
+                    {calculatedPriceInTargetCountry}: {calculatedPriceInTargetCountryValue}
+                </p>
+            </div>
+            
             <table>
                 {/* <thead>
                     <tr>
@@ -50,14 +60,14 @@ function Modal({ isOpen, onClose, values, info, loading, handleMailing }) {
                     </tr>
                 </thead> */}
                 <tbody style={{ border: ".2px solid #cccccc84", borderRadius: "10px" }}>
-                    <tr className="odd">
+                    {/* <tr className="odd">
                         <td id='head-left' style={{ fontWeight: 700 }}>{basePriceInBaseCountry}</td>
                         <td id='head-right' style={{ fontWeight: 700 }}>{basePriceInBaseCountryValue}</td>
                     </tr>
                     <tr className="odd">
                         <td style={{ fontWeight: 700 }}>{calculatedPriceInTargetCountry}</td>
                         <td style={{ fontWeight: 700 }}>{calculatedPriceInTargetCountryValue}</td>
-                    </tr>
+                    </tr> */}
                     <tr className="separation">
 
                     </tr>
@@ -66,12 +76,16 @@ function Modal({ isOpen, onClose, values, info, loading, handleMailing }) {
                         <td>{info?.base_currency}</td>
                     </tr>
                     <tr className="even">
-                        <td>Price in Base Country</td>
-                        <td>{values?.price_in_base_country}</td>
+                        <td>Base Country</td>
+                        <td>{values?.base_country}</td>
                     </tr>
                     <tr className="even">
                         <td>Target Country</td>
                         <td>{values?.target_country}</td>
+                    </tr>
+                    <tr className="even">
+                        <td>Price in Base Country</td>
+                        <td>{values?.price_in_base_country}</td>
                     </tr>
                     <tr className="even">
                         <td>Price in target country</td>
@@ -80,6 +94,10 @@ function Modal({ isOpen, onClose, values, info, loading, handleMailing }) {
                     <tr className="even" style={{ borderRadius: '0 0 10px 10px'}}>
                         <td style={{ borderRadius: '0 0 0 10px'}}>Calculated price in targeted country based on purchasing power</td>
                         <td style={{ borderRadius: '0 0 10px 0'}}>{values?.calculated_price_base_on_ppp}</td>
+                    </tr>
+                    <tr className="even">
+                        <td>Exchange rate between {values?.base_currency} and {values?.target_currency}</td>
+                        <td>{values?.exchange_rate}</td>
                     </tr>
                 </tbody>
             </table>
