@@ -10,11 +10,14 @@ mail_id = os.getenv("MAIL_ID",None)
 
 def send_mail(
     email,
+    base_currency,
+    target_currency,
     base_price_in_country,
     calculated_price_in_target_country,
     price_in_base_country,
     basecountry,
     targetcountry,
+    exchange_rate,
     target_price,
     calculated_price_base_on_ppp,
 ):
@@ -43,6 +46,7 @@ def send_mail(
                                 <p style="font-size:1.1em">Price In Base Country : {price_in_base_country}</p>
                                 <p style="font-size:1.1em">Base Price In {base_country} : {base_price_in_country},</p>
                                 <p style="font-size:1.1em">Calculated Price In {target_country} : {calculated_price_in_target_country}</p>
+                                <p style="font-size:1.1em">1 {base_currency} = {exchange_rate:.2f} {target_currency}</p>
                                 <p style="font-size:1.1em">Target Price : {target_price}</p>
                                 <p style="font-size:1.1em">Calculated Price Based On PPP : {calculated_price_base_on_ppp}</p>
                                 </div>
@@ -52,11 +56,14 @@ def send_mail(
                       """
     email_content = EMAIL_FROM_WEBSITE.format(
         email=email,
+        base_currency=base_currency,
+        target_currency=target_currency,
         base_country=basecountry,
         base_price_in_country=base_price_in_country,
         target_country=targetcountry,
         calculated_price_in_target_country=calculated_price_in_target_country,
         price_in_base_country=price_in_base_country,
+        exchange_rate = exchange_rate,
         target_price=target_price,
         calculated_price_base_on_ppp=calculated_price_base_on_ppp,
     )

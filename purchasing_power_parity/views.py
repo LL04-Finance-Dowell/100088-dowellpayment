@@ -120,6 +120,9 @@ class SendResponseToClient(APIView):
             
             
             email = data["email"]
+            base_currency = data["base_currency"]
+            target_currency = data["target_currency"]
+            exchange_rate = data["exchange_rate"]
             # base_price_in_base_country = data["base_price_in_base_country"] 
             # calculated_price_in_target_country = data["calculated_price_in_target_country"]
             price_in_base_country = data["price_in_base_country"]
@@ -150,6 +153,7 @@ class SendResponseToClient(APIView):
                                 <p style="font-size:1.1em">Price In Base Country : {price_in_base_country}</p>
                                 <p style="font-size:1.1em">Base Price In {base_country} : {base_price_in_base_country},</p>
                                 <p style="font-size:1.1em">Calculated Price In {target_country} : {calculated_price_in_target_country}</p>
+                                <p style="font-size:1.1em">1 {base_currency} = {exchange_rate} {target_currency}</p>
                                 <p style="font-size:1.1em">Target Price : {target_price}</p>
                                 <p style="font-size:1.1em">Calculated Price Based On PPP : {calculated_price_base_on_ppp}</p>
                                 </div>
@@ -158,6 +162,9 @@ class SendResponseToClient(APIView):
                         </html>
                       """
             email_content = EMAIL_FROM_WEBSITE.format(
+                base_currency = base_currency,
+                target_currency = target_currency,
+                exchange_rate=exchange_rate,
                 base_country=base_country,
                 base_price_in_base_country=base_price_in_base_country,
                 target_country=target_country,

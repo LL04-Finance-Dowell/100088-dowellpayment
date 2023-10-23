@@ -143,6 +143,8 @@ def get_ppp_data(
         )[0].currency_code.upper()
 
         res2 = get_latest_rate(target_country_currency_code, target_currency_code)
+        exchange_rate = get_latest_rate(base_currency_code,target_currency_code)
+        print("exchange_rate",exchange_rate)
         try:
             target_currency_exchange_rate = res2 * (purchasing_power)
         except:
@@ -181,11 +183,14 @@ def get_ppp_data(
 
     send_mail(
         email,
+        base_currency,
+        target_currency,
         base_price_in_country,
         calculated_price_in_target_country,
         price_in_base_country,
         basecountry,
         targetcountry,
+        exchange_rate,
         target_price,
         calculated_price_base_on_ppp,
     )
@@ -194,11 +199,18 @@ def get_ppp_data(
             "success": True,
             "message": "Expected values",
             "email":email,
+            "base_country": base_country,
+            "target_country": target_country,
+            "base_currency":base_currency,
+            "target_currency":target_currency,
             f"base_price_in_{base_country}": f"{base_price} {base_currency_code}",
             f"calculated_price_in_{target_country}": f"{target_currency_exchange_rate:.2f} {target_currency_code}",
             "price_in_base_country": f"{base_currency_exchange_rate:.2f} {base_country_currency_code}",
             "base_country": base_country,
             "target_country": target_country,
+            "base_currency":base_currency,
+            "target_currency":target_currency,
+            "exchange_rate":f"{exchange_rate:.2f}",
             "target_price": f"{purchasing_power:.2f} {target_country_currency_code}",
             "calculated_price_base_on_ppp": f"{target_currency_exchange_rate:.2f} {target_currency_code}",
         },
