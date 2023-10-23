@@ -20,7 +20,7 @@ label {
   font-style: normal;
   font-weight: 400;
   margin-top: 0;
-  margin-bottom: 7px;
+  margin-bottom: 1px;
 }
 
 select, input {
@@ -28,7 +28,7 @@ select, input {
   height: 50px;
   border-radius: 20px;
   background: #cccccc84;
-  padding-inline: 2em;
+  padding-inline: 1em;
   cursor: pointer;
   border: none;
   padding-right: 4em;
@@ -108,7 +108,7 @@ select::after {
 
 .vector {
   margin: 1em;
-  width: 62%;
+  width: 46%;
   display: block;
 }
 
@@ -155,7 +155,7 @@ select::after {
 
 .question {
   color: #151515;
-  font-size: 1.4rem;
+  font-size: 1rem;
   font-weight: 400;
   margin-bottom: 3px;
 }
