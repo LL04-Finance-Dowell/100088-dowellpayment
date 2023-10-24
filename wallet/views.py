@@ -8,6 +8,7 @@ from .serializers import (
     UserSerializer,
     WalletDetailSerializer,
     TransactionSerializer,
+    ExternalPaymentSerializer,
 )
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
@@ -58,6 +59,13 @@ class LoginView(APIView):
             return Response({'access_token': access_token})
         else:
             return Response({'error': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
+
+class LogoutView(APIView):
+    def post(self, request):
+        if request.user.is_authenticated:
+            request.session.flush()
+            return Response({'message': 'Logout successful'}, status=status.HTTP_200_OK)
+        return Response({'message': 'Not logged in'}, status=status.HTTP_401_UNAUTHORIZED)
         
 class PasswordResetRequestView(APIView):
     def post(self, request):
@@ -649,6 +657,149 @@ class StripePaymentCallback(APIView):
                 "toname": name,
                 "toemail": user_email,
                 "subject": "Walllet Deposit",
+                "email_content": email_content,
+            }
+            response = requests.post(url, json=payload)
+            print(response.text)
+            return response.text
+
+
+
+"""
+
+GET TRANSACTIONS HISTORY
+
+"""
+class TransactionHistoryView(APIView):
+    permissions_classes = [IsAuthenticated]
+    def get(self, request):
+        # Retrieve the user's transaction history
+        user = request.user
+        transactions = Transaction.objects.filter(wallet__user=user).order_by('-timestamp')
+
+        # Format the transaction history into a statement (you can customize the format)
+        statement = "Transaction History:\n\n"
+        for transaction in transactions:
+            statement += f"Transaction Type: {transaction.transaction_type}\n"
+            statement += f"Amount: ${transaction.amount}\n"
+            statement += f"Status: {transaction.status}\n"
+            statement += f"Timestamp: {transaction.timestamp}\n\n"
+
+        # Send the statement to the user's email using your email API
+        user_name = user.username
+        user_email = user.email
+        amount = sum(transaction.amount for transaction in transactions)  # Total amount in the statement
+        email_api_url = f"https://100085.pythonanywhere.com/api/email/"
+        
+        email_content = """
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta http-equiv="X-UA-Compatible" content="IE=edge">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Your Transaction History</title>
+            </head>
+            <body>
+                <div style="font-family: Helvetica, Arial, sans-serif; min-width: 100px; overflow: auto; line-height: 1.6; margin: 50px auto; width: 70%; padding: 20px 0; border-bottom: 1px solid #eee;">
+                    <p style="font-size: 1.1em; text-align: center;">Dear {name},</p>
+                    <p style="font-size: 1.1em; text-align: center;">Here is your transaction history:</p>
+                    <pre>{statement}</pre>
+                </div>
+            </body>
+            </html>
+        """.format(name=user_name, statement=statement)
+
+        payload = {
+            "toname": user_name,
+            "toemail": user_email,
+            "subject": "Transaction History",
+            "email_content": email_content,
+        }
+
+        response = requests.post(email_api_url, json=payload)
+        print(response)
+        if response.status_code == 200:
+            return Response({'message': 'Transaction history sent to your email'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'message': 'Failed to send transaction history'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+
+
+"""
+
+MAKE PAYMENTS TO EXTERNAL SITES
+
+"""
+
+class ExternalPaymentView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+        serializer = ExternalPaymentSerializer(data=request.data)
+
+        if serializer.is_valid():
+            user = request.user
+            data = serializer.validated_data
+            amount = data['amount']
+            try:
+                user_wallet = Wallet.objects.get(user=user)
+
+                if user_wallet.balance >= amount:
+                    # Deduct the payment amount from the user's wallet balance
+                    user_wallet.balance -= Decimal(amount)
+                    user_wallet.save()
+
+                    # Create a transaction record
+                    transaction = Transaction(
+                        wallet=user_wallet,
+                        transaction_type="Payment",
+                        status="Completed",
+                        amount=amount
+                    )
+                    transaction.save()
+                    
+                    # Pass the correct user object to the email function
+                    self.send_transaction_email(user, amount)
+
+                    return Response({'message': 'Payment successful'}, status=status.HTTP_200_OK)
+                else:
+                    return Response({'message': 'Insufficient wallet balance'}, status=status.HTTP_400_BAD_REQUEST)
+            except Wallet.DoesNotExist:
+                return Response({'message': 'User does not have a wallet'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    
+    def send_transaction_email(self,user,amount):
+            # API endpoint to send the email
+            url = f"https://100085.pythonanywhere.com/api/email/"
+            name = user.username
+            EMAIL_FROM_WEBSITE = """
+                    <!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta http-equiv="X-UA-Compatible" content="IE=edge">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                            <title>Samanta Content Evaluator</title>
+                        </head>
+                        <body>
+                            <div style="font-family: Helvetica, Arial, sans-serif; min-width: 100px; overflow: auto; line-height: 1.6; margin: 50px auto; width: 70%; padding: 20px 0; border-bottom: 1px solid #eee;">
+                                <a href="#" style="font-size: 1.2em; color: #00466a; text-decoration: none; font-weight: 600; display: block; text-align: center;">Dowell UX Living Lab Wallet</a>
+                                <p style="font-size: 1.1em; text-align: center;">Dear {name},</p>
+                                <p style="font-size: 1.1em; text-align: center;">Your Payment of ${amount} to Dowell was successful.</p>
+                                <p style="font-size: 1.1em; text-align: center;">Thank you for using our platform.</p>
+                            </div>
+                        </body>
+                        </html>
+                        """
+
+            email_content = EMAIL_FROM_WEBSITE.format(name=name, amount=amount)
+            payload = {
+                "toname": name,
+                "toemail": user.email,
+                "subject": "Wallet Payment",
                 "email_content": email_content,
             }
             response = requests.post(url, json=payload)

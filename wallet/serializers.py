@@ -55,3 +55,25 @@ class PaymentSerializer(serializers.Serializer):
 
 class VerifyPaymentSerializer(serializers.Serializer):
     id = serializers.CharField()
+
+
+
+class ExternalPaymentSerializer(serializers.Serializer):
+    amount = serializers.FloatField()
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        amount = data.get("amount")
+
+        """
+        The code checks if the price has no decimal portion (price % 1 == 0) 
+        and converts it to an integer if that's the case. 
+        If it has a decimal portion, it keeps it as is (preserving the decimal part).
+
+        """
+        # print("actual price", amount)
+        if amount % 1 == 0:
+            data["amount"] = int(amount)
+        else:
+            data["amount"] = amount
+        return data
