@@ -30,37 +30,8 @@ def get_latest_rate(from_currency, to_currency):
         return result
 
 
-def get_all_currency_and_country():
-    obj = PPPCalculation.objects.all()
-    currency_name_list = []
-    country_name_list = []
-    for item in obj:
-        if item.currency_name not in currency_name_list:
-            currency_name_list.append(item.currency_name)
-        if item.country_name not in country_name_list:
-            country_name_list.append(item.country_name)
-
-    currency_name_list.sort()
-    country_name_list.sort()
-    currency_name = []
-    country_name = []
-    for currency in currency_name_list:
-        currency_name.append({"value": currency, "label": currency})
-    for country in country_name_list:
-        country_name.append({"value": country, "label": country})
-    return Response(
-        {
-            "success": True,
-            "message": "List of country and currency name",
-            "currency_name": currency_name,
-            "country_name": country_name,
-        },
-        status=status.HTTP_200_OK,
-    )
-
 
 """GET ALL CURRENCY NAME AND COUNTRY NAME"""
-
 
 def get_all_currency_name():
     obj = PPPCalculation.objects.all()
@@ -74,21 +45,18 @@ def get_all_currency_name():
 
     currency_name_list.sort()
     country_name_list.sort()
-    currency_name = []
-    country_name = []
-    for currency in currency_name_list:
-        currency_name.append({"currency_name": currency})
-    for country in country_name_list:
-        country_name.append({"country_name": country})
     return Response(
         {
             "success": True,
             "message": "List of country and currency name",
-            "currency_name": currency_name,
-            "country_name": country_name,
+            "currency": currency_name_list,
+            "country": country_name_list,
         },
         status=status.HTTP_200_OK,
     )
+
+
+
 
 
 """CALCULATE THE PURCHASING POWER PARITY"""
@@ -210,7 +178,7 @@ def get_ppp_data(
             "target_country": target_country,
             "base_currency":base_currency,
             "target_currency":target_currency,
-            "exchange_rate":f"{exchange_rate:.2f}",
+            "exchange_rate":f"{exchange_rate:.4f}",
             "target_price": f"{purchasing_power:.2f} {target_country_currency_code}",
             "calculated_price_base_on_ppp": f"{target_currency_exchange_rate:.2f} {target_currency_code}",
         },
@@ -225,3 +193,32 @@ def get_ppp_data(
 #             "purchasing_power": f"{purchasing_power} {target_country_currency_code}",
 #             "target_currency_exchange_rate": f"{target_currency_exchange_rate} {target_currency_code}",
 #         },
+
+
+# def get_all_currency_name():
+#     obj = PPPCalculation.objects.all()
+#     currency_name_list = []
+#     country_name_list = []
+#     for item in obj:
+#         if item.currency_name not in currency_name_list:
+#             currency_name_list.append(item.currency_name)
+#         if item.country_name not in country_name_list:
+#             country_name_list.append(item.country_name)
+
+#     currency_name_list.sort()
+#     country_name_list.sort()
+#     currency_name = []
+#     country_name = []
+#     for currency in currency_name_list:
+#         currency_name.append({"currency_name": currency})
+#     for country in country_name_list:
+#         country_name.append({"country_name": country})
+#     return Response(
+#         {
+#             "success": True,
+#             "message": "List of country and currency name",
+#             "currency_name": currency_name,
+#             "country_name": country_name,
+#         },
+#         status=status.HTTP_200_OK,
+#     )
