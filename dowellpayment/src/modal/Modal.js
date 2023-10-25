@@ -40,7 +40,7 @@ function Modal({ isOpen, onClose, values, info, loading, handleMailing }) {
             </button>
             <div className="header">
                 <img src={logo} alt='Company logo' className="modalLogo" />
-                <p className='desc'>Purchase Price Parity Calculator</p>
+                <p className='desc'><b>Purchase Power Parity Calculator</b></p>
             </div>
             
             <div className="info__Price">
@@ -80,25 +80,29 @@ function Modal({ isOpen, onClose, values, info, loading, handleMailing }) {
                         <td>{values?.base_country}</td>
                     </tr>
                     <tr className="even">
-                        <td>Target Country</td>
-                        <td>{values?.target_country}</td>
-                    </tr>
-                    <tr className="even">
                         <td>Price in Base Country</td>
                         <td>{values?.price_in_base_country}</td>
+                    </tr>
+                    <tr className="even">
+                        <td>Target Country</td>
+                        <td>{values?.target_country}</td>
                     </tr>
                     <tr className="even">
                         <td>Price in target country</td>
                         <td>{values?.target_price}</td>
                     </tr>
-                    <tr className="even" style={{ borderRadius: '0 0 10px 10px'}}>
+                    <tr className="even">
+                        <td>Exchange rate</td>
+                        <td>1{values?.price_in_base_country?.split(' ')[1]} = {values?.exchange_rate}{values?.target_price?.split(' ')[1]}</td>
+                    </tr>
+                    {/* <tr className="even" style={{ borderRadius: '0 0 10px 10px'}}>
                         <td style={{ borderRadius: '0 0 0 10px'}}>Calculated price in targeted country based on purchasing power</td>
                         <td style={{ borderRadius: '0 0 10px 0'}}>{values?.calculated_price_base_on_ppp}</td>
-                    </tr>
-                    <tr className="even">
+                    </tr> */}
+                    {/* <tr className="even">
                         <td>Exchange rate between {values?.base_currency} and {values?.target_currency}</td>
                         <td>{values?.exchange_rate}</td>
-                    </tr>
+                    </tr> */}
                 </tbody>
             </table>
             <div className="mailPrompt">
@@ -122,6 +126,16 @@ function Modal({ isOpen, onClose, values, info, loading, handleMailing }) {
                     No
                 </Button> */}
             </div>
+            
+            <p className="disclaimer__Wrapp">
+                <span className="disclaimer__text">
+                    Disclaimer for Purchase Power Calculator:
+                </span>
+                <span className="disclaimer__Info">
+                    The Dowell World Price Indicator is used to provide estimates, with data collected solely for this purpose. The purpose-built and trained software offers approximate values, though results may vary with market dynamics. The creators disclaim any liabilities. Data collection complies with GDPR rules. Information obtained is for informational purposes, not professional & legal advice. By acknowledging these terms, Spending based on calculations is at user discretion
+                </span>
+            </p>
+
             </div>
         </div>
         )

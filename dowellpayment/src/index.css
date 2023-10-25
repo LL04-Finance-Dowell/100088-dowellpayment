@@ -188,8 +188,8 @@ select::after {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   padding: 25px;
   position: relative;
-  /* max-width: 80%;
-  width: 60%; */
+  max-width: 80%;
+  width: 60%;
   z-index: 1001;
   display: flex;
   flex-direction: column;
@@ -210,8 +210,10 @@ select::after {
 }
 
 .modalLogo {
-  width: auto;
+  width: 6rem;
   height: 100px;
+  display: block;
+  margin: 0 auto;
 }
 
 .mailPrompt {
@@ -233,7 +235,7 @@ table {
   border-radius: 5px;
   float: left;
   text-align: left;
-  margin-block: 1.5em;
+  margin: 1rem 0;
 }
 
 thead {
@@ -243,15 +245,15 @@ thead {
 
 th, td {
   width: 400px;
-  /* text-align: left; */
-  padding: .7em 2em;
-  margin: 2em;
-  font-size: 1rem;
+  text-align: center;
+  padding: .6em 2em;
+  margin: 2em .2em;
+  font-size: 0.875rem;
 }
 
 table .even {
   background: rgba(251, 239, 250, 0.114)84; /* Color for even rows */
-  border: .2px solid #cccccc84;
+  /* border: .2px solid #cccccc84; */
   border-radius: 10px;
 }
 
@@ -276,15 +278,16 @@ tbody .last-row {
 }
 
 .info__Price {
-  margin: 2rem 0 0.5rem;
+  margin: 1rem 0 0;
   width: 100%;
-  border: 1px solid rgba(204, 204, 204, 0.518);
+  border: 1.5px solid rgba(204, 204, 204, 0.518);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: column;
   gap: 0.5rem;
   padding: 1rem;
+  border-radius: 5px;
 }
 
 .info__Price p {
@@ -294,6 +297,23 @@ tbody .last-row {
 .select___ > div:first-of-type > div:first-child {
   font-size: 0.875rem;
   height: 20px;
+}
+
+.disclaimer__Wrapp {
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  margin-top: 1rem;
+}
+
+.disclaimer__text {
+  font-size: 0.875rem;
+}
+
+.disclaimer__Info {
+  font-size: 0.7rem;
+  text-align: left;
+  font-style: italic;
 }
 
 @media screen and (max-width: 991px) {
@@ -553,7 +573,9 @@ tbody .last-row {
   }
 
   .modal {
-    width: 90%;
+    width: 100%;
+    padding-left: 0.8rem;
+    padding-right: 0.8rem;
   }
   
   table {
@@ -572,6 +594,19 @@ tbody .last-row {
   }
   .answer {
     font-size: 1em;
+  }
+  
+  .close-button {
+    right: 0.8rem;
+    font-size: 1.4rem;
+  }
+
+  .disclaimer__text {
+    font-size: 0.75rem;
+  }
+
+  .disclaimer__Info {
+    font-size: 0.6rem;
   }
 }
 

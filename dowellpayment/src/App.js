@@ -27,7 +27,7 @@ function App() {
       const data = await res.json()
       setState(data)
     }
-
+console.log(result);
     fetchData('https://100088.pythonanywhere.com/api/v1/ppp')
   }, [])
 

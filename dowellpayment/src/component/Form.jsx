@@ -18,7 +18,7 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                 <div className="header">
                     <img src={logo} alt='Company logo' className="logo" />
                     <h1 className="title">DoWell World Price Indicator</h1>
-                    <p className='desc'>Purchase Price Parity Calculator</p>
+                    <p className='desc'>Purchase Power Parity Calculator</p>
                 </div>
 
                 <form className="form" onSubmit={handleCalculation}>
