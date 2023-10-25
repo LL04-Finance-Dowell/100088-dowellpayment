@@ -20,6 +20,7 @@ function App() {
   })
 
   const [result, setResult] = useState(null)
+  const [mailLoading, setMailLoading] = useState(false);
 
   useEffect(() => {
     const fetchData = async (url) => {
@@ -80,6 +81,10 @@ function App() {
   }
 
   const handleMailing = async () => {
+    if (mailLoading) return
+
+    setMailLoading(true);
+    
     const reqOption = {
       method: 'POST',
       headers: {
@@ -90,6 +95,7 @@ function App() {
 
     try {
       const response = await fetch('https://100088.pythonanywhere.com/api/v1/ppp/client-mail', reqOption)
+      setMailLoading(false);
       if(response.ok) {
         alert('Mail sent successfully')
       }
@@ -97,6 +103,7 @@ function App() {
 
     } catch (error) {
       console.error('Fetch Error:', error);
+      setMailLoading(false);
     }
   }
 
@@ -134,6 +141,7 @@ function App() {
         info={info}
         loading={loading}
         handleMailing={handleMailing} 
+        mailLoading={mailLoading}
       />
       <div className="container">
         {/* left col */}

@@ -1,7 +1,7 @@
 import { Button, Spinner } from "@chakra-ui/react";
 import logo from '../assets/dowell-logo.svg'
 
-function Modal({ isOpen, onClose, values, info, loading, handleMailing }) {
+function Modal({ isOpen, onClose, values, info, loading, handleMailing, mailLoading }) {
 
     function toTitleCaseWithSpaces(inputString) {
         return inputString
@@ -110,12 +110,17 @@ function Modal({ isOpen, onClose, values, info, loading, handleMailing }) {
                 <Button
                     color="white"
                     bg="#61B84C"
-                    p={2}
-                    fontSize={{ sm: '1em', md: '1.2em', lg: '1.2em' }}
+                    p={'1 5'}
+                    fontSize={'0.875rem'}
                     _hover={{ background: '#62b84cda'}}
                     onClick={handleMailing}
+                    disabled={mailLoading ? true : false}
                 >
-                    Yes
+                    {
+                        mailLoading ? 'Sending mail...'
+                        :
+                        'Yes'
+                    }
                 </Button>
                 {/* <Button
                     color="#972EA2"
