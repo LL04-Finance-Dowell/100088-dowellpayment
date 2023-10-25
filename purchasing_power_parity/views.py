@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .serializers import PPPSerializer
+from datetime import datetime
 from .helper import  get_all_currency_name, get_ppp_data
 import requests
 import re
@@ -105,7 +106,9 @@ class SendResponseToClient(APIView):
 
             email = data["email"]
             base_currency = data["base_currency"]
+            base_currency_code =data["base_currency_code"]
             target_currency = data["target_currency"]
+            target_currency_code =data["target_currency_code"]
             exchange_rate = data["exchange_rate"]
             # base_price_in_base_country = data["base_price_in_base_country"]
             # calculated_price_in_target_country = data["calculated_price_in_target_country"]
@@ -180,7 +183,7 @@ class SendResponseToClient(APIView):
                         <li>Base Price In {base_country} : {base_price_in_base_country}</li>
                         <li>Calculated Price In {target_country} : {calculated_price_in_target_country}</li>
                         <li>Calculated Price Based On PPP : {calculated_price_base_on_ppp}</li>
-                        <li>Exchange rate. 1 {base_currency} = {exchange_rate} {target_currency} </li>
+                        <li>Exchange rate. 1 {base_currency_code} = {exchange_rate} {target_currency_code} </li>
                     </ul>
                     <div style="margin: 20px;">
                         <p>
@@ -225,6 +228,8 @@ class SendResponseToClient(APIView):
             email_content = EMAIL_FROM_WEBSITE.format(
                 email=email,
                 base_currency=base_currency,
+                base_currency_code = base_currency_code,
+                target_currency_code = target_currency_code,
                 target_currency=target_currency,
                 exchange_rate=exchange_rate,
                 base_country=base_country,
@@ -235,11 +240,11 @@ class SendResponseToClient(APIView):
                 target_price=target_price,
                 calculated_price_base_on_ppp=calculated_price_base_on_ppp,
             )
-
+            date_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             payload = {
                 "toname": f"{email}",
                 "toemail": f"{email}",
-                "subject": "Purchasing Power Parity",
+                "subject": f"Result for Purchasing Power Parity {date_time}",
                 "email_content": email_content,
             }
             response = requests.post(url, json=payload)

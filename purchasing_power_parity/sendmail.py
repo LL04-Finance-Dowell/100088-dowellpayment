@@ -13,7 +13,9 @@ mail_id = os.getenv("MAIL_ID", None)
 def send_mail(
     email,
     base_currency,
+    base_currency_code,
     target_currency,
+    target_currency_code,
     base_price_in_country,
     calculated_price_in_target_country,
     price_in_base_country,
@@ -90,7 +92,7 @@ def send_mail(
             <li>Base Price In {base_country} : {base_price_in_country}</li>
             <li>Calculated Price In {target_country} : {calculated_price_in_target_country}</li>
             <li>Calculated Price Based On PPP : {calculated_price_base_on_ppp}</li>
-            <li>Exchange rate. 1 {base_currency} = {exchange_rate:.4f} {target_currency} </li>
+            <li>Exchange rate. 1 {base_currency_code} = {exchange_rate:.4f} {target_currency_code} </li>
           </ul>
           <div style="margin: 20px;">
             <p>DoWell UX Living Lab Team</p>
@@ -124,10 +126,13 @@ def send_mail(
   </body>
 </html>
 """
+    print("target_currency_code from mail",target_currency_code)
     email_content = EMAIL_FROM_WEBSITE.format(
         email=email,
         base_currency=base_currency,
+        base_currency_code = base_currency_code,
         target_currency=target_currency,
+        target_currency_code = target_currency_code,
         base_country=basecountry,
         base_price_in_country=base_price_in_country,
         target_country=targetcountry,
