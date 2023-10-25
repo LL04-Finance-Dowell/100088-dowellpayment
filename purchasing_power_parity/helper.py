@@ -112,6 +112,7 @@ def get_ppp_data(
 
         res2 = get_latest_rate(target_country_currency_code, target_currency_code)
         exchange_rate = get_latest_rate(base_currency_code,target_currency_code)
+        print(base_currency_code,target_currency_code)
         print("exchange_rate",exchange_rate)
         try:
             target_currency_exchange_rate = res2 * (purchasing_power)

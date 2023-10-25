@@ -147,7 +147,7 @@ class SendResponseToClient(APIView):
                 >
                     <img
                     src="https://dowellfileuploader.uxlivinglab.online/hr/logo-2-min-min.png"
-                    height="80px"
+                    height="140px"
                     width="140px"
                     style="display: block; margin: 0 auto;"
                     />
@@ -160,18 +160,18 @@ class SendResponseToClient(APIView):
                     <section style="margin: 20px;">
                     <p>Hi {email},</p>
                     <p>Result from DoWell World Price Indicator :</p>
-                    <p style="text-align: center;">
+                    <p style="text-align: left;">
                         <span style="font-weight: bold; font-size: 1.2rem;"
                         >Base Price in {base_country} : {base_price_in_base_country}</span
                         >
                     </p>
-                    <p style="text-align: center;">
+                    <p style="text-align: left;">
                         <span style="font-weight: bold; font-size: 1.2rem;"
                         >Calculated Price in {target_country} : {calculated_price_in_target_country}</span
                         >
                     </p>
-                    <p style="font-weight: bold;">Detailed information :</p>
-                    <ul>
+                    <p style="font-weight: bold; font-size: 14px;">Detailed information :</p>
+                    <ul style="font-size: 14px;">
                         <li>Base Currency : {base_currency}</li>
                         <li>Base Country : {base_country}</li>
                         <li>Target Country : {target_country}</li>
@@ -180,7 +180,7 @@ class SendResponseToClient(APIView):
                         <li>Base Price In {base_country} : {base_price_in_base_country}</li>
                         <li>Calculated Price In {target_country} : {calculated_price_in_target_country}</li>
                         <li>Calculated Price Based On PPP : {calculated_price_base_on_ppp}</li>
-                        <li>Exchange rate between {base_country} and {target_country} : {exchange_rate} </li>
+                        <li>Exchange rate. 1 {base_currency} = {exchange_rate} {target_currency} </li>
                     </ul>
                     <div style="margin: 20px;">
                         <p>
