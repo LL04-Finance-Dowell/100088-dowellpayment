@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import Modal from "./modal/Modal";
 import Form from "./component/Form";
 import Details from "./component/Details";
+import { toast } from 'react-toastify';
 
 function App() {
   const [isModalOpen, setModalOpen] = useState(false);
@@ -97,7 +98,7 @@ function App() {
       const response = await fetch('https://100088.pythonanywhere.com/api/v1/ppp/client-mail', reqOption)
       setMailLoading(false);
       if(response.ok) {
-        alert('Mail sent successfully')
+        toast.success('Mail sent successfully')
       }
       closeModal()
 
@@ -113,7 +114,7 @@ function App() {
         setModalOpen(true);
       }, 1600)
     } else {
-      alert("Kindly complete the form")
+      toast.info("Kindly complete the form")
       setLoading(false)
     }
   };

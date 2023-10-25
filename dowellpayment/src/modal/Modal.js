@@ -93,7 +93,7 @@ function Modal({ isOpen, onClose, values, info, loading, handleMailing, mailLoad
                     </tr>
                     <tr className="even">
                         <td>Exchange rate</td>
-                        <td>1 {info?.base_currency} = {values?.exchange_rate} {values?.target_currency}</td>
+                        <td>1 {values?.base_currency_code} = {values?.exchange_rate} {values?.target_currency_code}</td>
                     </tr>
                     {/* <tr className="even" style={{ borderRadius: '0 0 10px 10px'}}>
                         <td style={{ borderRadius: '0 0 0 10px'}}>Calculated price in targeted country based on purchasing power</td>

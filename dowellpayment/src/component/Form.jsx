@@ -61,6 +61,7 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                             ]
                         }
                         className='select___'
+                        value={{ label: info?.base_currency, value: info?.base_currency }}
                     >
                         {/* <option value="" selected={info.base_currency === ""}>Select Currency</option>
                         {state?.currency?.map((currency, key) => (
@@ -111,6 +112,7 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                             ]    
                         }
                         className='select___'
+                        value={{ label: info?.base_country, value: info?.base_country }}
                     >
                         {/* <option value="" selected={info.base_country === ""}>Select Country</option>
                         {state?.country?.map((country, key) => (
@@ -151,6 +153,7 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                             ]
                         }
                         className='select___'
+                        value={{ label: info?.target_country, value: info?.target_country }}
                     >
                         {/* <option value="" selected={info.target_country === ""}>Select Country</option>
                         {state?.country?.map((country, key) => (
@@ -191,6 +194,7 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                             ]
                         }
                         className='select___'
+                        value={{ label: info?.target_currency, value: info?.target_currency }}
                     >
                         {/* <option value="" selected={info.target_currency === ""}>Select Currency</option>
                         {state?.currency?.map((currency, key) => (
