@@ -8,7 +8,7 @@ class UserProfile(models.Model):
     firstname = models.CharField(max_length=100)
     lastname = models.CharField(max_length=100)
     profile_picture = models.ImageField(
-        default=None, 
+        default="avatar.jpg", 
         upload_to='profile_images', # dir to store the image
         null=True,
         blank=True

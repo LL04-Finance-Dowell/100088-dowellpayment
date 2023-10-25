@@ -25,5 +25,7 @@ urlpatterns = [
     path("transfer",views.SendMoney.as_view(),name="transfer"),
     #external payment
     path('external-payment',views.ExternalPaymentView.as_view(),name="external-payment"),
+    #userprofile
+    path('profile',views.UserProfileDetail.as_view(),name="profile"),
 
 ]

@@ -9,6 +9,7 @@ from .serializers import (
     WalletDetailSerializer,
     TransactionSerializer,
     ExternalPaymentSerializer,
+    UserProfileSerializer,
 )
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
@@ -38,6 +39,7 @@ from .serializers import PaymentSerializer
 from datetime import date
 import uuid
 import secrets
+from django.utils import timezone
 import stripe
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from decimal import Decimal
@@ -292,6 +294,8 @@ class UserRegistrationView(APIView):
         secret_key_bytes = secrets.token_bytes(20)  # 20 bytes (160 bits)
         # Convert the bytes to a base32-encoded string
         secret_key = base64.b32encode(secret_key_bytes).decode('utf-8')
+        # Calculate the expiration time (30 minutes from now)
+        expiration_time = timezone.now() + timezone.timedelta(minutes=30)
         # Create a TOTP instance
         totp = TOTP(secret_key, interval=30)  # Replace 'your-secret-key' with your secret key
         # Generate the TOTP token
@@ -303,6 +307,7 @@ class UserRegistrationView(APIView):
             # API endpoint to send the email
             url = f"https://100085.pythonanywhere.com/api/email/"
             name = user.username
+            expiration_time = timezone.now() + timezone.timedelta(minutes=30)  # 30 minutes from now
             EMAIL_FROM_WEBSITE = """
                     <!DOCTYPE html>
                         <html lang="en">
@@ -317,6 +322,7 @@ class UserRegistrationView(APIView):
                                 <a href="#" style="font-size: 1.2em; color: #00466a; text-decoration: none; font-weight: 600; display: block; text-align: center;">Dowell UX Living Lab Wallet</a>
                                 <p style="font-size: 1.1em; text-align: center;">Dear {name}, thank you for registering to our platform. Enter the OTP below to verify your email.</p>
                                 <p style="font-size: 1.1em; text-align: center;">Your OTP for verification is: {totp}</p>
+                                <p style="font-size: 1.1em; text-align: center;">This OTP is valid until {expiration_time}.</p>
                                 <p style="font-size: 1.1em; text-align: center;">If you did not create an account with us, you can ignore this email.</p>
                             </div>
                         </body>
@@ -327,7 +333,7 @@ class UserRegistrationView(APIView):
                 "totp":totp_key
             }
 
-            email_content = EMAIL_FROM_WEBSITE.format(name=name, totp=totp_key, email=email)
+            email_content = EMAIL_FROM_WEBSITE.format(name=name, expiration_time=expiration_time,totp=totp_key, email=email)
             payload = {
                 "toname": name,
                 "toemail": user.email,
@@ -805,3 +811,29 @@ class ExternalPaymentView(APIView):
             response = requests.post(url, json=payload)
             print(response.text)
             return response.text
+
+
+
+"""
+
+USERPROFILE
+
+"""
+
+class UserProfileDetail(APIView):
+    permission_classes=[IsAuthenticated]
+    def get(self, request):
+        user_profile = UserProfile.objects.get(user=request.user)
+        serializer = UserProfileSerializer(user_profile)
+        return Response(serializer.data)
+
+    def post(self, request):
+        user_profile = UserProfile.objects.get(user=request.user)
+
+        # You can validate and update the user profile data here.
+        serializer = UserProfileSerializer(user_profile, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

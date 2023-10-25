@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from .models import Wallet, Transaction
+from .models import Wallet, Transaction,UserProfile
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -77,3 +77,8 @@ class ExternalPaymentSerializer(serializers.Serializer):
         else:
             data["amount"] = amount
         return data
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = '__all__' 
