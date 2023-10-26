@@ -2,7 +2,7 @@ import os
 import requests
 from django.template.loader import render_to_string
 from io import BytesIO
-from datetime import date,datetime
+from datetime import date, datetime
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -126,13 +126,13 @@ def send_mail(
   </body>
 </html>
 """
-    print("target_currency_code from mail",target_currency_code)
+    print("target_currency_code from mail", target_currency_code)
     email_content = EMAIL_FROM_WEBSITE.format(
         email=email,
         base_currency=base_currency,
-        base_currency_code = base_currency_code,
+        base_currency_code=base_currency_code,
         target_currency=target_currency,
-        target_currency_code = target_currency_code,
+        target_currency_code=target_currency_code,
         base_country=basecountry,
         base_price_in_country=base_price_in_country,
         target_country=targetcountry,
@@ -143,8 +143,7 @@ def send_mail(
         calculated_price_base_on_ppp=calculated_price_base_on_ppp,
     )
 
-
-    date_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    date_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     payload = {
         "toname": "sodiq",
         "toemail": f"{mail_id}",

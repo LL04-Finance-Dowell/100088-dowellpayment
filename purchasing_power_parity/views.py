@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .serializers import PPPSerializer
 from datetime import datetime
-from .helper import  get_all_currency_name, get_ppp_data
+from .helper import get_all_currency_name, get_ppp_data
 import requests
 import re
 
@@ -17,7 +17,6 @@ def processApikey(api_key):
 
 
 # FOR DOWELL INTERNAL TEAM
-
 
 
 class GetPurchasingPowerParity(APIView):
@@ -52,24 +51,29 @@ class GetPurchasingPowerParity(APIView):
             else:
                 errors = serializer.errors
                 return Response(errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
-            
+
             try:
                 email = data["email"]
             except:
                 email = None
-            
+
             if email == None:
                 return Response(
-                {
-                    "success": False,
-                    "message": "something went wrong",
-                    "details": "Email Field cannot be empty",
-                },
-                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            )
+                    {
+                        "success": False,
+                        "message": "something went wrong",
+                        "details": "Email Field cannot be empty",
+                    },
+                    status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                )
             #  call the function to get Purchasing Power Parity
             res = get_ppp_data(
-                base_currency, base_price, base_country, target_country, target_currency,email
+                base_currency,
+                base_price,
+                base_country,
+                target_country,
+                target_currency,
+                email,
             )
             return res
         except Exception as e:
@@ -81,6 +85,7 @@ class GetPurchasingPowerParity(APIView):
                 },
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
+
 
 class SendResponseToClient(APIView):
     def post(self, request):
@@ -106,9 +111,9 @@ class SendResponseToClient(APIView):
 
             email = data["email"]
             base_currency = data["base_currency"]
-            base_currency_code =data["base_currency_code"]
+            base_currency_code = data["base_currency_code"]
             target_currency = data["target_currency"]
-            target_currency_code =data["target_currency_code"]
+            target_currency_code = data["target_currency_code"]
             exchange_rate = data["exchange_rate"]
             # base_price_in_base_country = data["base_price_in_base_country"]
             # calculated_price_in_target_country = data["calculated_price_in_target_country"]
@@ -228,8 +233,8 @@ class SendResponseToClient(APIView):
             email_content = EMAIL_FROM_WEBSITE.format(
                 email=email,
                 base_currency=base_currency,
-                base_currency_code = base_currency_code,
-                target_currency_code = target_currency_code,
+                base_currency_code=base_currency_code,
+                target_currency_code=target_currency_code,
                 target_currency=target_currency,
                 exchange_rate=exchange_rate,
                 base_country=base_country,
@@ -240,7 +245,7 @@ class SendResponseToClient(APIView):
                 target_price=target_price,
                 calculated_price_base_on_ppp=calculated_price_base_on_ppp,
             )
-            date_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            date_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             payload = {
                 "toname": f"{email}",
                 "toemail": f"{email}",
@@ -262,10 +267,8 @@ class SendResponseToClient(APIView):
                 },
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
-       
-        
-        
-        
+
+
 # FOR PUBLIC USAGE
 class GetPublicPurchasingPowerParity(APIView):
     def get(self, request, api_key):

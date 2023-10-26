@@ -8,21 +8,21 @@ class UserProfile(models.Model):
     firstname = models.CharField(max_length=100)
     lastname = models.CharField(max_length=100)
     profile_picture = models.ImageField(
-        default="avatar.jpg", 
-        upload_to='profile_images', # dir to store the image
+        default="profile_images/avatar.jpg",
+        upload_to="profile_images",  # dir to store the image
         null=True,
-        blank=True
+        blank=True,
     )
-    updated = models.DateTimeField(auto_now=True,null=True,blank=True)
-    created = models.DateTimeField(auto_now_add=True,null=True,blank=True)
+    updated = models.DateTimeField(auto_now=True, null=True, blank=True)
+    created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     totp_key = models.CharField(max_length=16)
 
     def save(self, *args, **kwargs):
-    # Call the super method to save the profile
+        # Call the super method to save the profile
         super().save(*args, **kwargs)
 
-    # Resize the image after saving and use the URL-based file path
+        # Resize the image after saving and use the URL-based file path
         if self.profile_picture:
             img = Image.open(self.profile_picture.path)
             if img.height > 300 or img.width > 300:

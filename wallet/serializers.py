@@ -1,17 +1,24 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from .models import Wallet, Transaction,UserProfile
+from .models import Wallet, Transaction, UserProfile
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, style={'input_type': 'password'})
+    password = serializers.CharField(write_only=True, style={"input_type": "password"})
     firstname = serializers.CharField()
     lastname = serializers.CharField()
     phone_number = serializers.CharField()
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'password', 'firstname', 'lastname', 'phone_number')
+        fields = (
+            "username",
+            "email",
+            "password",
+            "firstname",
+            "lastname",
+            "phone_number",
+        )
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -42,7 +49,7 @@ class PaymentSerializer(serializers.Serializer):
         """
         The code checks if the price has no decimal portion (price % 1 == 0) 
         and converts it to an integer if that's the case. 
-        If it has a decimal portion, it keeps it as is (preserving the decimal part).
+        If it has a decimal portion, it keeps it (preserving the decimal part).
 
         """
         # print("actual price", amount)
@@ -55,7 +62,6 @@ class PaymentSerializer(serializers.Serializer):
 
 class VerifyPaymentSerializer(serializers.Serializer):
     id = serializers.CharField()
-
 
 
 class ExternalPaymentSerializer(serializers.Serializer):
@@ -78,7 +84,8 @@ class ExternalPaymentSerializer(serializers.Serializer):
             data["amount"] = amount
         return data
 
+
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
-        fields = '__all__' 
+        fields = "__all__"
