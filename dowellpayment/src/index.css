@@ -189,7 +189,7 @@ select::after {
   padding: 25px;
   position: relative;
   max-width: 80%;
-  width: 60%;
+  width: 42%;
   z-index: 1001;
   display: flex;
   flex-direction: column;
