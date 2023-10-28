@@ -33,7 +33,6 @@ DEBUG = os.getenv("DEBUG", "0").lower() in ["true", "t", "1"]
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(" ")
 
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -190,6 +189,8 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
