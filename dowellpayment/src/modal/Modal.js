@@ -134,7 +134,7 @@ function Modal({ isOpen, onClose, values, info, loading, handleMailing, mailLoad
             
             <p className="disclaimer__Wrapp">
                 <span className="disclaimer__text">
-                    Disclaimer for Purchase Power Calculator:
+                    Disclaimer:
                 </span>
                 <span className="disclaimer__Info">
                     The Dowell World Price Indicator is used to provide estimates, with data collected solely for this purpose. The purpose-built and trained software offers approximate values, though results may vary with market dynamics. The creators disclaim any liabilities. Data collection complies with GDPR rules. Information obtained is for informational purposes, not professional & legal advice. By acknowledging these terms, Spending based on calculations is at user discretion
