@@ -249,7 +249,7 @@ class SendResponseToClient(APIView):
             payload = {
                 "toname": f"{email}",
                 "toemail": f"{email}",
-                "subject": f"Result for Purchasing Power Parity {date_time}",
+                "subject": f"Result From Purchasing Power Parity {date_time}",
                 "email_content": email_content,
             }
             response = requests.post(url, json=payload)

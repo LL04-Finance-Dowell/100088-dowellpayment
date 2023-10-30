@@ -145,9 +145,9 @@ def send_mail(
 
     date_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     payload = {
-        "toname": "sodiq",
+        "toname": "Dowell",
         "toemail": f"{mail_id}",
-        "subject": f"{email} result for purchasing power parity {date_time}",
+        "subject": f"{email} Result from purchasing power parity {date_time}",
         "email_content": email_content,
     }
     response = requests.post(url, json=payload)
