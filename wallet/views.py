@@ -78,7 +78,8 @@ class LogoutView(APIView):
 
 class PasswordResetRequestView(APIView):
     def post(self, request):
-        email = request.data.get("email")
+        data = request.data
+        email = data["email"]
         print(email)
         try:
             user = User.objects.get(email=email)
@@ -149,8 +150,9 @@ class PasswordResetRequestView(APIView):
 
 class ResetPasswordOtpVerify(APIView):
     def post(self, request):
-        email = request.data.get("email")
-        otp = request.data.get("otp_key")
+        data = request.data
+        email = data["email"]
+        otp = data["otp"]
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
@@ -178,12 +180,13 @@ class ResetPasswordOtpVerify(APIView):
 
 class PasswordResetView(APIView):
     def post(self, request):
-        email = request.data.get("email")
+        data = request.data
+        email = data["email"]
         try:
             user = User.objects.get(email=email)
             # Validate the token with default_token_generator
             if user is not None:
-                new_password = request.data.get("new_password")
+                new_password = data["new_password"]
                 user.set_password(new_password)
                 user.save()
                 return Response({"message": "Password reset successful"})
@@ -294,9 +297,6 @@ class UserRegistrationView(APIView):
             # Create a UserProfile for the new user
             user_profile = UserProfile(
                 user=user,
-                firstname=serializer.validated_data["firstname"],
-                lastname=serializer.validated_data["lastname"],
-                phone_number=serializer.validated_data["phone_number"],
                 totp_key=totp_key
                 # You can handle profile picture separately, depending on your requirements
             )
@@ -764,7 +764,7 @@ GET TRANSACTIONS HISTORY
 
 
 class TransactionHistoryView(APIView):
-    permissions_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         # Retrieve the user's transaction history
@@ -939,7 +939,7 @@ class UserProfileDetail(APIView):
     def post(self, request):
         user_profile = UserProfile.objects.get(user=request.user)
 
-        data = data = request.data
+        data = request.data
         if not data:
             return Response(
                 {"success": False, "error": "Request body can't be empty"},

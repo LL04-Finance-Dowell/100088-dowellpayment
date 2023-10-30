@@ -5,9 +5,6 @@ from .models import Wallet, Transaction, UserProfile
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, style={"input_type": "password"})
-    firstname = serializers.CharField()
-    lastname = serializers.CharField()
-    phone_number = serializers.CharField()
 
     class Meta:
         model = User
@@ -15,9 +12,6 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             "username",
             "email",
             "password",
-            "firstname",
-            "lastname",
-            "phone_number",
         )
 
 
