@@ -167,8 +167,12 @@ class ResetPasswordOtpVerify(APIView):
             )
         stored_otp_key = user_profile.totp_key
         if otp == stored_otp_key:
+            new_password = data["new_password"]
+            user.set_password(new_password)
+            user.save()
             return Response(
-                {"message": "OTP verification successful"}, status=status.HTTP_200_OK
+                {"message": "Password reset successful"},
+                status=status.HTTP_200_OK
             )
         else:
             return Response(
@@ -178,26 +182,6 @@ class ResetPasswordOtpVerify(APIView):
         """AFTER THIS THE USER SHOULD BE REDIRECTED TO THE RESET PASSWORD TO ENTER A NEW PASSWORD"""
 
 
-class PasswordResetView(APIView):
-    def post(self, request):
-        data = request.data
-        email = data["email"]
-        try:
-            user = User.objects.get(email=email)
-            # Validate the token with default_token_generator
-            if user is not None:
-                new_password = data["new_password"]
-                user.set_password(new_password)
-                user.save()
-                return Response({"message": "Password reset successful"})
-            else:
-                return Response(
-                    {"error": "user does not exist"}, status=status.HTTP_400_BAD_REQUEST
-                )
-        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-            return Response(
-                {"error": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST
-            )
 
 
 class ResendOTPView(APIView):

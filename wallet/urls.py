@@ -21,7 +21,6 @@ urlpatterns = [
         name="request-reset-password",
     ),
     path("verify-password-otp", views.ResetPasswordOtpVerify.as_view()),
-    path("reset-password", views.PasswordResetView.as_view(), name="reset-password"),
     # stripe url
     path("stripe-payment", views.StripePayment.as_view(), name="stripe-payment"),
     path(
