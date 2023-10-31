@@ -947,3 +947,134 @@ class UserProfileDetail(APIView):
             {"success": False, "error": serializer.errors},
             status=status.HTTP_400_BAD_REQUEST,
         )
+
+
+"""
+
+DELETE USER ACCOUNT
+
+"""
+class DeleteAccountView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request, format=None):
+        user = request.user
+        password = request.data.get('password')
+        if not user.check_password(password):
+            return Response({'detail': 'Incorrect password.'}, status=status.HTTP_400_BAD_REQUEST)
+        user.delete()
+        # Log out the user
+        logout(request)
+        return Response({'detail': 'Account deleted successfully.'}, status=status.HTTP_204_NO_CONTENT)
+    
+
+
+"""
+
+DEACTIVATE ACCOUNT
+
+
+"""
+
+
+class RequestDisableView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self,request):
+        user = request.user
+        user_profile, created = UserProfile.objects.get_or_create(user=user)
+        # Generate a TOTP key for the user
+        totp_key = self.generate_totp_key()
+        # Save the TOTP key to the user's profile
+        user_profile.totp_key = totp_key
+        user_profile.save()
+        # Send the TOTP key to the user via email or other communication method
+        self.send_otp_email(user, totp_key)
+
+        return Response(
+            {'Message': 'OTP for Account disable sent to your email.'},
+              status=status.HTTP_204_NO_CONTENT
+              )
+    
+    def generate_totp_key(self):
+        # Generate a random secret key as bytes
+        secret_key_bytes = secrets.token_bytes(20)  # 20 bytes (160 bits)
+        # Convert the bytes to a base32-encoded string
+        secret_key = base64.b32encode(secret_key_bytes).decode("utf-8")
+        # Calculate the expiration time (30 minutes from now)
+        expiration_time = timezone.now() + timezone.timedelta(minutes=30)
+        # Create a TOTP instance
+        totp = TOTP(
+            secret_key, interval=30
+        )  # Replace 'your-secret-key' with your secret key
+        # Generate the TOTP token
+        totp_key = totp.now()
+        return totp_key
+    
+    def send_otp_email(self, user, totp_key):
+        # API endpoint to send the email
+        url = f"https://100085.pythonanywhere.com/api/email/"
+        name = user.username
+        expiration_time = timezone.now() + timezone.timedelta(
+            minutes=30
+        )  # 30 minutes from now
+        EMAIL_FROM_WEBSITE = """
+                    <!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta http-equiv="X-UA-Compatible" content="IE=edge">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                            <title>Account Disabling OTP</title>
+                        </head>
+                        <body>
+                            <div style="font-family: Helvetica, Arial, sans-serif; min-width: 100px; overflow: auto; line-height: 2; margin: 50px auto; width: 70%; padding: 20px 0; border-bottom: 1px solid #eee;">
+                                <a href="#" style="font-size: 1.2em; color: #00466a; text-decoration: none; font-weight: 600; display: block; text-align: center;">Dowell UX Living Lab Wallet</a>
+                                <p style="font-size: 1.1em; text-align: center;">Dear {name}, you have requested an OTP to disable your account. Please enter the OTP below to proceed with the account disabling process.</p>
+                                <p style="font-size: 1.1em; text-align: center;">Your OTP for account disabling is: {totp}</p>
+                                <p style="font-size: 1.1em; text-align: center;">This OTP is valid until {expiration_time}.</p>
+                                <p style="font-size: 1.1em; text-align: center;">If you did not request this action, you can ignore this email.</p>
+                            </div>
+                        </body>
+                        </html>
+                    """
+        context = {"name": name, "totp": totp_key}
+
+        email_content = EMAIL_FROM_WEBSITE.format(
+            name=name, expiration_time=expiration_time, totp=totp_key
+        )
+        payload = {
+            "toname": name,
+            "toemail": user.email,
+            "subject": "OTP Verification",
+            "email_content": email_content,
+        }
+        response = requests.post(url, json=payload)
+        print(totp_key)
+        print(response.text)
+        return response.text
+        
+
+        
+        
+class DisableAccountView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+        otp_key = request.data.get('otp_key')
+        user = request.user
+        if user:
+            totp_key_from_profile = user.userprofile.totp_key
+            if totp_key_from_profile == otp_key:
+                # Disable the user
+                user.is_active = False
+                user.save()
+                return Response(
+                    {'Message': 'Account temporarily disabled.'},
+                    status=status.HTTP_200_OK,
+                )
+            else:
+                return Response(
+                    {"message": "Invalid OTP."}, status=status.HTTP_400_BAD_REQUEST
+                )
+        else:
+            return Response(
+                {"message": "User not found."}, status=status.HTTP_404_NOT_FOUND
+            )
