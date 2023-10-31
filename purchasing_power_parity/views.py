@@ -125,7 +125,7 @@ class SendResponseToClient(APIView):
 
             url = "https://100085.pythonanywhere.com/api/email/"
 
-            EMAIL_FROM_WEBSITE = """
+            EMAIL_FROM_WEBSITE1 = """
             <!DOCTYPE html>
             <html lang="en">
             <head>
@@ -229,7 +229,217 @@ class SendResponseToClient(APIView):
             </body>
             </html>
             """
-
+            EMAIL_FROM_WEBSITE = """
+                        <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8" />
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                <title>DoWell World Price Indicator</title>
+            </head>
+            <body
+                style="
+                font-family: Arial, sans-serif;
+                background-color: #ffffff;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                justify-content: center;
+                "
+            >
+                <div
+                style="
+                    width: 100%;
+                    margin: 30px;
+                    background-color: #ffffff;
+                    border: 4px solid #000;
+                    border-radius: 15px;
+                "
+                >
+                <header
+                    style="
+                    text-align: center;
+                    "
+                >
+                    <div
+                    style="
+                        height: 160px;
+                        overflow: hidden;
+                    "
+                    >
+                    <img
+                        src="https://d3ml3b6vywsj0z.cloudfront.net/company_images/605db34310fce904a78152f9_images.png"
+                        height="300px"
+                        width="300px"
+                        style="margin-top: -70px"
+                    />
+                    </div>
+                    <div style="font-size: 17px; margin-top: -25px">Purchase Power Parity Calculator</div>
+                </header>
+                <main>
+                    <section
+                    style="
+                        margin-top: 30px;
+                        
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                    "
+                    >
+                    <div
+                        style="
+                        width: fit-content;
+                        background-color: #97e0ae;
+                        border: 2px solid #000;
+                        border-radius: 10px;
+                        padding: 15px;
+                        padding-left: 40px;
+                        padding-right: 40px;
+                        "
+                    >
+                        <table style="font-size: 16px; border-spacing: 15px; z-index: 1; color: #000;">
+                        <tr>
+                            <td style="padding-right: 170px; color: #000; ">Base price in Germany</td>
+                            <td>:100 USD</td>
+                        </tr>
+                        <tr>
+                            <td>Calculated price in United States</td>
+                            <td>:104.84 GBP</td>
+                        </tr>
+                        </table>
+                    </div>
+                    </section>
+                    <section style="margin-top: 20px; display: flex;justify-content: center;align-items: center;flex-direction: column;">
+                    <div style="
+                    width: 600px;
+                        background-image: linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.9)),
+                        url(https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcRf9ND4OTYOUKtdScFLIaob2S_a_0trIOHK83_JWzDLAEQBwlwi);
+                        max-width: 100%;
+                        height: 100%;
+                        padding-top: 50px;
+                        background-repeat: no-repeat;
+                        background-size: 600px ;
+                        background-position: center center;
+                        
+                    ">
+                        <table
+                        style="padding-left: 80px; font-size: 16px; border-spacing: 15px; z-index: 1; color: #000;"
+                        >
+                        <tr>
+                            <td style="padding-right: 170px; color: #000; ">Base Currency</td>
+                            <td>United States Dollars</td>
+                        </tr>
+                        <tr>
+                            <td>Base Price</td>
+                            <td>100</td>
+                        </tr>
+                        <tr>
+                            <td>Base Country</td>
+                            <td>Germany</td>
+                        </tr>
+                        <tr>
+                            <td>Price in Base Country</td>
+                            <td>93.74 EUR</td>
+                        </tr>
+                        <tr>
+                            <td>Target Country</td>
+                            <td>United States</td>
+                        </tr>
+                        <tr>
+                            <td>Price in Target Country</td>
+                            <td>128.41 USD</td>
+                        </tr>
+                        <tr>
+                            <td>Target Currency</td>
+                            <td>British Pound</td>
+                        </tr>
+                        </table>
+                        <article
+                        style="
+                            padding-bottom: 45px;
+                            padding-top: 20px;
+                            padding-left: 130px;
+                            font-size: 18px;
+                            color: #000;
+                        "
+                        >
+                        Exchange rate. 1 USD = 0.81655 GBP
+                        </article>
+                    </div>
+                    </section>
+                    <article
+                    style="
+                        margin-left: 35px;
+                        font-size: 16px;
+                        color: #000;
+                    "
+                    >
+                    <p>
+                        Thank you for using DoWell World Price indicator, for more queries and pricing strategies contact dowell@dowellresearch.link
+                    </p>
+                    <h3 style="padding-left: 20px">DoWell UX Living Lab Team</h3>
+                    </article>
+                    <section
+                    style="
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        margin-bottom: 20px;
+                    "
+                    >
+                    <div
+                        style="
+                        width: 100%;
+                        border: 2px solid #000;
+                        border-radius: 10px;
+                        padding-left: 40px;
+                        padding-right: 40px;
+                        margin-left: 45px;
+                        margin-right: 45px;
+                        "
+                    >
+                        <h4 style="font-size: larger; color: #000;">Disclaimer</h4>
+                        <p
+                        style="
+                            font-size: large;
+                            color: #000;
+                        "
+                        >
+                        The DoWell World Price Indicator is used to provide estimates, with data collected solely for this purpose. The purpose-built and trained software offers approximate values, though results may vary with market dynamics. The creators disclaim any liabilities. Data collection complies with GDPR rules. Information obtained is for informational purposes, not professional & legal advice. By acknowledging these terms, spending based on calculations is at the user's discretion.
+                        </p>
+                    </div>
+                    </section>
+                </main>
+                <footer
+                    style="
+                    background-color: #013411;
+                    color: #fff;
+                    text-align: center;
+                    padding: 10px;
+                    margin-bottom: 20px;
+                    margin-left: 1px;
+                    margin-right: 1px;
+                    "
+                >
+                    <a
+                    href="https://www.uxlivinglab.org/"
+                    style="
+                        text-decoration: none;
+                        text-align: center;
+                        color: white;
+                        margin-bottom: 20px;
+                        padding-bottom: 10px;
+                    "
+                    >DoWell UX Living Lab</a
+                    >
+                    <p style="margin-top: 10px; font-size: 13px">
+                    &copy; 2023-All rights reserved.
+                    </p>
+                </footer>
+                
+                </div>
+            </body>
+            </html> """
             email_content = EMAIL_FROM_WEBSITE.format(
                 email=email,
                 base_currency=base_currency,
@@ -245,11 +455,11 @@ class SendResponseToClient(APIView):
                 target_price=target_price,
                 calculated_price_base_on_ppp=calculated_price_base_on_ppp,
             )
-            date_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            date = datetime.now().strftime("%Y-%m-%d")
             payload = {
                 "toname": f"{email}",
                 "toemail": f"{email}",
-                "subject": f"Result From Purchasing Power Parity {date_time}",
+                "subject": f"Result from DoWell World Price Indicator on {date}",
                 "email_content": email_content,
             }
             response = requests.post(url, json=payload)

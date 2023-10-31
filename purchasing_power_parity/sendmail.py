@@ -143,11 +143,11 @@ def send_mail(
         calculated_price_base_on_ppp=calculated_price_base_on_ppp,
     )
 
-    date_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    date = datetime.now().strftime("%Y-%m-%d")
     payload = {
         "toname": "Dowell",
         "toemail": f"{mail_id}",
-        "subject": f"{email} Result from purchasing power parity {date_time}",
+        "subject": f"{email}, result from DoWell World Price Indicator on {date}",
         "email_content": email_content,
     }
     response = requests.post(url, json=payload)
