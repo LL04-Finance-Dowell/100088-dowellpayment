@@ -72,28 +72,28 @@ function Modal({ isOpen, onClose, values, info, loading, handleMailing, mailLoad
 
                     </tr>
                     <tr className="even">
-                        <td>Base Currency</td>
-                        <td>{info?.base_currency}</td>
+                        <td className={'right__Align'}>Base Currency</td>
+                        <td className={'left__Align'}>{info?.base_currency}</td>
                     </tr>
                     <tr className="even">
-                        <td>Base Country</td>
-                        <td>{values?.base_country}</td>
+                        <td className={'right__Align'}>Base Country</td>
+                        <td className={'left__Align'}>{values?.base_country}</td>
                     </tr>
                     <tr className="even">
-                        <td>Price in Base Country</td>
-                        <td>{values?.price_in_base_country}</td>
+                        <td className={'right__Align'}>Price in Base Country</td>
+                        <td className={'left__Align'}>{values?.price_in_base_country}</td>
                     </tr>
                     <tr className="even">
-                        <td>Target Country</td>
-                        <td>{values?.target_country}</td>
+                        <td className={'right__Align'}>Target Country</td>
+                        <td className={'left__Align'}>{values?.target_country}</td>
                     </tr>
                     <tr className="even">
-                        <td>Price in target country</td>
-                        <td>{values?.target_price}</td>
+                        <td className={'right__Align'}>Price in target country</td>
+                        <td className={'left__Align'}>{values?.target_price}</td>
                     </tr>
                     <tr className="even">
-                        <td>Exchange rate</td>
-                        <td>1 {values?.base_currency_code} = {values?.exchange_rate} {values?.target_currency_code}</td>
+                        <td className={'right__Align'}>Exchange rate</td>
+                        <td className={'left__Align'}>1 {values?.base_currency_code} = {values?.exchange_rate} {values?.target_currency_code}</td>
                     </tr>
                     {/* <tr className="even" style={{ borderRadius: '0 0 10px 10px'}}>
                         <td style={{ borderRadius: '0 0 0 10px'}}>Calculated price in targeted country based on purchasing power</td>

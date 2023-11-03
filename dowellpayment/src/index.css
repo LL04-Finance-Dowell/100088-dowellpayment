@@ -316,6 +316,14 @@ tbody .last-row {
   font-style: italic;
 }
 
+.right__Align {
+  text-align: right;
+}
+
+.left__Align {
+  text-align: left;
+}
+
 @media screen and (max-width: 991px) {
   .left-col {
     height: max-content;
