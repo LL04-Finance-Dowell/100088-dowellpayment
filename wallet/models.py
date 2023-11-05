@@ -31,9 +31,8 @@ class UserProfile(models.Model):
                 img.thumbnail(output_size)
                 img.save(self.profile_picture.path)
 
-
 class Wallet(models.Model):
-    account_no = models.CharField(max_length=32)
+    account_no = models.CharField(max_length=32, null=True, default="", unique=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="wallet")
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 

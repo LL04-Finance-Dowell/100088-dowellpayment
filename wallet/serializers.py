@@ -24,7 +24,7 @@ class UserSerializer(serializers.ModelSerializer):
 class WalletDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Wallet
-        fields = ("balance",)
+        fields = "__all__"
 
 
 class TransactionSerializer(serializers.ModelSerializer):
