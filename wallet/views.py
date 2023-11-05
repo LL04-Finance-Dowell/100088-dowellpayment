@@ -407,19 +407,32 @@ class SendMoney(APIView):
         sender = request.user
         sender_email = sender.email  # Access sender's email
 
-        # Get the recipient's username and amount from the request data
-        recipient_username = request.data.get("recipient_username")
+        # Get the recipient's account_no and amount from the request data
+        account_no = request.data.get("account_no")
         amount = request.data.get("amount")
 
         try:
-            # Try to find the recipient in the database
-            recipient = User.objects.get(username=recipient_username)
+            # Try to find the wallet associated with the provided account_no
+            wallet = Wallet.objects.get(account_no=account_no)
+
+            # Check if the wallet is associated with a user
+            recipient = wallet.user  # Assuming 'user' is the related name in your Wallet model
+            print(recipient)
             recipient_email = recipient.email  # Access recipient's email
+            recipient_username = recipient.username
+
+        except Wallet.DoesNotExist:
+            # If the wallet doesn't exist, return an error response
+            return Response(
+                {"message": "Recipient's wallet not found"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         except User.DoesNotExist:
             # If recipient doesn't exist, return an error response
             return Response(
-                {"message": "Recipient not found"}, status=status.HTTP_400_BAD_REQUEST
+                {"message": "Recipient not found"},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         # Check if the sender is trying to send money to themselves
@@ -475,6 +488,7 @@ class SendMoney(APIView):
         self.recipient_transaction_email(
             amount, sender, recipient_username, recipient_email, transaction_time
         )
+
 
         # Return a success response
         return Response(

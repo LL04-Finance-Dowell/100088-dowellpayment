@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from PIL import Image
+import uuid
 
 
 class UserProfile(models.Model):
@@ -32,8 +33,20 @@ class UserProfile(models.Model):
 
 
 class Wallet(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    account_no = models.CharField(max_length=32)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="wallet")
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+
+    def save(self, *args, **kwargs):
+        if not self.account_no:
+            # Generate a unique wallet ID (e.g., UUID4) when creating a new wallet
+            self.account_no = str(uuid.uuid4().hex)
+
+        super(Wallet, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return self.account_no
+
 
 
 class Transaction(models.Model):
