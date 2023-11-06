@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from PIL import Image
-import uuid
+import random
 
 
 class UserProfile(models.Model):
@@ -32,16 +32,17 @@ class UserProfile(models.Model):
                 img.save(self.profile_picture.path)
 
 class Wallet(models.Model):
-    account_no = models.CharField(max_length=32, null=True, default="", unique=True)
+    account_no = models.CharField(max_length=20, null=True, default="")
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="wallet")
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 
     def save(self, *args, **kwargs):
         if not self.account_no:
-            # Generate a unique wallet ID (e.g., UUID4) when creating a new wallet
-            self.account_no = str(uuid.uuid4().hex)
+            # Generate a random 20-digit account number
+            self.account_no = ''.join([str(random.randint(0, 9)) for _ in range(20)])
 
         super(Wallet, self).save(*args, **kwargs)
+
 
     def __str__(self):
         return self.account_no
