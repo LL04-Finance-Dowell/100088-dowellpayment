@@ -52,10 +52,22 @@ load_dotenv()
 
 class LoginView(APIView):
     def post(self, request):
-        username = request.data.get("username")
+        email = request.data.get("email")
         password = request.data.get("password")
-        user = authenticate(username=username, password=password)
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response(
+                {"success": False, "error": "Invalid credentials"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # If the user with the given email exists, we can proceed to authentication.
+        user = authenticate(request, username=user.username, password=password)
+
         if user is not None:
+            # Authentication successful
             refresh = RefreshToken.for_user(user)
             access_token = str(refresh.access_token)
             return Response({"success": True, "access_token": access_token})
@@ -588,13 +600,19 @@ class WalletDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        print(request)
         wallet = Wallet.objects.get(user=request.user)
         transactions = Transaction.objects.filter(wallet=wallet).order_by("-timestamp")
         wallet_serializer = WalletDetailSerializer(wallet)
         transactions_serializer = TransactionSerializer(transactions, many=True)
 
+        user_data = {
+            "id": request.user.id,
+            "username": request.user.username,
+            # Add any other user-related fields you want to include
+        }
+
         data = {
+            "user": user_data,  # Include user data in the response
             "wallet": wallet_serializer.data,
             "transactions": transactions_serializer.data,
         }
