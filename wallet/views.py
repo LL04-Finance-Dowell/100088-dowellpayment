@@ -10,7 +10,9 @@ from .serializers import (
     TransactionSerializer,
     ExternalPaymentSerializer,
     UserProfileSerializer,
+    MoneyRequestSerializer,
 )
+from django.utils.crypto import get_random_string
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
 from django.http import HttpResponseRedirect
@@ -19,7 +21,7 @@ from requests.exceptions import RequestException
 import requests
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
-from .models import Wallet, Transaction, UserProfile
+from .models import Wallet, Transaction, UserProfile,MoneyRequest
 from django.urls import reverse
 from django.conf import settings
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -272,8 +274,13 @@ class UserRegistrationView(APIView):
     def post(self, request):
         serializer = UserRegistrationSerializer(data=request.data)
         if serializer.is_valid():
+            phone_number = request.data.get('phone_number')
+            first_name  = request.data.get('first_name')
+            last_name = request.data.get('last_name')
+
             # Check if a user with the same email already exists
             email = serializer.validated_data["email"]
+            username = email
             if User.objects.filter(email=email).exists():
                 return Response(
                     {"error": "Email already in use."},
@@ -283,8 +290,8 @@ class UserRegistrationView(APIView):
             totp_key = self.generate_totp_key()
             # Create a new user with the User model
             user = User.objects.create_user(
-                username=serializer.validated_data["username"],
                 email=email,
+                username=username,
                 password=serializer.validated_data["password"],
                 is_active=False,  # User starts as inactive
             )
@@ -293,7 +300,10 @@ class UserRegistrationView(APIView):
             # Create a UserProfile for the new user
             user_profile = UserProfile(
                 user=user,
-                totp_key=totp_key
+                totp_key=totp_key,
+                firstname=first_name,
+                lastname=last_name,
+                phone_number=phone_number
                 # You can handle profile picture separately, depending on your requirements
             )
             user_profile.save()
@@ -1110,3 +1120,191 @@ class DisableAccountView(APIView):
             return Response(
                 {"message": "User not found."}, status=status.HTTP_404_NOT_FOUND
             )
+        
+
+
+class MoneyRequestView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        # Get the account_no from the request data
+        account_no = request.data.get('account_no')
+        # Try to find the wallet associated with the provided account_no
+        wallet = get_object_or_404(Wallet, account_no=account_no)
+
+        # Check if the wallet is associated with a user
+        receiver = wallet.user  # Assuming 'user' is the related name in your Wallet model
+        receiver_name = receiver.username
+        receiver_email = receiver.email
+
+        # Check if the receiver exists
+        if receiver:
+            # Ensure that the sender and receiver are not the same user
+            if request.user == receiver:
+                return Response({'detail': 'You cannot request money from yourself.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            sender=request.user
+            sender_name = sender.username
+            sender_email = sender.email
+            amount = Decimal(request.data.get('amount'))
+
+            # Generate a custom_id here
+            custom_id = get_random_string(length=10)
+
+            # Create a new money request
+            serializer = MoneyRequestSerializer(data={
+                'custom_id': custom_id,
+                'sender': request.user.id,
+                'receiver': receiver.id,
+                'wallet': wallet.id,
+                'amount': amount,
+            })
+            
+
+            if serializer.is_valid():
+                serializer.save()
+                self.sender_email(
+                    sender_name,
+                    sender_email,
+                    receiver_name,
+                    amount
+                    )
+                self.receiver_email(
+                    sender_name,
+                    receiver_name,
+                    receiver_email,
+                    amount
+                    )
+                return Response(
+                    serializer.data,
+                    status=status.HTTP_201_CREATED
+                )
+            
+            return Response(
+                serializer.errors, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        else:
+            return Response({'detail': 'Receiver not found.'}, status=status.HTTP_404_NOT_FOUND)
+        
+    def sender_email(self, sender_name, sender_email, receiver_name, amount):
+        # API endpoint to send the email
+        url = f"https://100085.pythonanywhere.com/api/email/"
+        EMAIL_FROM_WEBSITE = """
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta http-equiv="X-UA-Compatible" content="IE-edge">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Your Wallet Transaction Confirmation</title>
+            </head>
+            <body>
+                <div style="font-family: Helvetica, Arial, sans-serif; min-width: 100px; overflow: auto; line-height: 1.6; margin: 50px auto; width: 70%; padding: 20px 0; border-bottom: 1px solid #eee;">
+                    <a href="#" style="font-size: 1.2em; color: #00466a; text-decoration: none; font-weight: 600; display: block; text-align: center;">Dowell UX Living Lab Wallet</a>
+                    <p style="font-size: 1.1em; text-align: center;">Dear {sender_name},</p>
+                    <p style="font-size: 1.1em; text-align: center;">You have sent a request of ${amount} to {receiver_name}.</p>
+                    <p style="font-size: 1.1em; text-align: center;">Thank you for using our platform.</p>
+                </div>
+            </body>
+            </html>
+        """
+
+        email_content = EMAIL_FROM_WEBSITE.format(sender_name=sender_name, amount=amount, receiver_name=receiver_name)
+
+        payload = {
+            "toname": sender_name,
+            "toemail": sender_email,
+            "subject": f"Sent Money request to {receiver_name}",
+            "email_content": email_content,
+        }
+        response = requests.post(url, json=payload)
+        print(response.text)
+        return response.text
+
+    def receiver_email(self, sender_name, receiver_name, receiver_email, amount):
+        # API endpoint to send the email
+        url = f"https://100085.pythonanywhere.com/api/email/"
+        EMAIL_FROM_WEBSITE = """
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta http-equiv=X-UA-Compatible content="IE-edge">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Your Wallet Transaction Confirmation</title>
+            </head>
+            <body>
+                <div style="font-family: Helvetica, Arial, sans-serif; min-width: 100px; overflow: auto; line-height: 1.6; margin: 50px auto; width: 70%; padding: 20px 0; border-bottom: 1px solid #eee;">
+                    <a href="#" style="font-size: 1.2em; color: #00466a; text-decoration: none; font-weight: 600; display: block; text-align: center;">Dowell UX Living Lab Wallet</a>
+                    <p style="font-size: 1.1em; text-align: center;">Dear {receiver_name},</p>
+                    <p style="font-size: 1.1em; text-align: center;">You have received a request of ${amount} from {sender_name}.</p>
+                    <p style="font-size: 1.1em; text-align: center;">Thank you for using our platform.</p>
+                </div>
+            </body>
+            </html>
+        """
+
+        email_content = EMAIL_FROM_WEBSITE.format(sender_name=sender_name, amount=amount, receiver_name=receiver_name)
+
+        payload = {
+            "toname": receiver_name,
+            "toemail": receiver_email,
+            "subject": f"Received Money request from {sender_name}",
+            "email_content": email_content,
+        }
+        response = requests.post(url, json=payload)
+        print(response.text)
+        return response.text
+
+
+class AcceptRequestView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        custom_id = request.data.get('custom_id')
+        print(custom_id)
+
+        # Get the MoneyRequest instance by its custom_id
+        money_request = MoneyRequest.objects.get(custom_id=custom_id)
+        print(money_request)
+
+        # Check if the request is for the current user
+        if money_request.receiver == request.user and not money_request.is_confirmed:
+            # Check if the receiver has sufficient balance
+            if money_request.receiver.wallet.balance < money_request.amount:
+                return Response({'success': False, 'detail': 'Insufficient balance.'}, status=status.HTTP_200_OK)
+
+            # Update the request to mark it as confirmed
+            money_request.is_confirmed = True
+            money_request.save()
+
+            # Update the wallet balances
+            money_request.receiver.wallet.balance -= money_request.amount
+            money_request.receiver.wallet.save()
+
+            money_request.sender.wallet.balance += money_request.amount
+            money_request.sender.wallet.save()
+
+            return Response({'success': True, 'detail': 'Money request confirmed and wallet balance updated.'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'success': False, 'detail': 'Money request not found or already confirmed.'}, status=status.HTTP_404_NOT_FOUND)
+        
+
+
+"""
+
+DISPLAY ALL REQUESTS
+
+"""
+class UserRequests(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        money_requests = MoneyRequest.objects.filter(receiver=user)
+        serializer = MoneyRequestSerializer(money_requests, many=True)
+        return Response(
+            {'success': True, 'data': serializer.data},
+            status=status.HTTP_200_OK
+        )

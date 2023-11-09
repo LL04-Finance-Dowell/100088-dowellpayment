@@ -30,6 +30,9 @@ urlpatterns = [
     ),
     # transfer url
     path("transfer", views.SendMoney.as_view(), name="transfer"),
+    path("request",views.MoneyRequestView.as_view(),name="request"),
+    path("user-request",views.UserRequests.as_view()),
+    path("accept-request",views.AcceptRequestView.as_view()),
     # external payment
     path(
         "external-payment", views.ExternalPaymentView.as_view(), name="external-payment"

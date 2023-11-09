@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from .models import Wallet, Transaction, UserProfile
-
+from .models import Wallet, Transaction, UserProfile,MoneyRequest
+from django.utils.crypto import get_random_string
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, style={"input_type": "password"})
@@ -9,7 +9,6 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            "username",
             "email",
             "password",
         )
@@ -82,4 +81,9 @@ class ExternalPaymentSerializer(serializers.Serializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
+        fields = "__all__"
+
+class MoneyRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MoneyRequest
         fields = "__all__"

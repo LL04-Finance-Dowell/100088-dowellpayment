@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from PIL import Image
 import random
+from django.utils.crypto import get_random_string
 
 
 class UserProfile(models.Model):
@@ -46,6 +47,25 @@ class Wallet(models.Model):
 
     def __str__(self):
         return self.account_no
+
+class MoneyRequest(models.Model):
+    custom_id = models.CharField(max_length=10, unique=True)
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sent_money_requests")
+    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name="received_money_requests")
+    wallet = models.ForeignKey(Wallet, on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    is_confirmed = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"MoneyRequest {self.custom_id}"
+    
+    def save(self, *args, **kwargs):
+        if not self.custom_id:
+            # Generate a random 10-character custom ID
+            self.custom_id = get_random_string(length=10)
+
+        super(MoneyRequest, self).save(*args, **kwargs)
 
 
 
