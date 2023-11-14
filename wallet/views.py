@@ -19,6 +19,7 @@ from django.http import HttpResponseRedirect
 from django.contrib.auth.models import User
 from requests.exceptions import RequestException
 import requests
+from django.contrib.auth.hashers import make_password,check_password
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from .models import Wallet, Transaction, UserProfile,MoneyRequest
@@ -311,7 +312,14 @@ class UserRegistrationView(APIView):
             print(f"account created for {user}")
             self.send_verification_email(user, totp_key, request)
             # Check if a Wallet already exists for the user
+            # Check if a Wallet already exists for the user
             wallet, created = Wallet.objects.get_or_create(user=user)
+
+            # Update the wallet password if provided
+            wallet_password = request.data.get("wallet_password")
+            if wallet_password:
+                wallet.password = make_password(str(wallet_password))
+                wallet.save()
             print(f"created wallet {wallet}")
             if created:
                 # Wallet was created
@@ -428,6 +436,15 @@ class SendMoney(APIView):
         # Get the user who is sending money (sender)
         sender = request.user
         sender_email = sender.email  # Access sender's email
+        # Get the wallet password from the request data
+        wallet_password = request.data.get("wallet_password")
+
+        # Verify the wallet password
+        if not check_password(str(wallet_password), sender.wallet.password):
+            return Response(
+                {"message": "Incorrect wallet password"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
 
         # Get the recipient's account_no and amount from the request data
         account_no = request.data.get("account_no")
@@ -874,6 +891,15 @@ class ExternalPaymentView(APIView):
             user = request.user
             data = serializer.validated_data
             amount = data["amount"]
+            # Get the wallet password from the request data
+            wallet_password = request.data.get("wallet_password")
+
+            # Verify the wallet password
+            if not check_password(str(wallet_password), user.wallet.password):
+                return Response(
+                    {"message": "Incorrect wallet password"},
+                    status=status.HTTP_401_UNAUTHORIZED,
+                )
             try:
                 user_wallet = Wallet.objects.get(user=user)
 
@@ -956,10 +982,26 @@ class UserProfileDetail(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        user_profile = UserProfile.objects.get(user=request.user)
+        user=request.user
+        user_profile = UserProfile.objects.get(user=user)
         serializer = UserProfileSerializer(user_profile)
+
+        # Get user's email
+        email = request.user.email
+
+        # Assuming UserProfile has a ForeignKey relationship to Wallet
+        wallet = user.wallet
+        # Get wallet account number
+        account_no = wallet.account_no if wallet else None
+
+        # Add email and account_no to the serialized data
+        serialized_data = serializer.data
+        serialized_data["email"] = email
+        serialized_data["account_no"] = account_no
+
         return Response(
-            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+            {"success": True, "data": serialized_data},
+            status=status.HTTP_200_OK
         )
 
     def post(self, request):
@@ -1262,33 +1304,57 @@ class AcceptRequestView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        user = request.user
+        wallet_password = request.data.get("wallet_password")
+
+        if not check_password(str(wallet_password), user.wallet.password):
+            return Response(
+                {"message": "Incorrect wallet password"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
         custom_id = request.data.get('custom_id')
-        print(custom_id)
 
-        # Get the MoneyRequest instance by its custom_id
-        money_request = MoneyRequest.objects.get(custom_id=custom_id)
-        print(money_request)
+        try:
+            money_request = MoneyRequest.objects.get(custom_id=custom_id)
+        except MoneyRequest.DoesNotExist:
+            return Response({'success': False, 'detail': 'Money request not found.'}, status=status.HTTP_404_NOT_FOUND)
 
-        # Check if the request is for the current user
         if money_request.receiver == request.user and not money_request.is_confirmed:
-            # Check if the receiver has sufficient balance
             if money_request.receiver.wallet.balance < money_request.amount:
                 return Response({'success': False, 'detail': 'Insufficient balance.'}, status=status.HTTP_200_OK)
 
-            # Update the request to mark it as confirmed
             money_request.is_confirmed = True
             money_request.save()
 
-            # Update the wallet balances
             money_request.receiver.wallet.balance -= money_request.amount
             money_request.receiver.wallet.save()
 
             money_request.sender.wallet.balance += money_request.amount
             money_request.sender.wallet.save()
 
-            return Response({'success': True, 'detail': 'Money request confirmed and wallet balance updated.'}, status=status.HTTP_200_OK)
+            # Create a transaction record for the receiver
+            receiver_transaction = Transaction(
+                wallet=money_request.receiver.wallet,
+                transaction_type="Sent from Request",
+                amount=money_request.amount,
+                status="Completed",
+            )
+            receiver_transaction.save()
+
+            # Create a transaction record for the sender
+            sender_transaction = Transaction(
+                wallet=money_request.sender.wallet,
+                transaction_type="Received from Request",
+                amount=money_request.amount,
+                status="Completed",
+            )
+            sender_transaction.save()
+
+            return Response({'success': True, 'detail': 'Money request confirmed, and wallet balances updated.'}, status=status.HTTP_200_OK)
         else:
             return Response({'success': False, 'detail': 'Money request not found or already confirmed.'}, status=status.HTTP_404_NOT_FOUND)
+
         
 
 
@@ -1302,9 +1368,23 @@ class UserRequests(APIView):
 
     def get(self, request):
         user = request.user
-        money_requests = MoneyRequest.objects.filter(receiver=user)
-        serializer = MoneyRequestSerializer(money_requests, many=True)
+
+        # Filter confirmed and pending money requests and order by created_at in descending order
+        confirmed_requests = MoneyRequest.objects.filter(receiver=user, is_confirmed=True).order_by('-created_at')
+        pending_requests = MoneyRequest.objects.filter(receiver=user, is_confirmed=False).order_by('-created_at')
+
+        # Serialize both sets of requests
+        confirmed_serializer = MoneyRequestSerializer(confirmed_requests, many=True)
+        pending_serializer = MoneyRequestSerializer(pending_requests, many=True)
+
         return Response(
-            {'success': True, 'data': serializer.data},
+            {
+                'success': True,
+                'data': {
+                    'confirmed_requests': confirmed_serializer.data,
+                    'pending_requests': pending_serializer.data,
+                }
+            },
             status=status.HTTP_200_OK
         )
+
