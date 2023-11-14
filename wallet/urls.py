@@ -42,4 +42,5 @@ urlpatterns = [
     #Delete/deactivate account
     path('request-disable',views.RequestDisableView.as_view()),
     path('disable',views.DisableAccountView.as_view()),
+    path('stripe-currency',views.GetStripeSupporteCurrency.as_view()),
 ]

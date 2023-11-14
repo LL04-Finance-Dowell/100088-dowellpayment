@@ -48,6 +48,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from decimal import Decimal
 import os
 from django.db.models import Q
+from .supported_currency import stripe_supported_currency
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -1388,3 +1389,8 @@ class UserRequests(APIView):
             status=status.HTTP_200_OK
         )
 
+class GetStripeSupporteCurrency(APIView):
+
+    def get(self, request):
+
+        return Response({"success":True,"data":stripe_supported_currency},status=status.HTTP_200_OK)
