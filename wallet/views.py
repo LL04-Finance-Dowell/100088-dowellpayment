@@ -1394,3 +1394,40 @@ class GetStripeSupporteCurrency(APIView):
     def get(self, request):
 
         return Response({"success":True,"data":stripe_supported_currency},status=status.HTTP_200_OK)
+
+class UpdateUserSettings(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        option = request.data.get("option")
+
+        if option == "email":
+            new_email = request.data.get("new_email")
+            if new_email:
+                user.email = new_email
+                user.save()
+                return Response({'detail': 'Email updated successfully.'}, status=status.HTTP_200_OK)
+            else:
+                return Response({'error': 'New email not provided.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        elif option == "phone":
+            new_phone = request.data.get("new_phone")
+            if new_phone:
+                user.phone_number = new_phone
+                user.save()
+                return Response({'detail': 'Phone number updated successfully.'}, status=status.HTTP_200_OK)
+            else:
+                return Response({'error': 'New phone number not provided.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        elif option == "password":
+            new_password = request.data.get("new_password")
+            if new_password:
+                user.set_password(new_password)
+                user.save()
+                return Response({'detail': 'Password updated successfully.'}, status=status.HTTP_200_OK)
+            else:
+                return Response({'error': 'New password not provided.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        else:
+            return Response({'error': 'Invalid option.'}, status=status.HTTP_400_BAD_REQUEST)

@@ -39,6 +39,7 @@ urlpatterns = [
     ),
     # userprofile
     path("profile", views.UserProfileDetail.as_view(), name="profile"),
+    path("update-settings",views.UpdateUserSettings.as_view()),
     #Delete/deactivate account
     path('request-disable',views.RequestDisableView.as_view()),
     path('disable',views.DisableAccountView.as_view()),
