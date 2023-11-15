@@ -9,6 +9,7 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     firstname = models.CharField(max_length=100,null=True, blank=True)
     lastname = models.CharField(max_length=100,null=True, blank=True)
+    address = models.CharField(max_length=255, blank=True, null=True)
     profile_picture = models.ImageField(
         default="profile_images/avatar.jpg",
         upload_to="profile_images",  # dir to store the image
