@@ -3,6 +3,7 @@ import requests
 from django.template.loader import render_to_string
 from io import BytesIO
 from dotenv import load_dotenv
+from .generate_pdf_invoice import generate_invoice,generate_invoice_with_voucher
 
 load_dotenv()
 
@@ -22,6 +23,7 @@ def send_mail_one(
     ref_id,
     payment_method,
 ):
+    pdf_url = generate_invoice(name,address,city,ref_id,date,payment_method,desc,amount,currency)
     order_template = "payment/order.html"
 
     # API endpoint to send the email
@@ -51,6 +53,7 @@ def send_mail_one(
         "ref": ref,
         "date": date,
         "payment_method": payment_method,
+        "pdf_url":pdf_url
     }
 
     # Email data
@@ -87,6 +90,8 @@ def send_mail_two(
 ):
     order_template = "payment/order_two.html"
 
+    pdf_url = generate_invoice_with_voucher(name,address,city,ref_id,date,payment_method,desc,amount,currency,voucher_code)
+
     # API endpoint to send the email
     url = f"https://100085.pythonanywhere.com/api/payment-status/"
 
@@ -116,6 +121,7 @@ def send_mail_two(
         "ref": ref,
         "date": date,
         "payment_method": payment_method,
+        "pdf_url":pdf_url
     }
 
     # Email data

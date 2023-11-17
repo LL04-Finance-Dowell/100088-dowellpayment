@@ -165,6 +165,7 @@ def verify_paypal(
 
     """GET PAYMENT DETAILS FROM PAYPAL USING THE PAYMENT ID"""
     response = requests.get(url, headers=headers).json()
+    print(response)
     try:
         if response["name"] == "RESOURCE_NOT_FOUND":
             return Response(
@@ -255,7 +256,7 @@ def verify_paypal(
             mail_sent = transaction["data"]["mail_sent"]
 
             """USE THIS MAIL TEMPLATE IF VOUCHER CODE IS NOT INCLUDED IN THE PAYMENT DATA """
-            if mail_sent == "False" and voucher_code == "":
+            if mail_sent == "True" and voucher_code == "":
                 res = send_mail_one(
                     amount,
                     currency,
@@ -271,7 +272,7 @@ def verify_paypal(
                 )
 
             """USE THIS MAIL TEMPLATE IF VOUCHER CODE IS INCLUDED IN THE PAYMENT DATA """
-            if mail_sent == "False" and voucher_code != "":
+            if mail_sent == "True" and voucher_code != "":
                 res = send_mail_two(
                     amount,
                     currency,

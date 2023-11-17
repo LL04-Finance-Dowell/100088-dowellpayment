@@ -138,6 +138,7 @@ def verify_stripe(
     print(payment_session)
     payment_status = payment_session["payment_status"]
     state = payment_session["status"]
+    print(payment_session)
 
     # Check the payment status
     if payment_status == "paid" and state == "complete":
@@ -161,8 +162,13 @@ def verify_stripe(
             city = payment_session["customer_details"]["address"]["city"]
         except:
             city = ""
+        # try:
+        #     country = payment_session["customer_details"]["address"]["country"]
+        # except:
+        #     country = ""
         try:
             state = payment_session["customer_details"]["address"]["state"]
+            print("state",state)
         except:
             state = ""
         try:
@@ -194,7 +200,8 @@ def verify_stripe(
             voucher_code = ""
 
         """USE THIS MAIL TEMPLATE IF VOUCHER CODE IS NOT INCLUDED IN THE PAYMENT DATA """
-        if mail_sent == "False" and voucher_code == "":
+        if mail_sent == "True" and voucher_code == "":
+            print("------------called1-----------")
             res = send_mail_one(
                 amount,
                 currency,
@@ -210,7 +217,7 @@ def verify_stripe(
             )
 
         """USE THIS MAIL TEMPLATE IF VOUCHER CODE IS INCLUDED IN THE PAYMENT DATA """
-        if mail_sent == "False" and voucher_code != "":
+        if mail_sent == "True" and voucher_code != "":
             res = send_mail_two(
                 amount,
                 currency,
