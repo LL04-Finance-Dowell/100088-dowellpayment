@@ -62,7 +62,7 @@ urlpatterns = [
     ),
     path("success", Success.as_view()),
     path("error", Error.as_view()),
-    path('pdf/<str:pdf_filename>', views.serve_pdf, name='serve_pdf'),
+    path("pdf/<str:pdf_filename>", views.serve_pdf, name="serve_pdf"),
     path("tink/create/payment", TinkCreatePayment.as_view()),
     # path("yapily/supported-countries", YapilySupportedCountry.as_view()),
     # path("yapily/initialize/payment", InitializeNetPaymentYapily.as_view()),
@@ -71,4 +71,4 @@ urlpatterns = [
     # path("plaid/initialize", NetPaymentPlaid.as_view()),
     # path("token/all-bank", GetAllBank.as_view()),
     # path("token/create-payment", CreatePayment.as_view()),
-]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

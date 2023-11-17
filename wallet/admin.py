@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Wallet, Transaction, UserProfile,MoneyRequest
+from .models import Wallet, Transaction, UserProfile, MoneyRequest
 
 admin.site.register(Wallet)
 admin.site.register(Transaction)

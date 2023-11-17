@@ -896,14 +896,12 @@ class VerifyPaypalPaymentPublicUse(APIView):
 def serve_pdf(request, pdf_filename):
     pdf_path = os.path.join(settings.MEDIA_ROOT, pdf_filename)
     if os.path.exists(pdf_path):
-        with open(pdf_path, 'rb') as pdf_file:
-            response = HttpResponse(pdf_file.read(), content_type='application/pdf')
-            response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
+        with open(pdf_path, "rb") as pdf_file:
+            response = HttpResponse(pdf_file.read(), content_type="application/pdf")
+            response["Content-Disposition"] = f'attachment; filename="{pdf_filename}"'
             return response
     else:
         return HttpResponse("PDF not found", status=404)
-
-
 
 
 class TinkCreatePayment(APIView):

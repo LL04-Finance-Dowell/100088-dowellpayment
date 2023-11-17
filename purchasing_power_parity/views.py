@@ -6,6 +6,7 @@ from datetime import datetime
 from .helper import get_all_currency_name, get_ppp_data
 import requests
 import re
+
 # from django_wkhtmltopdf.views import PDFTemplateView
 from weasyprint import HTML
 
@@ -128,25 +129,14 @@ class SendResponseToClient(APIView):
             url = "https://100085.pythonanywhere.com/api/email/"
 
             EMAIL_FROM_WEBSITE = """
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8" />
-                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-                <title>DoWell World Price Indicator</title>
-            </head>
-            <body
-                style="
-                font-family: Arial, sans-serif;
-                background-color: #ffffff;
-                margin: 0;
-                padding: 0;
-                display: flex;
-                justify-content: center;
-                "
-            >
-                <div style="width: 100%; background-color: #ffffff;">
-                <header
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8" />
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                    <title>DoWell World Price Indicator</title>
+                </head>
+                <body
                     style="
                     color: #fff;
                     display: flex;
@@ -202,36 +192,10 @@ class SendResponseToClient(APIView):
                         </p>
                         <p>DoWell UX Living Lab Team</p>
                     </div>
-                    </section>
-                </main>
+                </body>
+                </html>
+                """
 
-                <footer
-                    style="
-                    background-color: #005733;
-                    color: #fff;
-                    text-align: center;
-                    padding: 10px;
-                    "
-                >
-                    <a
-                    href="https://www.uxlivinglab.org/"
-                    style="
-                        text-align: center;
-                        color: white;
-                        margin-bottom: 20px;
-                        padding-bottom: 10px;
-                    "
-                    >DoWell UX Living Lab</a
-                    >
-                    <p style="margin-top: 10px; font-size: 13px;">
-                    &copy; 2023-All rights reserved.
-                    </p>
-                </footer>
-                </div>
-            </body>
-            </html>
-            """
-            
             email_content = EMAIL_FROM_WEBSITE.format(
                 email=email,
                 base_currency=base_currency,
@@ -249,17 +213,17 @@ class SendResponseToClient(APIView):
             )
             date = datetime.now().strftime("%Y-%m-%d")
 
-
-            
             payload = {
                 "toname": f"{email}",
                 "toemail": f"{email}",
                 "subject": f"Result from DoWell World Price Indicator on {date}",
                 "email_content": email_content,
-                
             }
+            # pdf_file.close()
             response = requests.post(url, json=payload)
-            print(response.text)
+
+            # print(response.text)
+            print(response)
             return Response(
                 {"success": True, "message": "Mail sent successfully"},
                 status=status.HTTP_200_OK,
@@ -273,20 +237,24 @@ class SendResponseToClient(APIView):
                 },
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
+
+
 import os
 from django.conf import settings
 from django.http import HttpResponse
+
+
 def serve_pdf(request, pdf_filename):
     pdf_path = os.path.join(settings.MEDIA_ROOT, pdf_filename)
 
     if os.path.exists(pdf_path):
-        with open(pdf_path, 'rb') as pdf_file:
-            response = HttpResponse(pdf_file.read(), content_type='application/pdf')
-            response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
+        with open(pdf_path, "rb") as pdf_file:
+            response = HttpResponse(pdf_file.read(), content_type="application/pdf")
+            response["Content-Disposition"] = f'attachment; filename="{pdf_filename}"'
             return response
     else:
         return HttpResponse("PDF not found", status=404)
-    
+
 
 # FOR PUBLIC USAGE
 class GetPublicPurchasingPowerParity(APIView):

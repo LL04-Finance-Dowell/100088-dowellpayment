@@ -30,17 +30,17 @@ urlpatterns = [
     ),
     # transfer url
     path("transfer", views.SendMoney.as_view(), name="transfer"),
-    path("request",views.MoneyRequestView.as_view(),name="request"),
-    path("user-request",views.UserRequests.as_view()),
-    path("accept-request",views.AcceptRequestView.as_view()),
+    path("request", views.MoneyRequestView.as_view(), name="request"),
+    path("user-request", views.UserRequests.as_view()),
+    path("accept-request", views.AcceptRequestView.as_view()),
     # external payment
     path(
         "external-payment", views.ExternalPaymentView.as_view(), name="external-payment"
     ),
     # userprofile
     path("profile", views.UserProfileDetail.as_view(), name="profile"),
-    #Delete/deactivate account
-    path('request-disable',views.RequestDisableView.as_view()),
-    path('disable',views.DisableAccountView.as_view()),
-    path('stripe-currency',views.GetStripeSupporteCurrency.as_view()),
+    # Delete/deactivate account
+    path("request-disable", views.RequestDisableView.as_view()),
+    path("disable", views.DisableAccountView.as_view()),
+    path("stripe-currency", views.GetStripeSupporteCurrency.as_view()),
 ]

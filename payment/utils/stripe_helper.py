@@ -168,7 +168,7 @@ def verify_stripe(
         #     country = ""
         try:
             state = payment_session["customer_details"]["address"]["state"]
-            print("state",state)
+            print("state", state)
         except:
             state = ""
         try:

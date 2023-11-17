@@ -7,8 +7,8 @@ from django.utils.crypto import get_random_string
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    firstname = models.CharField(max_length=100,null=True, blank=True)
-    lastname = models.CharField(max_length=100,null=True, blank=True)
+    firstname = models.CharField(max_length=100, null=True, blank=True)
+    lastname = models.CharField(max_length=100, null=True, blank=True)
     profile_picture = models.ImageField(
         default="profile_images/avatar.jpg",
         upload_to="profile_images",  # dir to store the image
@@ -32,27 +32,34 @@ class UserProfile(models.Model):
                 img.thumbnail(output_size)
                 img.save(self.profile_picture.path)
 
+
 class Wallet(models.Model):
     account_no = models.CharField(max_length=20, null=True, default="")
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="wallet")
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    password = models.CharField(max_length=4, null=True)  # Add a new field for wallet password
+    password = models.CharField(
+        max_length=4, null=True
+    )  # Add a new field for wallet password
 
     def save(self, *args, **kwargs):
         if not self.account_no:
             # Generate a random 20-digit account number
-            self.account_no = ''.join([str(random.randint(0, 9)) for _ in range(20)])
+            self.account_no = "".join([str(random.randint(0, 9)) for _ in range(20)])
 
         super(Wallet, self).save(*args, **kwargs)
-
 
     def __str__(self):
         return self.account_no
 
+
 class MoneyRequest(models.Model):
     custom_id = models.CharField(max_length=10, unique=True)
-    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sent_money_requests")
-    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name="received_money_requests")
+    sender = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="sent_money_requests"
+    )
+    receiver = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="received_money_requests"
+    )
     wallet = models.ForeignKey(Wallet, on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     is_confirmed = models.BooleanField(default=False)
@@ -60,14 +67,13 @@ class MoneyRequest(models.Model):
 
     def __str__(self):
         return f"MoneyRequest {self.custom_id}"
-    
+
     def save(self, *args, **kwargs):
         if not self.custom_id:
             # Generate a random 10-character custom ID
             self.custom_id = get_random_string(length=10)
 
         super(MoneyRequest, self).save(*args, **kwargs)
-
 
 
 class Transaction(models.Model):

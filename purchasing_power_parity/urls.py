@@ -13,5 +13,5 @@ urlpatterns = [
     path("ppp", GetPurchasingPowerParity.as_view()),
     path("ppp/client-mail", SendResponseToClient.as_view()),
     path("ppp/public/<str:api_key>", GetPublicPurchasingPowerParity.as_view()),
-    path('pdf/<str:pdf_filename>', views.serve_pdf, name='serve_pdf'),
-]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    path("pdf/<str:pdf_filename>", views.serve_pdf, name="serve_pdf"),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

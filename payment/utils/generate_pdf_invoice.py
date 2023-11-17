@@ -5,10 +5,10 @@ from django.http import HttpResponse
 from weasyprint import HTML
 
 
-
 # name,address,country,invoice_number,invoice_date,order_number,payment_method
-def generate_invoice(name,address,city,ref_id,date,payment_method,desc,amount,currency):
-
+def generate_invoice(
+    name, address, city, ref_id, date, payment_method, desc, amount, currency
+):
     email_content = f"""
 
                 <html>
@@ -149,11 +149,13 @@ def generate_invoice(name,address,city,ref_id,date,payment_method,desc,amount,cu
                 </body>
                 </html>
 
-                """     
+                """
     pdf_data = HTML(string=email_content).write_pdf()
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf",dir=settings.MEDIA_ROOT) as temp_file:
-                temp_file.write(pdf_data)
-                print(f"Temporary PDF file saved at: {temp_file.name}")
+    with tempfile.NamedTemporaryFile(
+        delete=False, suffix=".pdf", dir=settings.MEDIA_ROOT
+    ) as temp_file:
+        temp_file.write(pdf_data)
+        print(f"Temporary PDF file saved at: {temp_file.name}")
     pdf_filename = os.path.basename(temp_file.name)
     pdf_url = f"http://127.0.0.1:8000/api/pdf/{pdf_filename}"
     print(pdf_filename)
@@ -161,10 +163,18 @@ def generate_invoice(name,address,city,ref_id,date,payment_method,desc,amount,cu
     return pdf_url
 
 
-
-
-def generate_invoice_with_voucher(name,address,city,ref_id,date,payment_method,desc,amount,currency,voucher_code):
-
+def generate_invoice_with_voucher(
+    name,
+    address,
+    city,
+    ref_id,
+    date,
+    payment_method,
+    desc,
+    amount,
+    currency,
+    voucher_code,
+):
     email_content = f"""
 
                 <html>
@@ -307,14 +317,15 @@ def generate_invoice_with_voucher(name,address,city,ref_id,date,payment_method,d
                 </body>
                 </html>
 
-                """     
+                """
     pdf_data = HTML(string=email_content).write_pdf()
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf",dir=settings.MEDIA_ROOT) as temp_file:
-                temp_file.write(pdf_data)
-                print(f"Temporary PDF file saved at: {temp_file.name}")
+    with tempfile.NamedTemporaryFile(
+        delete=False, suffix=".pdf", dir=settings.MEDIA_ROOT
+    ) as temp_file:
+        temp_file.write(pdf_data)
+        print(f"Temporary PDF file saved at: {temp_file.name}")
     pdf_filename = os.path.basename(temp_file.name)
     pdf_url = f"http://127.0.0.1:8000/api/pdf/{pdf_filename}"
     print(pdf_filename)
     print(pdf_url)
     return pdf_url
-
