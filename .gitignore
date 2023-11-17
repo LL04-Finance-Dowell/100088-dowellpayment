@@ -10,3 +10,7 @@ token.json
 /qrcode
 /node_modules
 /qrcodes
+/wallet/__pycache__
+/purchasing_power_parity/__pycache__
+/payment/__pycache__
+/dowellpay/__pycache__
