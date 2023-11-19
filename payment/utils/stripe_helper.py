@@ -193,6 +193,8 @@ def verify_stripe(
         payment_method = "Stripe"
 
         mail_sent = transaction["data"]["mail_sent"]
+        invoice_number = transaction["data"]["invoice_number"]
+        order_number = transaction["data"]["order_number"]
 
         try:
             voucher_code = transaction["data"]["voucher_code"]
@@ -213,6 +215,8 @@ def verify_stripe(
                 address,
                 postal_code,
                 ref_id,
+                invoice_number,
+                order_number,
                 payment_method,
             )
 
@@ -230,6 +234,8 @@ def verify_stripe(
                 postal_code,
                 voucher_code,
                 ref_id,
+                invoice_number,
+                order_number,
                 payment_method,
             )
         """CONNECT TO DOWELL DATABASE AND UPDATE THE PAYMENT DETAILS"""
