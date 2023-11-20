@@ -21,10 +21,12 @@ def send_mail_one(
     address,
     postal_code,
     ref_id,
+    invoice_number,
+    order_number,
     payment_method,
 ):
     pdf_url = generate_invoice(
-        name, address, city, ref_id, date, payment_method, desc, amount, currency
+        name, address, city, ref_id,invoice_number, order_number,date, payment_method, desc, amount, currency
     )
     order_template = "payment/order.html"
 
@@ -53,6 +55,8 @@ def send_mail_one(
         "address": address,
         "postal_code": postal_code,
         "ref": ref,
+        "invoice_number":invoice_number,
+        "order_number":order_number,
         "date": date,
         "payment_method": payment_method,
         "pdf_url": pdf_url,
@@ -88,6 +92,8 @@ def send_mail_two(
     postal_code,
     voucher_code,
     ref_id,
+    invoice_number,
+    order_number,
     payment_method,
 ):
     order_template = "payment/order_two.html"
@@ -97,6 +103,8 @@ def send_mail_two(
         address,
         city,
         ref_id,
+        invoice_number,
+        order_number,
         date,
         payment_method,
         desc,
@@ -132,6 +140,8 @@ def send_mail_two(
         "postal_code": postal_code,
         "voucher_code": voucher_code,
         "ref": ref,
+        "invoice_number":invoice_number,
+        "order_number":order_number,
         "date": date,
         "payment_method": payment_method,
         "pdf_url": pdf_url,

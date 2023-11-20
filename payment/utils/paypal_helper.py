@@ -254,6 +254,8 @@ def verify_paypal(
                 voucher_code = ""
 
             mail_sent = transaction["data"]["mail_sent"]
+            invoice_number = transaction["data"]["invoice_number"]
+            order_number = transaction["data"]["order_number"]
 
             """USE THIS MAIL TEMPLATE IF VOUCHER CODE IS NOT INCLUDED IN THE PAYMENT DATA """
             if mail_sent == "True" and voucher_code == "":
@@ -268,6 +270,8 @@ def verify_paypal(
                     address,
                     postal_code,
                     ref_id,
+                    invoice_number,
+                    order_number,
                     payment_method,
                 )
 
@@ -285,6 +289,8 @@ def verify_paypal(
                     postal_code,
                     voucher_code,
                     ref_id,
+                    invoice_number,
+                    order_number,
                     payment_method,
                 )
 
