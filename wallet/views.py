@@ -5,12 +5,12 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate, login, logout
 from .serializers import (
     UserRegistrationSerializer,
-    UserSerializer,
+    PaymentVerificationSerializer,
     WalletDetailSerializer,
     TransactionSerializer,
     ExternalPaymentSerializer,
     UserProfileSerializer,
-    MoneyRequestSerializer,
+    DowellPaymentSerializer,
 )
 from django.utils.crypto import get_random_string
 from django.contrib.auth.models import User
@@ -19,6 +19,7 @@ from django.http import HttpResponseRedirect
 from django.contrib.auth.models import User
 from requests.exceptions import RequestException
 import requests
+import random
 from django.contrib.auth.hashers import make_password, check_password
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
@@ -1417,3 +1418,70 @@ class GetStripeSupporteCurrency(APIView):
             {"success": True, "data": stripe_supported_currency},
             status=status.HTTP_200_OK,
         )
+
+
+
+"""
+
+DOWELL PAYMENTS
+
+"""
+
+class PaymentRequestView(APIView):
+    serializer_class = DowellPaymentSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            # Get user's wallet (assuming user is authenticated)
+            user_wallet = request.user.wallet
+
+            # Create a transaction record with payment details
+            payment_data = serializer.validated_data
+            price = payment_data.get('price')
+            currency = payment_data.get('currency')
+            callback_url = payment_data.get('callback_url')
+
+            
+
+            # Save the transaction
+            transaction.save()
+
+            # Redirect user to login page with payment ID as request params
+            redirect_url = f"/login/?payment_id={transaction.payment_id}"
+
+            return Response({'redirect_url': redirect_url}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PaymentVerificationView(APIView):
+    serializer_class = PaymentVerificationSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            # Retrieve user credentials and payment ID from request
+            username = serializer.validated_data.get('username')
+            password = serializer.validated_data.get('password')
+            payment_id = serializer.validated_data.get('payment_id')
+
+            # Authenticate user
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                # If authentication is successful, query the database with the payment ID
+                try:
+                    transaction = Transaction.objects.get(payment_id=payment_id)
+                    # Get payment details
+                    price = transaction.amount
+                    currency = "USD"  # Assuming currency is stored somewhere or set to default
+                    callback_url = transaction.wallet.user.wallet.callback_url
+
+                    # Redirect user to the callback URL with the payment ID as a query parameter
+                    redirect_url = f"{callback_url}?id={transaction.id}"
+                    return Response({'redirect_url': redirect_url}, status=status.HTTP_200_OK)
+
+                except Transaction.DoesNotExist:
+                    return Response({'message': 'Invalid payment ID'}, status=status.HTTP_404_NOT_FOUND)
+            else:
+                return Response({'message': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

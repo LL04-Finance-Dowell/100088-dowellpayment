@@ -89,3 +89,15 @@ class MoneyRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = MoneyRequest
         fields = "__all__"
+
+
+class DowellPaymentSerializer(serializers.Serializer):
+    price = serializers.DecimalField(max_digits=10, decimal_places=2)
+    currency = serializers.CharField(max_length=10)
+    callback_url = serializers.URLField()
+
+
+class PaymentVerificationSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=150)
+    password = serializers.CharField(max_length=128)
+    payment_id = serializers.CharField(max_length=10)
