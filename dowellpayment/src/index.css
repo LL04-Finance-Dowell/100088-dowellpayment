@@ -196,6 +196,8 @@ select::after {
   justify-content: center;
   align-items: center;
   text-align: center;
+  margin-bottom: auto;
+  margin-top: 2rem;
 }
 
 .close-button {
@@ -248,7 +250,7 @@ th, td {
   text-align: center;
   padding: .6em 2em;
   margin: 2em .2em;
-  font-size: 0.875rem;
+  font-size: 0.95rem;
 }
 
 table .even {
@@ -307,11 +309,11 @@ tbody .last-row {
 }
 
 .disclaimer__text {
-  font-size: 0.875rem;
+  font-size: 0.9rem;
 }
 
 .disclaimer__Info {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   text-align: left;
   font-style: italic;
 }

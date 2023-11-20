@@ -122,14 +122,17 @@ function Modal({ isOpen, onClose, values, info, loading, handleMailing, mailLoad
                         'Yes'
                     }
                 </Button>
-                {/* <Button
-                    color="#972EA2"
-                    bg="#FBEFFA"
-                    p={1}
-                    _hover={{ background: '#FBDDF9'}}
+                <Button
+                    color="white"
+                    bg="#ff0000"
+                    p={'1 5'}
+                    fontSize={'0.875rem'}
+                    _hover={{ background: '#808080'}}
+                    onClick={onClose}
+                    disabled={mailLoading ? true : false}
                 >
                     No
-                </Button> */}
+                </Button>
             </div>
             
             <p className="disclaimer__Wrapp">
