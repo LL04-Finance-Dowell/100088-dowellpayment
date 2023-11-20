@@ -1434,9 +1434,6 @@ class PaymentRequestView(APIView):
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            # Get user's wallet (assuming user is authenticated)
-            # user_wallet = request.user.wallet
-
             # Create a transaction record with payment details
             payment_data = serializer.validated_data
             price = payment_data.get('price')
@@ -1446,10 +1443,16 @@ class PaymentRequestView(APIView):
             unique_id = uuid.uuid4()
             initialization_id = str(unique_id)
 
-            obj = PaymentInitialazation.objects.create(price=price,currency=currency,callback_url=callback_url,initialization_id=initialization_id)
+            payment = PaymentInitialazation.objects.create(
+                price=price,
+                currency=currency,
+                callback_url=callback_url,
+                initialization_id=initialization_id
+                )
+            payment.save()
 
             # Redirect user to login page with payment ID as request params
-            redirect_url = f"https://www.google.com/?ini_id={initialization_id}"
+            redirect_url = f"https://dowell-wallet.vercel.app/payment-login/?initialization_id={initialization_id}"
 
             return Response({'redirect_url': redirect_url}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -1461,28 +1464,60 @@ class PaymentVerificationView(APIView):
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            # Retrieve user credentials and payment ID from request
-            username = serializer.validated_data.get('username')
+            email = serializer.validated_data.get('email')
             password = serializer.validated_data.get('password')
             initialization_id = serializer.validated_data.get('initialization_id')
 
-            # Authenticate user
-            user = authenticate(username=username, password=password)
+            try:
+                user = User.objects.get(email=email)
+            except User.DoesNotExist:
+                return Response(
+                    {"success": False, "error": "Invalid credentials"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            # If the user with the given email exists, we can proceed to authentication.
+            user = authenticate(request, username=user.username, password=password)
             if user is not None:
-                # If authentication is successful, query the database with the payment ID
                 try:
-                    transaction = PaymentInitialazation.objects.get(initialization_id=initialization_id)
+                    # Check if the payment initialization exists
+                    payment_initialization = PaymentInitialazation.objects.get(initialization_id=initialization_id)
+
                     # Get payment details
-                    price = transaction.amount
-                    currency = "USD"  # Assuming currency is stored somewhere or set to default
-                    callback_url = transaction.callback_url
+                    price = payment_initialization.price
+                    currency = payment_initialization.currency
+                    callback_url = payment_initialization.callback_url
 
-                    # Redirect user to the callback URL with the payment ID as a query parameter
-                    redirect_url = f"{callback_url}?id={transaction.id}"
-                    return Response({'redirect_url': redirect_url}, status=status.HTTP_200_OK)
+                    # Get user's wallet and check balance
+                    user_wallet = Wallet.objects.get(user=user)
+                    user_balance = user_wallet.balance
 
-                except Transaction.DoesNotExist:
-                    return Response({'message': 'Invalid payment ID'}, status=status.HTTP_404_NOT_FOUND)
+                    # Check if the user has sufficient balance
+                    if user_balance >= price:
+                        # Deduct the amount from the user's wallet
+                        user_wallet.balance -= price
+                        user_wallet.save()
+
+                        # Create a new transaction
+                        new_transaction = Transaction.objects.create(
+                            user=user,
+                            amount=price,
+                            currency=currency,
+                            payment_id=payment_initialization.id
+                            # Add other transaction details as needed
+                        )
+
+                        # Redirect user to the callback URL with the payment ID as a query parameter
+                        redirect_url = f"{callback_url}?id={payment_initialization.id}"
+                        return Response({'redirect_url': redirect_url}, status=status.HTTP_200_OK)
+                    else:
+                        return Response({'message': 'Insufficient balance'}, status=status.HTTP_400_BAD_REQUEST)
+
+                except PaymentInitialazation.DoesNotExist:
+                    return Response({'message': 'Invalid payment initialization ID'}, status=status.HTTP_404_NOT_FOUND)
+                except Wallet.DoesNotExist:
+                    return Response({'message': 'User wallet not found'}, status=status.HTTP_404_NOT_FOUND)
+
             else:
                 return Response({'message': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
