@@ -23,7 +23,7 @@ import random
 from django.contrib.auth.hashers import make_password, check_password
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
-from .models import Wallet, Transaction, UserProfile, MoneyRequest
+from .models import Wallet, Transaction, UserProfile, MoneyRequest,PaymentInitialazation
 from django.urls import reverse
 from django.conf import settings
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -50,6 +50,7 @@ from decimal import Decimal
 import os
 from django.db.models import Q
 from .supported_currency import stripe_supported_currency
+import uuid
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -1434,7 +1435,7 @@ class PaymentRequestView(APIView):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             # Get user's wallet (assuming user is authenticated)
-            user_wallet = request.user.wallet
+            # user_wallet = request.user.wallet
 
             # Create a transaction record with payment details
             payment_data = serializer.validated_data
@@ -1442,13 +1443,13 @@ class PaymentRequestView(APIView):
             currency = payment_data.get('currency')
             callback_url = payment_data.get('callback_url')
 
-            
+            unique_id = uuid.uuid4()
+            initialization_id = str(unique_id)
 
-            # Save the transaction
-            transaction.save()
+            obj = PaymentInitialazation.objects.create(price=price,currency=currency,callback_url=callback_url,initialization_id=initialization_id)
 
             # Redirect user to login page with payment ID as request params
-            redirect_url = f"/login/?payment_id={transaction.payment_id}"
+            redirect_url = f"https://www.google.com/?ini_id={initialization_id}"
 
             return Response({'redirect_url': redirect_url}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -1463,18 +1464,18 @@ class PaymentVerificationView(APIView):
             # Retrieve user credentials and payment ID from request
             username = serializer.validated_data.get('username')
             password = serializer.validated_data.get('password')
-            payment_id = serializer.validated_data.get('payment_id')
+            initialization_id = serializer.validated_data.get('initialization_id')
 
             # Authenticate user
             user = authenticate(username=username, password=password)
             if user is not None:
                 # If authentication is successful, query the database with the payment ID
                 try:
-                    transaction = Transaction.objects.get(payment_id=payment_id)
+                    transaction = PaymentInitialazation.objects.get(initialization_id=initialization_id)
                     # Get payment details
                     price = transaction.amount
                     currency = "USD"  # Assuming currency is stored somewhere or set to default
-                    callback_url = transaction.wallet.user.wallet.callback_url
+                    callback_url = transaction.callback_url
 
                     # Redirect user to the callback URL with the payment ID as a query parameter
                     redirect_url = f"{callback_url}?id={transaction.id}"

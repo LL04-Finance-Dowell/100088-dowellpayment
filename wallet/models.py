@@ -87,3 +87,13 @@ class Transaction(models.Model):
 
     def __str__(self):
         return f"{self.wallet.user}"
+
+
+class PaymentInitialazation(models.Model):
+    price = models.CharField(max_length=10)
+    currency = models.CharField(max_length=10)
+    callback_url = models.CharField(max_length=100)
+    initialization_id = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f"{self.initialization_id}"
