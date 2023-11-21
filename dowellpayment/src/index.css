@@ -401,7 +401,7 @@ tbody .last-row {
     height: auto;
   }
   tr, td {
-    font-size: .9em;
+    font-size: 0.9rem;
   }
 
   .vector {
@@ -424,7 +424,7 @@ tbody .last-row {
     font-size: 1.7em;
   }
   tr, td {
-    font-size: .85em;
+    font-size: .9rem;
   }
 }
 
@@ -436,7 +436,7 @@ tbody .last-row {
     font-size: 1.7em;
   }
   tr, td {
-    font-size: .85em;
+    font-size: .9rem;
   }
   .form-group {
     margin-block: .5em;
@@ -454,7 +454,7 @@ tbody .last-row {
     font-size: 1.7em;
   }
   tr, td {
-    font-size: .85em;
+    font-size: .9rem;
   }
   .form-group {
     margin-block: .5em;
@@ -472,7 +472,7 @@ tbody .last-row {
     font-size: .8em;
   }
   tr, td {
-    font-size: .85em;
+    font-size: .9rem;
   }
   .form-group {
     margin-block: .5em;
@@ -593,7 +593,7 @@ tbody .last-row {
     height: auto;
   }
   tr, td {
-    font-size: .9em;
+    font-size: .9rem;
   }
 
   .vector {

@@ -6,6 +6,7 @@ import Modal from "./modal/Modal";
 import Form from "./component/Form";
 import Details from "./component/Details";
 import { toast } from 'react-toastify';
+import { getUserRecentHistory, updateUserRecentHistory } from "./utils";
 
 function App() {
   const [isModalOpen, setModalOpen] = useState(false);
@@ -53,6 +54,10 @@ function App() {
       },
       body: JSON.stringify(info)
     };
+
+    const { savedBaseCurrencies, savedBaseCountries, savedTargetCountries, savedTargetCurrencies } = getUserRecentHistory();
+    const copyOfInfo = {...info};
+
     try {
       const response = await fetch('https://100088.pythonanywhere.com/api/v1/ppp', requestOption)
       if (!response.ok) {
@@ -73,6 +78,33 @@ function App() {
           target_currency: "",
           email: ""
         })
+
+        if (savedBaseCurrencies.includes(copyOfInfo.base_currency)) {
+          const foundPreviousItemIndex = savedBaseCurrencies.indexOf(copyOfInfo.base_currency);
+          if (foundPreviousItemIndex > -1) savedBaseCurrencies.splice(foundPreviousItemIndex, 1)
+        }
+
+        if (savedBaseCountries.includes(copyOfInfo.base_country)) {
+          const foundPreviousItemIndex = savedBaseCountries.indexOf(copyOfInfo.base_country);
+          if (foundPreviousItemIndex > -1) savedBaseCountries.splice(foundPreviousItemIndex, 1)
+        }
+
+        if (savedTargetCountries.includes(copyOfInfo.target_country)) {
+          const foundPreviousItemIndex = savedTargetCountries.indexOf(copyOfInfo.target_country);
+          if (foundPreviousItemIndex > -1) savedTargetCountries.splice(foundPreviousItemIndex, 1)
+        }
+
+        if (savedTargetCurrencies.includes(copyOfInfo.target_currency)) {
+          const foundPreviousItemIndex = savedTargetCurrencies.indexOf(copyOfInfo.target_currency);
+          if (foundPreviousItemIndex > -1) savedTargetCurrencies.splice(foundPreviousItemIndex, 1)
+        }
+        
+        savedBaseCurrencies.push(copyOfInfo.base_currency);
+        savedBaseCountries.push(copyOfInfo.base_country);
+        savedTargetCountries.push(copyOfInfo.target_country);
+        savedTargetCurrencies.push(copyOfInfo.target_currency);
+
+        updateUserRecentHistory(savedBaseCurrencies, savedBaseCountries, savedTargetCountries, savedTargetCurrencies);
       }
 
     } catch (error) {

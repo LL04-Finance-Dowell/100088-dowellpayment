@@ -1,16 +1,29 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Button, Icon, Spinner } from '@chakra-ui/react'
 import { MdArrowDropDown } from 'react-icons/md'
 import logo from '../assets/dowell-logo.svg'
 import Select from "react-select"
+import { getUserRecentHistory } from '../utils'
 
 
 const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) => {
     // console.log('State: ', state)
+    const [ savedDetails, setSavedDetails ] = useState(null);
 
     const handleClosePage = () => {
         window.close()
     }
+
+    useEffect(() => {
+        const { savedBaseCurrencies, savedBaseCountries, savedTargetCountries, savedTargetCurrencies } = getUserRecentHistory();
+        
+        setSavedDetails({
+            savedBaseCurrencies: [...savedBaseCurrencies].reverse(),
+            savedBaseCountries: [...savedBaseCountries].reverse(),
+            savedTargetCountries: [...savedTargetCountries].reverse(),
+            savedTargetCurrencies: [...savedTargetCurrencies].reverse(),
+        })
+    }, [info])
 
     return (
         <>
@@ -49,6 +62,14 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                             !state?.currency || !state ? [
                                 // {label: 'Select Currency', value: ''},
                             ]
+                            :
+                            savedDetails && savedDetails.savedBaseCurrencies ?
+                                [...savedDetails.savedBaseCurrencies, ...state?.currency?.filter(item => !savedDetails.savedBaseCurrencies.find(savedItem => savedItem === item))].map((currency => {
+                                    return {
+                                        label: currency,
+                                        value: currency,
+                                    }
+                                }))
                             :
                             [
                                 // {label: 'Select Currency', value: ''},
@@ -101,6 +122,14 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                                 // {label: 'Select country', value: ''},
                             ]
                             :
+                            savedDetails && savedDetails.savedBaseCountries ?
+                                [...savedDetails.savedBaseCountries, ...state?.country?.filter(item => !savedDetails.savedBaseCountries.find(savedItem => savedItem === item))].map((country => {
+                                    return {
+                                        label: country,
+                                        value: country,
+                                    }
+                                }))
+                            :
                             [
                                 // {label: 'Select country', value: ''},
                                 ...state?.country?.map((country) => {
@@ -142,6 +171,14 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                                 // {label: 'Select country', value: ''},
                             ]
                             :
+                            savedDetails && savedDetails.savedTargetCountries ?
+                                [...savedDetails.savedTargetCountries, ...state?.country?.filter(item => !savedDetails.savedTargetCountries.find(savedItem => savedItem === item))].map((country => {
+                                    return {
+                                        label: country,
+                                        value: country,
+                                    }
+                                }))
+                            :
                             [
                                 // {label: 'Select country', value: ''},
                                 ...state?.country?.map((country) => {
@@ -182,6 +219,14 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                             !state?.currency || !state ? [
                                 // {label: 'Select Currency', value: ''},
                             ]
+                            :
+                            savedDetails && savedDetails.savedTargetCurrencies ?
+                                [...savedDetails.savedTargetCurrencies, ...state?.currency?.filter(item => !savedDetails.savedTargetCurrencies.find(savedItem => savedItem === item))].map((currency => {
+                                    return {
+                                        label: currency,
+                                        value: currency,
+                                    }
+                                }))
                             :
                             [
                                 // {label: 'Select Currency', value: ''},
