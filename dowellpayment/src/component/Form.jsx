@@ -252,7 +252,7 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                     <input 
                         required
                         type="text" 
-                        placeholder="admin@example.com"
+                        placeholder="dowell@dowellresearch.uk"
                         name='email'
                         value={info?.email}
                         onChange={onChange}

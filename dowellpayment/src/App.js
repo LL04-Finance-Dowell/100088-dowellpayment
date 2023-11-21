@@ -47,6 +47,8 @@ function App() {
 
     info.target_currency && setLoading(true)
 
+    if (info.email.length < 1) info.email = 'dowell@dowellresearch.uk';
+    
     const requestOption = {
       method: 'POST',
       headers: {
