@@ -48,7 +48,7 @@ function App() {
     info.target_currency && setLoading(true)
 
     if (info.email.length < 1) info.email = 'dowell@dowellresearch.uk';
-    
+
     const requestOption = {
       method: 'POST',
       headers: {
@@ -143,7 +143,7 @@ function App() {
   }
 
   const openModal = () => {
-    if(info.target_currency !== "" && info.target_country !== "" && info.base_country !== "" && info.base_currency !== "" && info.email !== "") {
+    if(info.target_currency !== "" && info.target_country !== "" && info.base_country !== "" && info.base_currency !== "") {
       setTimeout(() => {
         setModalOpen(true);
       }, 1600)
