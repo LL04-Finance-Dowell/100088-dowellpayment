@@ -250,7 +250,7 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                     <div className="form-group">
                     <label>Your Email Address</label>
                     <input 
-                        required
+                        // required
                         type="text" 
                         placeholder="dowell@dowellresearch.uk"
                         name='email'
