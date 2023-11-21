@@ -251,7 +251,7 @@ const Form = ({ onChange, state, info, handleCalculation, openModal, loading }) 
                     <label>Your Email Address</label>
                     <input 
                         // required
-                        type="text" 
+                        type='email'
                         placeholder="dowell@dowellresearch.uk"
                         name='email'
                         value={info?.email}
