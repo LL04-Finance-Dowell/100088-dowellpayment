@@ -44,4 +44,5 @@ urlpatterns = [
     path("disable", views.DisableAccountView.as_view()),
     path("stripe-currency", views.GetStripeSupporteCurrency.as_view()),
     path("initialize-payment",views.PaymentRequestView.as_view()),
+    path("verify-payment",views.PaymentVerificationView.as_view()),
 ]

@@ -98,6 +98,6 @@ class DowellPaymentSerializer(serializers.Serializer):
 
 
 class PaymentVerificationSerializer(serializers.Serializer):
-    username = serializers.CharField(max_length=150)
+    email = serializers.CharField(max_length=150)
     password = serializers.CharField(max_length=128)
-    payment_id = serializers.CharField(max_length=10)
+    initialization_id = serializers.CharField()

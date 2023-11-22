@@ -1450,11 +1450,18 @@ class PaymentRequestView(APIView):
                 initialization_id=initialization_id
                 )
             payment.save()
-
+            payment_info = {
+                'price': price,
+            }
             # Redirect user to login page with payment ID as request params
-            redirect_url = f"https://dowell-wallet.vercel.app/payment-login/?initialization_id={initialization_id}"
+            redirect_url = f"https://dowell-wallet.vercel.app/payment-login/?initialization_id={initialization_id}&price={price}"
 
-            return Response({'redirect_url': redirect_url}, status=status.HTTP_200_OK)
+
+            return Response({'redirect_url': redirect_url,
+                             'payment_info':payment_info
+                             }, 
+                             status=status.HTTP_200_OK
+                             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -1476,39 +1483,33 @@ class PaymentVerificationView(APIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            # If the user with the given email exists, we can proceed to authentication.
             user = authenticate(request, username=user.username, password=password)
             if user is not None:
                 try:
-                    # Check if the payment initialization exists
                     payment_initialization = PaymentInitialazation.objects.get(initialization_id=initialization_id)
-
-                    # Get payment details
-                    price = payment_initialization.price
+                    price = Decimal(payment_initialization.price)
                     currency = payment_initialization.currency
                     callback_url = payment_initialization.callback_url
 
-                    # Get user's wallet and check balance
                     user_wallet = Wallet.objects.get(user=user)
                     user_balance = user_wallet.balance
 
-                    # Check if the user has sufficient balance
                     if user_balance >= price:
                         # Deduct the amount from the user's wallet
                         user_wallet.balance -= price
                         user_wallet.save()
 
-                        # Create a new transaction
+                        # Create a new Transaction entry
                         new_transaction = Transaction.objects.create(
-                            user=user,
+                            wallet=user_wallet,
+                            transaction_type='Dowell payment',
+                            status='completed',
                             amount=price,
-                            currency=currency,
-                            payment_id=payment_initialization.id
-                            # Add other transaction details as needed
+                            payment_id=payment_initialization,
+                            session_id='',  # You might adjust this as per your needs
                         )
 
-                        # Redirect user to the callback URL with the payment ID as a query parameter
-                        redirect_url = f"{callback_url}?id={payment_initialization.id}"
+                        redirect_url = f"{callback_url}?id={payment_initialization}"
                         return Response({'redirect_url': redirect_url}, status=status.HTTP_200_OK)
                     else:
                         return Response({'message': 'Insufficient balance'}, status=status.HTTP_400_BAD_REQUEST)
