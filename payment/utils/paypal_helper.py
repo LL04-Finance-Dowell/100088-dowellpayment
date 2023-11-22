@@ -2,6 +2,7 @@ import requests
 import base64
 import json
 from rest_framework import status
+from datetime import date
 from rest_framework.response import Response
 from .qrcodes import payment_qrcode
 from .sendmail import send_mail_one, send_mail_two
@@ -100,10 +101,11 @@ def paypal_payment(
         )
 
     try:
+        today = date.today()
         payment_id = response["id"]
         """CONNECT TO DOWELL DATABASE AND STORE THE INFORMATION"""
         transaction_info = model_instance(
-            payment_id, "", product_name, "", template_id, voucher_code
+            payment_id, "", product_name, today, template_id, voucher_code
         )
     except Exception as e:
         return Response(
@@ -258,7 +260,7 @@ def verify_paypal(
             order_number = transaction["data"]["order_number"]
 
             """USE THIS MAIL TEMPLATE IF VOUCHER CODE IS NOT INCLUDED IN THE PAYMENT DATA """
-            if mail_sent == "True" and voucher_code == "":
+            if mail_sent == "False" and voucher_code == "":
                 res = send_mail_one(
                     amount,
                     currency,
