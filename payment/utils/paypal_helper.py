@@ -278,7 +278,7 @@ def verify_paypal(
                 )
 
             """USE THIS MAIL TEMPLATE IF VOUCHER CODE IS INCLUDED IN THE PAYMENT DATA """
-            if mail_sent == "True" and voucher_code != "":
+            if mail_sent == "False" and voucher_code != "":
                 res = send_mail_two(
                     amount,
                     currency,

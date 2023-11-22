@@ -202,7 +202,7 @@ def verify_stripe(
             voucher_code = ""
 
         """USE THIS MAIL TEMPLATE IF VOUCHER CODE IS NOT INCLUDED IN THE PAYMENT DATA """
-        if mail_sent == "True" and voucher_code == "":
+        if mail_sent == "False" and voucher_code == "":
             print("------------called1-----------")
             res = send_mail_one(
                 amount,
@@ -221,7 +221,7 @@ def verify_stripe(
             )
 
         """USE THIS MAIL TEMPLATE IF VOUCHER CODE IS INCLUDED IN THE PAYMENT DATA """
-        if mail_sent == "True" and voucher_code != "":
+        if mail_sent == "False" and voucher_code != "":
             res = send_mail_two(
                 amount,
                 currency,
