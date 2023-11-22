@@ -97,7 +97,7 @@ class DowellPaymentSerializer(serializers.Serializer):
     callback_url = serializers.URLField()
 
 
-class PaymentVerificationSerializer(serializers.Serializer):
+class PaymentAuthorizationSerializer(serializers.Serializer):
     email = serializers.CharField(max_length=150)
     password = serializers.CharField(max_length=128)
     initialization_id = serializers.CharField()
