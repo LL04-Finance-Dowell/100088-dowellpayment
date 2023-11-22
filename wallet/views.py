@@ -1506,7 +1506,7 @@ class PaymentVerificationView(APIView):
                             status='completed',
                             amount=price,
                             payment_id=payment_initialization,
-                            session_id='',  # You might adjust this as per your needs
+                            session_id='',
                         )
 
                         redirect_url = f"{callback_url}?id={payment_initialization}"
