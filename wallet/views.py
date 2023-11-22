@@ -5,7 +5,7 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate, login, logout
 from .serializers import (
     UserRegistrationSerializer,
-    PaymentVerificationSerializer,
+    PaymentAuthorizationSerializer,
     WalletDetailSerializer,
     TransactionSerializer,
     ExternalPaymentSerializer,
@@ -1465,8 +1465,8 @@ class PaymentRequestView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class PaymentVerificationView(APIView):
-    serializer_class = PaymentVerificationSerializer
+class PaymentAuthoriazationView(APIView):
+    serializer_class = PaymentAuthorizationSerializer
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
@@ -1477,6 +1477,7 @@ class PaymentVerificationView(APIView):
 
             try:
                 user = User.objects.get(email=email)
+                
             except User.DoesNotExist:
                 return Response(
                     {"success": False, "error": "Invalid credentials"},
@@ -1522,3 +1523,17 @@ class PaymentVerificationView(APIView):
             else:
                 return Response({'message': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class PaymentVerificationView(APIView):
+    def post (self,request):
+        data  = request.data
+        id = data["id"]
+        try:
+            obj = Transaction.objects.get(payment_id=id)
+            print(obj)
+            if obj.status == "completed":
+                return Response({'success': True,'status':"completed"}, status=status.HTTP_200_OK)
+            return Response({'success': False,'status':"Failed"}, status=status.HTTP_401_UNAUTHORIZED)
+        except Exception as err:
+            return Response({'success': False,'status':"Failed","message":f"{err}"}, status=status.HTTP_401_UNAUTHORIZED)
