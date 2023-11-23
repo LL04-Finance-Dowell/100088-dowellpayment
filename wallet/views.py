@@ -62,6 +62,13 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+"""GET PAYPAL MODE DOWELL INTERNAL TEAM"""
+dowell_paypal_mode = os.getenv("DOWELL_PAYPAL_LIVE_MODE")
+if dowell_paypal_mode == "True":
+    dowell_paypal_url = "https://api-m.paypal.com"
+else:
+    dowell_paypal_url = "https://api-m.sandbox.paypal.com"
+
 class LoginView(APIView):
     def post(self, request):
         email = request.data.get("email")
@@ -653,7 +660,109 @@ class WalletDetailView(APIView):
 
         return Response(data, status=status.HTTP_200_OK)
 
+class PaypalPayment(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+        try:
+            print("user", request.user)
+            data = request.data
+            serializer = PaymentSerializer(data=data)
+            if serializer.is_valid():
+                validate_data = serializer.to_representation(serializer.validated_data)
+                amount = validate_data["amount"]
+            else:
+                errors = serializer.errors
+                return Response(
+                    {"success": False, "errors": errors},
+                    status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                )
+            url = f"{dowell_paypal_url}/v2/checkout/orders"
+            client_id = os.getenv("PAYPAL_CLIENT_ID", None)
+            client_secret = os.getenv("PAYPAL_SECRET_KEY", None)
+            unique_id = uuid.uuid4()
+            payment_id = str(unique_id)
+            encoded_auth = base64.b64encode((f"{client_id}:{client_secret}").encode())
+            
+            headers = {
+                "Content-Type": "application/json",
+                "Authorization": f"Basic {encoded_auth.decode()}",
+                "Prefer": "return=representation",
+            }
+            body = {
+                "intent": "CAPTURE",
+                "purchase_units": [
+                    {
+                        "amount": {
+                            "currency_code": "USD",
+                            "value": f"{amount}",
+                        }
+                    }
+                ],
+                "payment_source": {
+                    "paypal": {
+                        "experience_context": {
+                            "payment_method_preference": "IMMEDIATE_PAYMENT_REQUIRED",
+                            "payment_method_selected": "PAYPAL",
+                            "locale": "en-US",
+                            "landing_page": "LOGIN",
+                            "user_action": "PAY_NOW",
+                            "return_url": f"{'http://127.0.0.1:8000/api/wallet/v1/paypal-callback'}?payment_id={payment_id}",
+                            "cancel_url": f"{'http://127.0.0.1:8000/api/wallet/v1/paypal-callback'}?payment_id={payment_id}",
+                        }
+                    }
+                },
+    }
+            response = requests.post(url, headers=headers, data=json.dumps(body)).json()
+           
+            if "name" in response and response["name"] == "UNPROCESSABLE_ENTITY":
+                return Response(
+                    {
+                        "success": False,
+                        "error": response["name"],
+                        "details": response["details"][0]["description"],
+                    },
+                    status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                )
 
+            if "error" in response and response["error"] == "invalid_client":
+                return Response(
+                    {
+                        "success": False,
+                        "error": response["error"],
+                        "details": response["error_description"],
+                    },
+                    status=status.HTTP_401_UNAUTHORIZED,
+                )
+                
+            user_wallet = Wallet.objects.get(user=request.user)
+            session_id = response["id"]
+            
+            transaction = Transaction(
+                wallet=user_wallet,
+                transaction_type="Deposit",
+                status="Failed",
+                amount=amount,
+                session_id=session_id,
+                payment_id=payment_id,
+            )
+            transaction.save()
+            approve_payment = response["links"][1]["href"]
+            return Response(
+                {
+                    "success": True,
+                    "approval_url": approve_payment,
+                    "payment_id": payment_id,
+                },
+                status=status.HTTP_200_OK,
+            )
+            
+        except Exception as e:
+            return Response(
+                {"success": False, "message": "something went wrong", "error": f"{e}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        
 class StripePayment(APIView):
     permission_classes = [IsAuthenticated]
 
