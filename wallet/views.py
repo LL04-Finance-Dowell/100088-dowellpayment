@@ -23,7 +23,13 @@ import random
 from django.contrib.auth.hashers import make_password, check_password
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
-from .models import Wallet, Transaction, UserProfile, MoneyRequest,PaymentInitialazation
+from .models import (
+    Wallet,
+    Transaction,
+    UserProfile,
+    MoneyRequest,
+    PaymentInitialazation,
+)
 from django.urls import reverse
 from django.conf import settings
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -454,13 +460,13 @@ class OTPVerificationView(APIView):
 #             # Try to find the wallet associated with the provided account_no
 #             wallet = Wallet.objects.get(account_no=account_no)
 
-            # # Check if the wallet is associated with a user
-            # recipient = (
-            #     wallet.user
-            # )  # Assuming 'user' is the related name in your Wallet model
-            # print(recipient)
-            # recipient_email = recipient.email  # Access recipient's email
-            # recipient_username = recipient.username
+# # Check if the wallet is associated with a user
+# recipient = (
+#     wallet.user
+# )  # Assuming 'user' is the related name in your Wallet model
+# print(recipient)
+# recipient_email = recipient.email  # Access recipient's email
+# recipient_username = recipient.username
 
 #         except Wallet.DoesNotExist:
 #             # If the wallet doesn't exist, return an error response
@@ -530,10 +536,10 @@ class OTPVerificationView(APIView):
 #             amount, sender, recipient_username, recipient_email, transaction_time
 #         )
 
-        # # Return a success response
-        # return Response(
-        #     {"message": "Money sent successfully"}, status=status.HTTP_200_OK
-        # )
+# # Return a success response
+# return Response(
+#     {"message": "Money sent successfully"}, status=status.HTTP_200_OK
+# )
 
 #     def sender_transaction_email(
 #         self, amount, sender, recipient_username, sender_email, transaction_time
@@ -1421,12 +1427,12 @@ class GetStripeSupporteCurrency(APIView):
         )
 
 
-
 """
 
 DOWELL PAYMENTS
 
 """
+
 
 class PaymentRequestView(APIView):
     serializer_class = DowellPaymentSerializer
@@ -1436,9 +1442,9 @@ class PaymentRequestView(APIView):
         if serializer.is_valid():
             # Create a transaction record with payment details
             payment_data = serializer.validated_data
-            price = payment_data.get('price')
-            currency = payment_data.get('currency')
-            callback_url = payment_data.get('callback_url')
+            price = payment_data.get("price")
+            currency = payment_data.get("currency")
+            callback_url = payment_data.get("callback_url")
 
             unique_id = uuid.uuid4()
             initialization_id = str(unique_id)
@@ -1447,21 +1453,19 @@ class PaymentRequestView(APIView):
                 price=price,
                 currency=currency,
                 callback_url=callback_url,
-                initialization_id=initialization_id
-                )
+                initialization_id=initialization_id,
+            )
             payment.save()
             payment_info = {
-                'price': price,
+                "price": price,
             }
             # Redirect user to login page with payment ID as request params
             redirect_url = f"https://dowell-wallet.vercel.app/payment-login/?initialization_id={initialization_id}&price={price}"
 
-
-            return Response({'redirect_url': redirect_url,
-                             'payment_info':payment_info
-                             }, 
-                             status=status.HTTP_200_OK
-                             )
+            return Response(
+                {"redirect_url": redirect_url, "payment_info": payment_info},
+                status=status.HTTP_200_OK,
+            )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -1471,13 +1475,13 @@ class PaymentAuthoriazationView(APIView):
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            email = serializer.validated_data.get('email')
-            password = serializer.validated_data.get('password')
-            initialization_id = serializer.validated_data.get('initialization_id')
+            email = serializer.validated_data.get("email")
+            password = serializer.validated_data.get("password")
+            initialization_id = serializer.validated_data.get("initialization_id")
 
             try:
                 user = User.objects.get(email=email)
-                
+
             except User.DoesNotExist:
                 return Response(
                     {"success": False, "error": "Invalid credentials"},
@@ -1487,7 +1491,9 @@ class PaymentAuthoriazationView(APIView):
             user = authenticate(request, username=user.username, password=password)
             if user is not None:
                 try:
-                    payment_initialization = PaymentInitialazation.objects.get(initialization_id=initialization_id)
+                    payment_initialization = PaymentInitialazation.objects.get(
+                        initialization_id=initialization_id
+                    )
                     price = Decimal(payment_initialization.price)
                     currency = payment_initialization.currency
                     callback_url = payment_initialization.callback_url
@@ -1503,37 +1509,59 @@ class PaymentAuthoriazationView(APIView):
                         # Create a new Transaction entry
                         new_transaction = Transaction.objects.create(
                             wallet=user_wallet,
-                            transaction_type='Dowell payment',
-                            status='completed',
+                            transaction_type="Dowell payment",
+                            status="completed",
                             amount=price,
                             payment_id=payment_initialization,
                             session_id='',
                         )
 
                         redirect_url = f"{callback_url}?id={payment_initialization}"
-                        return Response({'redirect_url': redirect_url}, status=status.HTTP_200_OK)
+                        return Response(
+                            {"redirect_url": redirect_url}, status=status.HTTP_200_OK
+                        )
                     else:
-                        return Response({'message': 'Insufficient balance'}, status=status.HTTP_400_BAD_REQUEST)
+                        return Response(
+                            {"message": "Insufficient balance"},
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
 
                 except PaymentInitialazation.DoesNotExist:
-                    return Response({'message': 'Invalid payment initialization ID'}, status=status.HTTP_404_NOT_FOUND)
+                    return Response(
+                        {"message": "Invalid payment initialization ID"},
+                        status=status.HTTP_404_NOT_FOUND,
+                    )
                 except Wallet.DoesNotExist:
-                    return Response({'message': 'User wallet not found'}, status=status.HTTP_404_NOT_FOUND)
+                    return Response(
+                        {"message": "User wallet not found"},
+                        status=status.HTTP_404_NOT_FOUND,
+                    )
 
             else:
-                return Response({'message': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+                return Response(
+                    {"message": "Invalid credentials"},
+                    status=status.HTTP_401_UNAUTHORIZED,
+                )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
 
 class PaymentVerificationView(APIView):
-    def post (self,request):
-        data  = request.data
+    def post(self, request):
+        data = request.data
         id = data["id"]
         try:
             obj = Transaction.objects.get(payment_id=id)
             print(obj)
             if obj.status == "completed":
-                return Response({'success': True,'status':"completed"}, status=status.HTTP_200_OK)
-            return Response({'success': False,'status':"Failed"}, status=status.HTTP_401_UNAUTHORIZED)
+                return Response(
+                    {"success": True, "status": "completed"}, status=status.HTTP_200_OK
+                )
+            return Response(
+                {"success": False, "status": "Failed"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
         except Exception as err:
-            return Response({'success': False,'status':"Failed","message":f"{err}"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                {"success": False, "status": "Failed", "message": f"{err}"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )

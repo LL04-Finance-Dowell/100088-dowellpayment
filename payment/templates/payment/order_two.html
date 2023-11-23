@@ -1,158 +1,292 @@
-<html>
+<!DOCTYPE html>
+<html
+  lang="en"
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:o="urn:schemas-microsoft-com:office:office"
+>
   <head>
-      <meta name="viewport" content="width=device-width, initial-scale=1" />
-      <style>
-      /* Global styles */
-      body {
-          font-family: Arial, sans-serif;
-          margin: 0;
-          padding: 0;
-          background-color: #f0f0f0;
-      }
-      .container {
-          height: 100vh;
-          width: 70%;
-          margin: 0 auto;
-          background-color: #fff;
-          padding: 20px;
-      }
-      h1 {
-          font-size: 24px;
-          font-weight: bold;
-      }
-      table {
-          width: 100%;
-          border-collapse: collapse;
-          margin-top: 100px;
-      }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="x-apple-disable-message-reformatting" />
+    <title></title>
+    <!--[if mso]>
+      <noscript>
+        <xml>
+          <o:OfficeDocumentSettings>
+            <o:PixelsPerInch>96</o:PixelsPerInch>
+          </o:OfficeDocumentSettings>
+        </xml>
+      </noscript>
+    <![endif]-->
+    <style>
       table,
-      th,
+      td,
+      div,
+      h1,
+      p {
+        font-family: Arial, sans-serif;
+      }
+      /* table,
       td {
-          border: 2px solid #000; /* Border lines are bold */
-      }
-      th,
+        border: 2px solid #000000 !important;
+      } */
       td {
-          padding: 10px;
-          text-align: left;
-          font-weight: bold; /* Make table content bold */
+        padding-left: 20px;
       }
-      .company-details {
-          display: flex;
-          flex-direction: row;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 30px;
-      }
-      .company-details-text-container {
-          margin-left:200px ;
-          display: block;
-      }
-      .invoice-details {
-          display: flex;
-          flex-direction: row;
-          justify-content: space-between;
-          width: 100%;
-          margin-bottom: 20px;
-      }
-      
       .table-bold {
-          border: 2px solid #000;
-          font-weight: bold;
-          background-color: black;
-          color: white;
+        border: 2px solid #000;
+        font-weight: bold;
+        background-color: black;
+        color: white;
       }
-      .width {
-          width: 70%;
+      .tableContainer {
+        overflow-x: auto;
       }
-
-      .subinv2 {
-        padding-left: 100px;
-      }
-      
-      @media (max-width: 1000px){
-        .subinv1 {
-          font-size: 10px;
-        }
-        .subinv2 {
-          padding-left: 50px;
-          font-size: 10px;
-        }
-        .company-details-text-container {
-          margin-left: 100px;
-          font-size: 10px;
-        }
-      }
-      @media (max-width: 768px) {
-          .container {
-          width: 100%;
-          }
-          .tableContainer {
-          overflow-x: auto;
-          }
-          .invoice-details{
-          flex-direction: column;
-          }
-      }
-      </style>
+    </style>
   </head>
-  <body>
-      <div class="container">
-      <div class="company-details">
-          <div>
-          <img
-              src="https://100088.pythonanywhere.com/static/images/Logo_.png"
-              alt="Company Logo"
-              style="max-width: 100px; display: block"
-          />
-          </div>
-          <div class="company-details-text-container">
-          <p>DOWELL RESEARCH PTE. LTD</p>
-          <p>#42-00 6 BATTERY ROAD</p>
-          <p>Singapore, 049909, SINGAPORE</p>
-          </div>
-      </div>
-      <h1 style="margin-top: 40px; margin-bottom: 10px">Invoice</h1>
-      <div class="invoice-details">
-          <div >
-          <p class="subinv1">
-              <strong>NAME: {{name}}</strong><br />
-              <strong>Address: {{address}}</strong><br />
-              <strong>City: {{city}}</strong>
-          </p>
-          </div>
-          <div class="subinv2">
-          <p>
-              <strong>Invoice Number: {{ref}}</strong><br />
-              <strong>Invoice Date: {{date}}</strong><br />
-              <strong>Order Number: {{ref}}</strong><br />
-              <strong>Payment Method: {{payment_method}}</strong>
-              <br/>
-              <strong style="font-size: medium;">Voucher Code: {{voucher_code}}</strong>
-          </p>
-          </div>
-      </div>
-      <div class="tableContainer">
-          <table>
-          <tbody>
-              <tr>
-              <th class="table-bold width">Product</th>
-              <th class="table-bold">Quantity</th>
-              <th class="table-bold">Price</th>
-              </tr>
-              <tr>
-              <td>{{desc}}</td>
-              <td>1</td>
-              <td>{{amount}}</td>
-              </tr>
-          </tbody>
+  <body style="margin: 20px; padding: 0">
+    <table
+      role="presentation"
+      style="
+        width: 100%;
+        border-collapse: collapse;
+        border: 0;
+        border-spacing: 0;
+        background: #ffffff;
+      "
+    >
+      <tr>
+        <td align="center" style="padding: 0">
+          <table style="border: 2px solid; width: 800px; border-radius: 15px;">
+            <tr>
+              <td align="center">
+                <table
+                  style="
+                    width: 750px;
+                    border-collapse: collapse;
+                    border-spacing: 0;
+                    text-align: left;
+
+                  "
+                >
+                  <tr>
+                    <!-- header -->
+                    <td style="padding: 40px 40px 40px 40px">
+                      <img
+                        src="https://100088.pythonanywhere.com/static/images/Logo_.png"
+                        alt=""
+                        width="100"
+                        style="height: auto; display: block"
+                      />
+                    </td>
+                    <td align="right" style="padding-right: 50px">
+                      <p>DOWELL RESEARCH PTE. LTD</p>
+                      <p>#42-00 6 BATTERY ROAD</p>
+                      <p>Singapore, 049909, SINGAPORE</p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding-left: 10">
+                      <h1 style="padding-top: 20px; padding-bottom: 20px">
+                        Invoice
+                      </h1>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="max-width: 400px; word-wrap: break-word">
+                      <p style="font-weight: 600">
+                        Name :
+                        <span style="font-weight: 400">{{name}}</span>
+                      </p>
+                      <p style="font-weight: 600">
+                        Address :
+                        <span style="font-weight: 400">{{address}}</span>
+                      </p>
+                      <p style="font-weight: 600">
+                        City :
+                        <span style="font-weight: 400">{{city}}</span>
+                      </p>
+                    </td>
+                    <td
+                      style="
+                        width: 54%;
+                        max-width: 200px;
+                        word-wrap: break-word;
+                        padding-left: 150px;
+                        padding-right: 20px;
+
+                      "
+                    >
+                      <p style="font-weight: 600">
+                        Invoive number :
+                        <span style="font-weight: 400"
+                          >{{invoice_number}}</span
+                        >
+                      </p>
+                      <p style="font-weight: 600">
+                        Invoive Date :
+                        <span style="font-weight: 400">{{date}}</span>
+                      </p>
+                      <p style="font-weight: 600">
+                        Order Number :
+                        <span style="font-weight: 400">
+                          {{order_number}}</span
+                        >
+                      </p>
+                      <p style="font-weight: 600">
+                        Payment Method:
+                        <span style="font-weight: 400">{{payment_method}}</span>
+                      </p>
+                      <p style="font-weight: 600">
+                        Voucher Code:
+                        <span style="font-weight: 400">{{voucher_code}}</span>
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+                <!-- <div class="tableContainer"> -->
+                <table
+                  style="
+                    margin-top: 70px;
+                    width: 700px;
+                    border-collapse: collapse;
+
+                  "
+                >
+                  <tbody>
+                    <tr>
+                      <th
+                        class="table-bold"
+                        style="
+                          padding-top: 10px;
+                          padding-bottom: 10px;
+                          width: 70%;
+                        "
+                      >
+                        Product
+                      </th>
+                      <th class="table-bold">Quantity</th>
+                      <th class="table-bold">Price</th>
+                    </tr>
+                    <tr>
+                      <td
+                        style="
+                          max-width: 200px;
+                          word-wrap: break-word;
+                          padding-top: 10px;
+                          padding-bottom: 10px;
+                          border: 2px solid #000000 !important;
+                        "
+                      >
+                        {{desc}}
+                      </td>
+                      <td
+                        style="
+                          max-width: 200px;
+                          word-wrap: break-word;
+                          border: 2px solid #000000 !important;
+                        "
+                      >
+                        1
+                      </td>
+                      <td
+                        style="
+                          max-width: 200px;
+                          word-wrap: break-word;
+                          border: 2px solid #000000 !important;
+                        "
+                      >
+                        {{amount}}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <!-- </div> -->
+                <table
+                  style="
+                    width: 750px;
+                    border-collapse: collapse;
+                    border-spacing: 0;
+                    text-align: left;
+                    margin-top: 30px;
+
+                  "
+                >
+                  <tr>
+                    <td>
+                      <a
+                       href="{{ pdf_url }}"
+                        style="
+                          background-color: aquamarine;
+                          padding: 13px;
+                          border-radius: 10px;
+                          cursor: pointer;
+                        "
+                        >Download as pdf</a
+                      >
+                    </td>
+                    <td align="right" style="padding-top: 20px">
+                      <div
+                        style="
+                          width: 50%;
+                          background-color: grey;
+                          height: 1px;
+                          margin-right: 20px;
+                        "
+                      ></div>
+                      <div style="margin-top: 20px"></div>
+                      <p
+                        style="
+                          margin-right: 30px;
+                          font-weight: 600;
+                          display: inline;
+                        "
+                      >
+                        Sub Total
+                      </p>
+                      <p style="margin-right: 20px; display: inline">
+                        {{currency}} {{amount}}
+                      </p>
+                      <div style="margin-bottom: 20px"></div>
+                      <div
+                        style="
+                          width: 50%;
+                          background-color: black;
+                          height: 3px;
+                          margin-right: 20px;
+                        "
+                      ></div>
+                      <div style="margin-top: 20px"></div>
+                      <p
+                        style="
+                          margin-right: 30px;
+                          font-weight: 600;
+                          display: inline;
+                        "
+                      >
+                        Total
+                      </p>
+                      <p style="margin-right: 20px; display: inline">
+                        {{currency}} {{amount}}
+                      </p>
+                      <div style="margin-bottom: 20px"></div>
+                      <div
+                        style="
+                          width: 50%;
+                          background-color: black;
+                          height: 3px;
+                          margin-right: 20px;
+                          margin-bottom: 20px;
+                        "
+                      ></div>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
           </table>
-      </div>
-      <p style="text-align: right; margin-right: 20px">Sub Total {{currency}} {{amount}}</p>
-      <div style="width: 100%; background-color: grey; height: 1px"></div>
-      <p style="text-align: right; margin-right: 20px; font-weight: 800">
-          Total {{currency}} {{amount}}
-      </p>
-      </div>
+        </td>
+      </tr>
+    </table>
   </body>
-  <p>Click <a href="{{ pdf_url }}" download="invoice.pdf">here</a> to download the PDF</p>
-  </html>
+</html>
