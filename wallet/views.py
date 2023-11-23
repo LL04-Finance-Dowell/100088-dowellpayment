@@ -57,6 +57,8 @@ import os
 from django.db.models import Q
 from .supported_currency import stripe_supported_currency
 import uuid
+import json
+import requests
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -679,8 +681,6 @@ class PaypalPayment(APIView):
             url = f"{dowell_paypal_url}/v2/checkout/orders"
             client_id = os.getenv("PAYPAL_CLIENT_ID", None)
             client_secret = os.getenv("PAYPAL_SECRET_KEY", None)
-            unique_id = uuid.uuid4()
-            payment_id = str(unique_id)
             encoded_auth = base64.b64encode((f"{client_id}:{client_secret}").encode())
             
             headers = {
@@ -706,8 +706,8 @@ class PaypalPayment(APIView):
                             "locale": "en-US",
                             "landing_page": "LOGIN",
                             "user_action": "PAY_NOW",
-                            "return_url": f"{'http://127.0.0.1:8000/api/wallet/v1/paypal-callback'}?payment_id={payment_id}",
-                            "cancel_url": f"{'http://127.0.0.1:8000/api/wallet/v1/paypal-callback'}?payment_id={payment_id}",
+                            "return_url": f"{'http://127.0.0.1:8000/api/wallet/v1/paypal-callback'}",
+                            "cancel_url": f"{'http://127.0.0.1:8000/api/wallet/v1/paypal-callback'}",
                         }
                     }
                 },
@@ -735,14 +735,13 @@ class PaypalPayment(APIView):
                 )
                 
             user_wallet = Wallet.objects.get(user=request.user)
-            session_id = response["id"]
+            payment_id = response["id"]
             
             transaction = Transaction(
                 wallet=user_wallet,
                 transaction_type="Deposit",
                 status="Failed",
                 amount=amount,
-                session_id=session_id,
                 payment_id=payment_id,
             )
             transaction.save()
@@ -751,7 +750,6 @@ class PaypalPayment(APIView):
                 {
                     "success": True,
                     "approval_url": approve_payment,
-                    "payment_id": payment_id,
                 },
                 status=status.HTTP_200_OK,
             )
@@ -835,6 +833,100 @@ class StripePayment(APIView):
                 {"success": False, "message": "something went wrong", "error": f"{e}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+class PaypalPaymentCallback(APIView):
+    def get(self, request):
+        try:
+            payment_id = request.GET.get("token")
+            print("payment_id",payment_id)
+            transaction = Transaction.objects.get(payment_id=payment_id)
+
+            url = f"{dowell_paypal_url}/v2/checkout/orders/{payment_id}"
+            print("url",url)
+            client_id = os.getenv("PAYPAL_CLIENT_ID", None)
+            client_secret = os.getenv("PAYPAL_SECRET_KEY", None)
+            encoded_auth = base64.b64encode((f"{client_id}:{client_secret}").encode())
+            headers = {
+                "Content-Type": "application/json",
+                "Authorization": f"Basic {encoded_auth.decode()}",
+                "Prefer": "return=representation",
+            }
+            response = requests.get(url, headers=headers).json()
+            print("response",response)
+
+            try:
+                if response["name"] == "RESOURCE_NOT_FOUND":
+                    redirect_url = f"https://100088.pythonanywhere.com/api/success"
+                    response = HttpResponseRedirect(redirect_url)
+                    return response
+            except:
+                pass
+            try:
+                if response["error"] == "invalid_client":
+                    redirect_url = f"https://100088.pythonanywhere.com/api/success"
+                    response = HttpResponseRedirect(redirect_url)
+                    return response
+            except:
+                payment_status = response["status"]
+                if payment_status == "APPROVED":
+                    amount = response["purchase_units"][0]["amount"]["value"]
+                    wallet = transaction.wallet
+                    if transaction.status == "Failed":
+                        wallet.balance += Decimal(amount)
+                        wallet.save()
+                    transaction.status = "sucessful"
+                    transaction.save()
+                    # Get the user's email address and name
+                    user_email = transaction.wallet.user.email
+                    user_name = transaction.wallet.user.username
+                    self.send_transaction_email(user_name, user_email, amount)
+
+            # redirect to frontend url page
+            redirect_url = f"https://100088.pythonanywhere.com/api/success"
+            response = HttpResponseRedirect(redirect_url)
+            return response
+
+        except Exception as e:
+            print("error", e)
+            redirect_url = f"https://100088.pythonanywhere.com/api/success"
+            response = HttpResponseRedirect(redirect_url)
+            return response
+
+    def send_transaction_email(self, user_name, user_email, amount):
+        # API endpoint to send the email
+        url = f"https://100085.pythonanywhere.com/api/email/"
+        name = user_name
+        EMAIL_FROM_WEBSITE = """
+                    <!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta http-equiv="X-UA-Compatible" content="IE=edge">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                            <title>Samanta Content Evaluator</title>
+                        </head>
+                        <body>
+                            <div style="font-family: Helvetica, Arial, sans-serif; min-width: 100px; overflow: auto; line-height: 1.6; margin: 50px auto; width: 70%; padding: 20px 0; border-bottom: 1px solid #eee;">
+                                <a href="#" style="font-size: 1.2em; color: #00466a; text-decoration: none; font-weight: 600; display: block; text-align: center;">Dowell UX Living Lab Wallet</a>
+                                <p style="font-size: 1.1em; text-align: center;">Dear {name},</p>
+                                <p style="font-size: 1.1em; text-align: center;">Your deposit was successful.</p>
+                                <p style="font-size: 1.1em; text-align: center;">You have added an amount of ${amount} to your wallet.</p>
+                                <p style="font-size: 1.1em; text-align: center;">Thank you for using our platform.</p>
+                            </div>
+                        </body>
+                        </html>
+                        """
+
+        email_content = EMAIL_FROM_WEBSITE.format(name=name, amount=amount)
+        payload = {
+            "toname": name,
+            "toemail": user_email,
+            "subject": "Walllet Deposit",
+            "email_content": email_content,
+        }
+        response = requests.post(url, json=payload)
+        print(response.text)
+        return response.text
 
 
 # Stripe verify Payment classs
