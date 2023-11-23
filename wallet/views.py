@@ -433,203 +433,6 @@ class OTPVerificationView(APIView):
                 {"message": "User not found."}, status=status.HTTP_404_NOT_FOUND
             )
 
-
-# @method_decorator(csrf_exempt, name="dispatch")
-# class SendMoney(APIView):
-#     permission_classes = [IsAuthenticated]
-
-#     def post(self, request):
-#         # Get the user who is sending money (sender)
-#         sender = request.user
-#         sender_email = sender.email  # Access sender's email
-#         # Get the wallet password from the request data
-#         wallet_password = request.data.get("wallet_password")
-
-#         # Verify the wallet password
-#         if not check_password(str(wallet_password), sender.wallet.password):
-#             return Response(
-#                 {"message": "Incorrect wallet password"},
-#                 status=status.HTTP_401_UNAUTHORIZED,
-#             )
-
-#         # Get the recipient's account_no and amount from the request data
-#         account_no = request.data.get("account_no")
-#         amount = request.data.get("amount")
-
-#         try:
-#             # Try to find the wallet associated with the provided account_no
-#             wallet = Wallet.objects.get(account_no=account_no)
-
-# # Check if the wallet is associated with a user
-# recipient = (
-#     wallet.user
-# )  # Assuming 'user' is the related name in your Wallet model
-# print(recipient)
-# recipient_email = recipient.email  # Access recipient's email
-# recipient_username = recipient.username
-
-#         except Wallet.DoesNotExist:
-#             # If the wallet doesn't exist, return an error response
-#             return Response(
-#                 {"message": "Recipient's wallet not found"},
-#                 status=status.HTTP_400_BAD_REQUEST,
-#             )
-
-#         except User.DoesNotExist:
-#             # If recipient doesn't exist, return an error response
-#             return Response(
-#                 {"message": "Recipient not found"},
-#                 status=status.HTTP_400_BAD_REQUEST,
-#             )
-
-#         # Check if the sender is trying to send money to themselves
-#         if sender == recipient:
-#             return Response(
-#                 {"message": "You cannot send money to yourself"},
-#                 status=status.HTTP_400_BAD_REQUEST,
-#             )
-
-#         # Check if the amount is valid
-#         if amount <= 0:
-#             return Response(
-#                 {"message": "Invalid amount"}, status=status.HTTP_400_BAD_REQUEST
-#             )
-
-#         # Update the sender's wallet balance
-#         sender_wallet = sender.wallet
-#         if sender_wallet.balance < amount:
-#             return Response(
-#                 {"message": "Insufficient balance"}, status=status.HTTP_400_BAD_REQUEST
-#             )
-#         sender_wallet.balance -= amount
-#         sender_wallet.save()
-
-#         # Update the recipient's wallet balance
-#         recipient_wallet = recipient.wallet
-#         recipient_wallet.balance += amount
-#         recipient_wallet.save()
-
-#         # Create a transaction record for the sender
-#         transaction = Transaction(
-#             wallet=sender.wallet,
-#             transaction_type="Transfer",
-#             amount=amount,
-#             status="Completed",
-#         )
-#         transaction.save()
-#         transaction_time = transaction.timestamp
-
-#         # Create a transaction record for the recipient
-#         recipient_transaction = Transaction(
-#             wallet=recipient.wallet,
-#             transaction_type="Received",
-#             amount=amount,
-#             status="Completed",
-#         )
-#         recipient_transaction.save()
-
-#         # Send transaction confirmation emails to the sender and recipient
-#         self.sender_transaction_email(
-#             amount, sender, recipient_username, sender_email, transaction_time
-#         )
-#         self.recipient_transaction_email(
-#             amount, sender, recipient_username, recipient_email, transaction_time
-#         )
-
-# # Return a success response
-# return Response(
-#     {"message": "Money sent successfully"}, status=status.HTTP_200_OK
-# )
-
-#     def sender_transaction_email(
-#         self, amount, sender, recipient_username, sender_email, transaction_time
-#     ):
-#         # API endpoint to send the email
-#         url = f"https://100085.pythonanywhere.com/api/email/"
-#         sender_name = sender.username
-#         EMAIL_FROM_WEBSITE = """
-#                     <!DOCTYPE html>
-#                         <html lang="en">
-#                         <head>
-#                             <meta charset="UTF-8">
-#                             <meta http-equiv="X-UA-Compatible" content="IE-edge">
-#                             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-#                             <title>Your Wallet Transaction Confirmation</title>
-#                         </head>
-#                         <body>
-#                             <div style="font-family: Helvetica, Arial, sans-serif; min-width: 100px; overflow: auto; line-height: 1.6; margin: 50px auto; width: 70%; padding: 20px 0; border-bottom: 1px solid #eee;">
-#                                 <a href="#" style="font-size: 1.2em; color: #00466a; text-decoration: none; font-weight: 600; display: block; text-align: center;">Dowell UX Living Lab Wallet</a>
-#                                 <p style="font-size: 1.1em; text-align: center;">Dear {sender_name},</p>
-#                                 <p style="font-size: 1.1em; text-align: center;">You have successfully sent ${amount} to {recipient_username}.</p>
-#                                 <p style="font-size: 1.1em; text-align: center;">Transaction time: {transaction_time}</p>
-#                                 <p style="font-size: 1.1em; text-align: center;">Thank you for using our platform.</p>
-#                             </div>
-#                         </body>
-#                         </html>
-#                         """
-
-#         email_content = EMAIL_FROM_WEBSITE.format(
-#             sender_name=sender_name,
-#             amount=amount,
-#             recipient_username=recipient_username,
-#             transaction_time=transaction_time,
-#         )
-#         payload = {
-#             "toname": sender_name,
-#             "toemail": sender_email,
-#             "subject": f"Transfer Money to {recipient_username}",
-#             "email_content": email_content,
-#         }
-#         response = requests.post(url, json=payload)
-#         print(response.text)
-#         return response.text
-
-#     def recipient_transaction_email(
-#         self, amount, sender, recipient_username, recipient_email, transaction_time
-#     ):
-#         # API endpoint to send the email
-#         url = f"https://100085.pythonanywhere.com/api/email/"
-#         sender_name = sender.username
-#         EMAIL_FROM_WEBSITE = """
-#                     <!DOCTYPE html>
-#                         <html lang="en">
-#                         <head>
-#                             <meta charset="UTF-8">
-#                             <meta http-equiv="X-UA-Compatible" content="IE-edge">
-#                             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-#                             <title>Your Wallet Transaction Confirmation</title>
-#                         </head>
-#                         <body>
-#                             <div style="font-family: Helvetica, Arial, sans-serif; min-width: 100px; overflow: auto; line-height: 1.6; margin: 50px auto; width: 70%; padding: 20px 0; border-bottom: 1px solid #eee;">
-#                                 <a href="#" style="font-size: 1.2em; color: #00466a; text-decoration: none; font-weight: 600; display: block; text-align: center;">Dowell UX Living Lab Wallet</a>
-#                                 <p style="font-size: 1.1em; text-align: center;">Dear {recipient_username},</p>
-#                                 <p style="font-size: 1.1em; text-align: center;">You have received ${amount} from {sender_name}.</p>
-#                                 <p style="font-size: 1.1em; text-align: center;">Transaction time: {transaction_time}</p>
-#                                 <p style="font-size: 1.1em; text-align: center;">Thank you for using our platform.</p>
-#                             </div>
-#                         </body>
-#                         </html>
-
-
-#                         """
-
-#         email_content = EMAIL_FROM_WEBSITE.format(
-#             sender_name=sender_name,
-#             amount=amount,
-#             recipient_username=recipient_username,
-#             transaction_time=transaction_time,
-#         )
-#         payload = {
-#             "toname": sender_name,
-#             "toemail": recipient_email,
-#             "subject": f"Received Money from {sender_name}",
-#             "email_content": email_content,
-#         }
-#         response = requests.post(url, json=payload)
-#         print(response.text)
-#         return response.text
-
-
 class WalletDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -1176,6 +979,154 @@ class DisableAccountView(APIView):
                 {"message": "User not found."}, status=status.HTTP_404_NOT_FOUND
             )
 
+class GetStripeSupporteCurrency(APIView):
+    def get(self, request):
+        return Response(
+            {"success": True, "data": stripe_supported_currency},
+            status=status.HTTP_200_OK,
+        )
+
+
+"""
+
+DOWELL PAYMENTS
+
+"""
+
+
+class PaymentRequestView(APIView):
+    serializer_class = DowellPaymentSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            # Create a transaction record with payment details
+            payment_data = serializer.validated_data
+            price = payment_data.get("price")
+            currency = payment_data.get("currency")
+            callback_url = payment_data.get("callback_url")
+
+            unique_id = uuid.uuid4()
+            initialization_id = str(unique_id)
+
+            payment = PaymentInitialazation.objects.create(
+                price=price,
+                currency=currency,
+                callback_url=callback_url,
+                initialization_id=initialization_id,
+            )
+            payment.save()
+            payment_info = {
+                "price": price,
+            }
+            # Redirect user to login page with payment ID as request params
+            redirect_url = f"https://dowell-wallet.vercel.app/payment-login/?initialization_id={initialization_id}&price={price}"
+
+            return Response(
+                {"redirect_url": redirect_url, "payment_info": payment_info},
+                status=status.HTTP_200_OK,
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PaymentAuthoriazationView(APIView):
+    serializer_class = PaymentAuthorizationSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            email = serializer.validated_data.get("email")
+            password = serializer.validated_data.get("password")
+            initialization_id = serializer.validated_data.get("initialization_id")
+
+            try:
+                user = User.objects.get(email=email)
+
+            except User.DoesNotExist:
+                return Response(
+                    {"success": False, "error": "Invalid credentials"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            user = authenticate(request, username=user.username, password=password)
+            if user is not None:
+                try:
+                    payment_initialization = PaymentInitialazation.objects.get(
+                        initialization_id=initialization_id
+                    )
+                    price = Decimal(payment_initialization.price)
+                    currency = payment_initialization.currency
+                    callback_url = payment_initialization.callback_url
+
+                    user_wallet = Wallet.objects.get(user=user)
+                    user_balance = user_wallet.balance
+
+                    if user_balance >= price:
+                        # Deduct the amount from the user's wallet
+                        user_wallet.balance -= price
+                        user_wallet.save()
+
+                        # Create a new Transaction entry
+                        new_transaction = Transaction.objects.create(
+                            wallet=user_wallet,
+                            transaction_type="Dowell payment",
+                            status="completed",
+                            amount=price,
+                            payment_id=payment_initialization,
+                            session_id='',
+                        )
+
+                        redirect_url = f"{callback_url}?id={payment_initialization}"
+                        return Response(
+                            {"redirect_url": redirect_url}, status=status.HTTP_200_OK
+                        )
+                    else:
+                        return Response(
+                            {"message": "Insufficient balance"},
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
+
+                except PaymentInitialazation.DoesNotExist:
+                    return Response(
+                        {"message": "Invalid payment initialization ID"},
+                        status=status.HTTP_404_NOT_FOUND,
+                    )
+                except Wallet.DoesNotExist:
+                    return Response(
+                        {"message": "User wallet not found"},
+                        status=status.HTTP_404_NOT_FOUND,
+                    )
+
+            else:
+                return Response(
+                    {"message": "Invalid credentials"},
+                    status=status.HTTP_401_UNAUTHORIZED,
+                )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PaymentVerificationView(APIView):
+    def post(self, request):
+        data = request.data
+        id = data["id"]
+        try:
+            obj = Transaction.objects.get(payment_id=id)
+            print(obj)
+            if obj.status == "completed":
+                return Response(
+                    {"success": True, "status": "completed"}, status=status.HTTP_200_OK
+                )
+            return Response(
+                {"success": False, "status": "Failed"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+        except Exception as err:
+            return Response(
+                {"success": False, "status": "Failed", "message": f"{err}"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+
 
 # # class MoneyRequestView(APIView):
 # #     permission_classes = [IsAuthenticated]
@@ -1419,149 +1370,200 @@ DISPLAY ALL REQUESTS
 #         )
 
 
-class GetStripeSupporteCurrency(APIView):
-    def get(self, request):
-        return Response(
-            {"success": True, "data": stripe_supported_currency},
-            status=status.HTTP_200_OK,
-        )
 
 
-"""
+# @method_decorator(csrf_exempt, name="dispatch")
+# class SendMoney(APIView):
+#     permission_classes = [IsAuthenticated]
 
-DOWELL PAYMENTS
+#     def post(self, request):
+#         # Get the user who is sending money (sender)
+#         sender = request.user
+#         sender_email = sender.email  # Access sender's email
+#         # Get the wallet password from the request data
+#         wallet_password = request.data.get("wallet_password")
 
-"""
+#         # Verify the wallet password
+#         if not check_password(str(wallet_password), sender.wallet.password):
+#             return Response(
+#                 {"message": "Incorrect wallet password"},
+#                 status=status.HTTP_401_UNAUTHORIZED,
+#             )
+
+#         # Get the recipient's account_no and amount from the request data
+#         account_no = request.data.get("account_no")
+#         amount = request.data.get("amount")
+
+#         try:
+#             # Try to find the wallet associated with the provided account_no
+#             wallet = Wallet.objects.get(account_no=account_no)
+
+# # Check if the wallet is associated with a user
+# recipient = (
+#     wallet.user
+# )  # Assuming 'user' is the related name in your Wallet model
+# print(recipient)
+# recipient_email = recipient.email  # Access recipient's email
+# recipient_username = recipient.username
+
+#         except Wallet.DoesNotExist:
+#             # If the wallet doesn't exist, return an error response
+#             return Response(
+#                 {"message": "Recipient's wallet not found"},
+#                 status=status.HTTP_400_BAD_REQUEST,
+#             )
+
+#         except User.DoesNotExist:
+#             # If recipient doesn't exist, return an error response
+#             return Response(
+#                 {"message": "Recipient not found"},
+#                 status=status.HTTP_400_BAD_REQUEST,
+#             )
+
+#         # Check if the sender is trying to send money to themselves
+#         if sender == recipient:
+#             return Response(
+#                 {"message": "You cannot send money to yourself"},
+#                 status=status.HTTP_400_BAD_REQUEST,
+#             )
+
+#         # Check if the amount is valid
+#         if amount <= 0:
+#             return Response(
+#                 {"message": "Invalid amount"}, status=status.HTTP_400_BAD_REQUEST
+#             )
+
+#         # Update the sender's wallet balance
+#         sender_wallet = sender.wallet
+#         if sender_wallet.balance < amount:
+#             return Response(
+#                 {"message": "Insufficient balance"}, status=status.HTTP_400_BAD_REQUEST
+#             )
+#         sender_wallet.balance -= amount
+#         sender_wallet.save()
+
+#         # Update the recipient's wallet balance
+#         recipient_wallet = recipient.wallet
+#         recipient_wallet.balance += amount
+#         recipient_wallet.save()
+
+#         # Create a transaction record for the sender
+#         transaction = Transaction(
+#             wallet=sender.wallet,
+#             transaction_type="Transfer",
+#             amount=amount,
+#             status="Completed",
+#         )
+#         transaction.save()
+#         transaction_time = transaction.timestamp
+
+#         # Create a transaction record for the recipient
+#         recipient_transaction = Transaction(
+#             wallet=recipient.wallet,
+#             transaction_type="Received",
+#             amount=amount,
+#             status="Completed",
+#         )
+#         recipient_transaction.save()
+
+#         # Send transaction confirmation emails to the sender and recipient
+#         self.sender_transaction_email(
+#             amount, sender, recipient_username, sender_email, transaction_time
+#         )
+#         self.recipient_transaction_email(
+#             amount, sender, recipient_username, recipient_email, transaction_time
+#         )
+
+# # Return a success response
+# return Response(
+#     {"message": "Money sent successfully"}, status=status.HTTP_200_OK
+# )
+
+#     def sender_transaction_email(
+#         self, amount, sender, recipient_username, sender_email, transaction_time
+#     ):
+#         # API endpoint to send the email
+#         url = f"https://100085.pythonanywhere.com/api/email/"
+#         sender_name = sender.username
+#         EMAIL_FROM_WEBSITE = """
+#                     <!DOCTYPE html>
+#                         <html lang="en">
+#                         <head>
+#                             <meta charset="UTF-8">
+#                             <meta http-equiv="X-UA-Compatible" content="IE-edge">
+#                             <meta name="viewport" content="width=device-width, initial-scale=1.0">
+#                             <title>Your Wallet Transaction Confirmation</title>
+#                         </head>
+#                         <body>
+#                             <div style="font-family: Helvetica, Arial, sans-serif; min-width: 100px; overflow: auto; line-height: 1.6; margin: 50px auto; width: 70%; padding: 20px 0; border-bottom: 1px solid #eee;">
+#                                 <a href="#" style="font-size: 1.2em; color: #00466a; text-decoration: none; font-weight: 600; display: block; text-align: center;">Dowell UX Living Lab Wallet</a>
+#                                 <p style="font-size: 1.1em; text-align: center;">Dear {sender_name},</p>
+#                                 <p style="font-size: 1.1em; text-align: center;">You have successfully sent ${amount} to {recipient_username}.</p>
+#                                 <p style="font-size: 1.1em; text-align: center;">Transaction time: {transaction_time}</p>
+#                                 <p style="font-size: 1.1em; text-align: center;">Thank you for using our platform.</p>
+#                             </div>
+#                         </body>
+#                         </html>
+#                         """
+
+#         email_content = EMAIL_FROM_WEBSITE.format(
+#             sender_name=sender_name,
+#             amount=amount,
+#             recipient_username=recipient_username,
+#             transaction_time=transaction_time,
+#         )
+#         payload = {
+#             "toname": sender_name,
+#             "toemail": sender_email,
+#             "subject": f"Transfer Money to {recipient_username}",
+#             "email_content": email_content,
+#         }
+#         response = requests.post(url, json=payload)
+#         print(response.text)
+#         return response.text
+
+#     def recipient_transaction_email(
+#         self, amount, sender, recipient_username, recipient_email, transaction_time
+#     ):
+#         # API endpoint to send the email
+#         url = f"https://100085.pythonanywhere.com/api/email/"
+#         sender_name = sender.username
+#         EMAIL_FROM_WEBSITE = """
+#                     <!DOCTYPE html>
+#                         <html lang="en">
+#                         <head>
+#                             <meta charset="UTF-8">
+#                             <meta http-equiv="X-UA-Compatible" content="IE-edge">
+#                             <meta name="viewport" content="width=device-width, initial-scale=1.0">
+#                             <title>Your Wallet Transaction Confirmation</title>
+#                         </head>
+#                         <body>
+#                             <div style="font-family: Helvetica, Arial, sans-serif; min-width: 100px; overflow: auto; line-height: 1.6; margin: 50px auto; width: 70%; padding: 20px 0; border-bottom: 1px solid #eee;">
+#                                 <a href="#" style="font-size: 1.2em; color: #00466a; text-decoration: none; font-weight: 600; display: block; text-align: center;">Dowell UX Living Lab Wallet</a>
+#                                 <p style="font-size: 1.1em; text-align: center;">Dear {recipient_username},</p>
+#                                 <p style="font-size: 1.1em; text-align: center;">You have received ${amount} from {sender_name}.</p>
+#                                 <p style="font-size: 1.1em; text-align: center;">Transaction time: {transaction_time}</p>
+#                                 <p style="font-size: 1.1em; text-align: center;">Thank you for using our platform.</p>
+#                             </div>
+#                         </body>
+#                         </html>
 
 
-class PaymentRequestView(APIView):
-    serializer_class = DowellPaymentSerializer
+#                         """
 
-    def post(self, request):
-        serializer = self.serializer_class(data=request.data)
-        if serializer.is_valid():
-            # Create a transaction record with payment details
-            payment_data = serializer.validated_data
-            price = payment_data.get("price")
-            currency = payment_data.get("currency")
-            callback_url = payment_data.get("callback_url")
+#         email_content = EMAIL_FROM_WEBSITE.format(
+#             sender_name=sender_name,
+#             amount=amount,
+#             recipient_username=recipient_username,
+#             transaction_time=transaction_time,
+#         )
+#         payload = {
+#             "toname": sender_name,
+#             "toemail": recipient_email,
+#             "subject": f"Received Money from {sender_name}",
+#             "email_content": email_content,
+#         }
+#         response = requests.post(url, json=payload)
+#         print(response.text)
+#         return response.text
 
-            unique_id = uuid.uuid4()
-            initialization_id = str(unique_id)
-
-            payment = PaymentInitialazation.objects.create(
-                price=price,
-                currency=currency,
-                callback_url=callback_url,
-                initialization_id=initialization_id,
-            )
-            payment.save()
-            payment_info = {
-                "price": price,
-            }
-            # Redirect user to login page with payment ID as request params
-            redirect_url = f"https://dowell-wallet.vercel.app/payment-login/?initialization_id={initialization_id}&price={price}"
-
-            return Response(
-                {"redirect_url": redirect_url, "payment_info": payment_info},
-                status=status.HTTP_200_OK,
-            )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class PaymentAuthoriazationView(APIView):
-    serializer_class = PaymentAuthorizationSerializer
-
-    def post(self, request):
-        serializer = self.serializer_class(data=request.data)
-        if serializer.is_valid():
-            email = serializer.validated_data.get("email")
-            password = serializer.validated_data.get("password")
-            initialization_id = serializer.validated_data.get("initialization_id")
-
-            try:
-                user = User.objects.get(email=email)
-
-            except User.DoesNotExist:
-                return Response(
-                    {"success": False, "error": "Invalid credentials"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
-            user = authenticate(request, username=user.username, password=password)
-            if user is not None:
-                try:
-                    payment_initialization = PaymentInitialazation.objects.get(
-                        initialization_id=initialization_id
-                    )
-                    price = Decimal(payment_initialization.price)
-                    currency = payment_initialization.currency
-                    callback_url = payment_initialization.callback_url
-
-                    user_wallet = Wallet.objects.get(user=user)
-                    user_balance = user_wallet.balance
-
-                    if user_balance >= price:
-                        # Deduct the amount from the user's wallet
-                        user_wallet.balance -= price
-                        user_wallet.save()
-
-                        # Create a new Transaction entry
-                        new_transaction = Transaction.objects.create(
-                            wallet=user_wallet,
-                            transaction_type="Dowell payment",
-                            status="completed",
-                            amount=price,
-                            payment_id=payment_initialization,
-                            session_id='',
-                        )
-
-                        redirect_url = f"{callback_url}?id={payment_initialization}"
-                        return Response(
-                            {"redirect_url": redirect_url}, status=status.HTTP_200_OK
-                        )
-                    else:
-                        return Response(
-                            {"message": "Insufficient balance"},
-                            status=status.HTTP_400_BAD_REQUEST,
-                        )
-
-                except PaymentInitialazation.DoesNotExist:
-                    return Response(
-                        {"message": "Invalid payment initialization ID"},
-                        status=status.HTTP_404_NOT_FOUND,
-                    )
-                except Wallet.DoesNotExist:
-                    return Response(
-                        {"message": "User wallet not found"},
-                        status=status.HTTP_404_NOT_FOUND,
-                    )
-
-            else:
-                return Response(
-                    {"message": "Invalid credentials"},
-                    status=status.HTTP_401_UNAUTHORIZED,
-                )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class PaymentVerificationView(APIView):
-    def post(self, request):
-        data = request.data
-        id = data["id"]
-        try:
-            obj = Transaction.objects.get(payment_id=id)
-            print(obj)
-            if obj.status == "completed":
-                return Response(
-                    {"success": True, "status": "completed"}, status=status.HTTP_200_OK
-                )
-            return Response(
-                {"success": False, "status": "Failed"},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
-        except Exception as err:
-            return Response(
-                {"success": False, "status": "Failed", "message": f"{err}"},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
