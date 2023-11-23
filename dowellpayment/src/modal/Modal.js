@@ -45,10 +45,14 @@ function Modal({ isOpen, onClose, values, info, loading, handleMailing, mailLoad
             
             <div className="info__Price">
                 <p>
-                    {basePriceInBaseCountry}: {basePriceInBaseCountryValue}
+                    <b>
+                        {basePriceInBaseCountry}: {basePriceInBaseCountryValue}
+                    </b>
                 </p>
                 <p>
-                    {calculatedPriceInTargetCountry}: {calculatedPriceInTargetCountryValue}
+                    <b>
+                        {calculatedPriceInTargetCountry}: {calculatedPriceInTargetCountryValue}
+                    </b>
                 </p>
             </div>
             
