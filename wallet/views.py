@@ -57,10 +57,19 @@ import os
 from django.db.models import Q
 from .supported_currency import stripe_supported_currency
 import uuid
+import json
+import requests
 from dotenv import load_dotenv
 
 load_dotenv()
 
+
+"""GET PAYPAL MODE DOWELL INTERNAL TEAM"""
+dowell_paypal_mode = os.getenv("DOWELL_PAYPAL_LIVE_MODE")
+if dowell_paypal_mode == "True":
+    dowell_paypal_url = "https://api-m.paypal.com"
+else:
+    dowell_paypal_url = "https://api-m.sandbox.paypal.com"
 
 class LoginView(APIView):
     def post(self, request):
@@ -456,7 +465,105 @@ class WalletDetailView(APIView):
 
         return Response(data, status=status.HTTP_200_OK)
 
+class PaypalPayment(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+        try:
+            print("user", request.user)
+            data = request.data
+            serializer = PaymentSerializer(data=data)
+            if serializer.is_valid():
+                validate_data = serializer.to_representation(serializer.validated_data)
+                amount = validate_data["amount"]
+            else:
+                errors = serializer.errors
+                return Response(
+                    {"success": False, "errors": errors},
+                    status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                )
+            url = f"{dowell_paypal_url}/v2/checkout/orders"
+            client_id = os.getenv("PAYPAL_CLIENT_ID", None)
+            client_secret = os.getenv("PAYPAL_SECRET_KEY", None)
+            encoded_auth = base64.b64encode((f"{client_id}:{client_secret}").encode())
+            
+            headers = {
+                "Content-Type": "application/json",
+                "Authorization": f"Basic {encoded_auth.decode()}",
+                "Prefer": "return=representation",
+            }
+            body = {
+                "intent": "CAPTURE",
+                "purchase_units": [
+                    {
+                        "amount": {
+                            "currency_code": "USD",
+                            "value": f"{amount}",
+                        }
+                    }
+                ],
+                "payment_source": {
+                    "paypal": {
+                        "experience_context": {
+                            "payment_method_preference": "IMMEDIATE_PAYMENT_REQUIRED",
+                            "payment_method_selected": "PAYPAL",
+                            "locale": "en-US",
+                            "landing_page": "LOGIN",
+                            "user_action": "PAY_NOW",
+                            "return_url": f"{'http://127.0.0.1:8000/api/wallet/v1/paypal-callback'}",
+                            "cancel_url": f"{'http://127.0.0.1:8000/api/wallet/v1/paypal-callback'}",
+                        }
+                    }
+                },
+    }
+            response = requests.post(url, headers=headers, data=json.dumps(body)).json()
+           
+            if "name" in response and response["name"] == "UNPROCESSABLE_ENTITY":
+                return Response(
+                    {
+                        "success": False,
+                        "error": response["name"],
+                        "details": response["details"][0]["description"],
+                    },
+                    status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                )
 
+            if "error" in response and response["error"] == "invalid_client":
+                return Response(
+                    {
+                        "success": False,
+                        "error": response["error"],
+                        "details": response["error_description"],
+                    },
+                    status=status.HTTP_401_UNAUTHORIZED,
+                )
+                
+            user_wallet = Wallet.objects.get(user=request.user)
+            payment_id = response["id"]
+            
+            transaction = Transaction(
+                wallet=user_wallet,
+                transaction_type="Deposit",
+                status="Failed",
+                amount=amount,
+                payment_id=payment_id,
+            )
+            transaction.save()
+            approve_payment = response["links"][1]["href"]
+            return Response(
+                {
+                    "success": True,
+                    "approval_url": approve_payment,
+                },
+                status=status.HTTP_200_OK,
+            )
+            
+        except Exception as e:
+            return Response(
+                {"success": False, "message": "something went wrong", "error": f"{e}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        
 class StripePayment(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -529,6 +636,100 @@ class StripePayment(APIView):
                 {"success": False, "message": "something went wrong", "error": f"{e}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+class PaypalPaymentCallback(APIView):
+    def get(self, request):
+        try:
+            payment_id = request.GET.get("token")
+            print("payment_id",payment_id)
+            transaction = Transaction.objects.get(payment_id=payment_id)
+
+            url = f"{dowell_paypal_url}/v2/checkout/orders/{payment_id}"
+            print("url",url)
+            client_id = os.getenv("PAYPAL_CLIENT_ID", None)
+            client_secret = os.getenv("PAYPAL_SECRET_KEY", None)
+            encoded_auth = base64.b64encode((f"{client_id}:{client_secret}").encode())
+            headers = {
+                "Content-Type": "application/json",
+                "Authorization": f"Basic {encoded_auth.decode()}",
+                "Prefer": "return=representation",
+            }
+            response = requests.get(url, headers=headers).json()
+            print("response",response)
+
+            try:
+                if response["name"] == "RESOURCE_NOT_FOUND":
+                    redirect_url = f"https://100088.pythonanywhere.com/api/success"
+                    response = HttpResponseRedirect(redirect_url)
+                    return response
+            except:
+                pass
+            try:
+                if response["error"] == "invalid_client":
+                    redirect_url = f"https://100088.pythonanywhere.com/api/success"
+                    response = HttpResponseRedirect(redirect_url)
+                    return response
+            except:
+                payment_status = response["status"]
+                if payment_status == "APPROVED":
+                    amount = response["purchase_units"][0]["amount"]["value"]
+                    wallet = transaction.wallet
+                    if transaction.status == "Failed":
+                        wallet.balance += Decimal(amount)
+                        wallet.save()
+                    transaction.status = "sucessful"
+                    transaction.save()
+                    # Get the user's email address and name
+                    user_email = transaction.wallet.user.email
+                    user_name = transaction.wallet.user.username
+                    self.send_transaction_email(user_name, user_email, amount)
+
+            # redirect to frontend url page
+            redirect_url = f"https://100088.pythonanywhere.com/api/success"
+            response = HttpResponseRedirect(redirect_url)
+            return response
+
+        except Exception as e:
+            print("error", e)
+            redirect_url = f"https://100088.pythonanywhere.com/api/success"
+            response = HttpResponseRedirect(redirect_url)
+            return response
+
+    def send_transaction_email(self, user_name, user_email, amount):
+        # API endpoint to send the email
+        url = f"https://100085.pythonanywhere.com/api/email/"
+        name = user_name
+        EMAIL_FROM_WEBSITE = """
+                    <!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta http-equiv="X-UA-Compatible" content="IE=edge">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                            <title>Samanta Content Evaluator</title>
+                        </head>
+                        <body>
+                            <div style="font-family: Helvetica, Arial, sans-serif; min-width: 100px; overflow: auto; line-height: 1.6; margin: 50px auto; width: 70%; padding: 20px 0; border-bottom: 1px solid #eee;">
+                                <a href="#" style="font-size: 1.2em; color: #00466a; text-decoration: none; font-weight: 600; display: block; text-align: center;">Dowell UX Living Lab Wallet</a>
+                                <p style="font-size: 1.1em; text-align: center;">Dear {name},</p>
+                                <p style="font-size: 1.1em; text-align: center;">Your deposit was successful.</p>
+                                <p style="font-size: 1.1em; text-align: center;">You have added an amount of ${amount} to your wallet.</p>
+                                <p style="font-size: 1.1em; text-align: center;">Thank you for using our platform.</p>
+                            </div>
+                        </body>
+                        </html>
+                        """
+
+        email_content = EMAIL_FROM_WEBSITE.format(name=name, amount=amount)
+        payload = {
+            "toname": name,
+            "toemail": user_email,
+            "subject": "Walllet Deposit",
+            "email_content": email_content,
+        }
+        response = requests.post(url, json=payload)
+        print(response.text)
+        return response.text
 
 
 # Stripe verify Payment classs

@@ -28,6 +28,12 @@ urlpatterns = [
         views.StripePaymentCallback.as_view(),
         name="verify-stripe-payment",
     ),
+    path("paypal-payment", views.PaypalPayment.as_view(), name="paypal-payment"),
+    path(
+        "paypal-callback",
+        views.PaypalPaymentCallback.as_view(),
+        name="verify-paypal-payment",
+    ),
     # transfer url
     # path("transfer", views.SendMoney.as_view(), name="transfer"),
     # path("request", views.MoneyRequestView.as_view(), name="request"),
