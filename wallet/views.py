@@ -82,27 +82,37 @@ else:
 
 @method_decorator(user_is_authenticated, name='dispatch')
 class WalletDashboard(APIView):
-    def get(self,request,*args, **kwargs):
+    def get(self, request, *args, **kwargs):
         username = kwargs.get('username')
         email = kwargs.get('email')
         session_id = kwargs.get('sessionID')
         wallets_data = False
+        
         try:
+            # Check if wallet data exists for the user
             wallets = Wallets.objects.get(username=username)
             wallets_data = True
-        except:
-            wallets_data = False
+            print(wallets.account_no)
+        except Wallets.DoesNotExist:
             pass
+
         if wallets_data:
-            #return to wallet dashboard
-            return redirect (f"https://ll04-finance-dowell.github.io/100088-dowellwallet/?session_id={session_id}")
+            # Wallet data exists, redirect to wallet dashboard
+            return redirect(f"https://ll04-finance-dowell.github.io/100088-dowellwallet/?session_id={session_id}")
         else:
-            #create user data with user username
-            userinfo = UserInfo.objects.create(username=username,email=email)
-            #create wallet with user username
-            wallet = Wallets.objects.create(username=username,balance=0,currency="usd")
-            #return to wallet dashboard
-            return redirect (f"https://ll04-finance-dowell.github.io/100088-dowellwallet/?session_id={session_id}")
+            
+            # Create user data with username and email
+            userinfo, created = UserInfo.objects.get_or_create(username=username, defaults={'email': email})
+
+            # Create wallet only if user info was created or exists
+            if created or userinfo:
+                wallet = Wallets.objects.create(username=username, email=email, balance=0, currency="usd")
+                
+                # Redirect to wallet dashboard
+                return redirect(f"https://ll04-finance-dowell.github.io/100088-dowellwallet/?session_id={session_id}")
+            else:
+                print("Failed to create UserInfo or UserInfo already exists")
+
 
 class LoginView(APIView):
     def post(self, request):
@@ -475,19 +485,21 @@ class OTPVerificationView(APIView):
                 {"message": "User not found."}, status=status.HTTP_404_NOT_FOUND
             )
 
-class WalletDetailView(APIView):
-    permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        wallet = Wallet.objects.get(user=request.user)
-        transactions = Transaction.objects.filter(wallet=wallet).order_by("-timestamp")
+@method_decorator(user_is_authenticated, name='dispatch')
+class WalletDetailView(APIView):
+
+    def get(self, request,*args, **kwargs):
+        username = kwargs.get('username')
+        wallet = Wallets.objects.get(username=username)
+        transactions = Transactions.objects.filter(username=username).order_by("-timestamp")
         wallet_serializer = WalletDetailSerializer(wallet)
         transactions_serializer = TransactionSerializer(transactions, many=True)
 
+        userdata = UserInfo.objects.get(username=username)
         user_data = {
-            "id": request.user.id,
-            "username": request.user.username,
-            # Add any other user-related fields you want to include
+            "username":userdata.username,
+            "email":userdata.email
         }
 
         data = {
@@ -849,72 +861,87 @@ GET TRANSACTIONS HISTORY
 
 """
 
-
+@method_decorator(user_is_authenticated, name='dispatch')
 class TransactionHistoryView(APIView):
-    permission_classes = [IsAuthenticated]
+    def get(self, request,*args,**kwargs):
+        username = kwargs.get('username')
+        print(username)
 
-    def get(self, request):
-        # Retrieve the user's transaction history
-        user = request.user
-        transactions = Transaction.objects.filter(wallet__user=user).order_by(
-            "-timestamp"
-        )
-
-        # Format the transaction history into a statement (you can customize the format)
-        statement = "Transaction History:\n\n"
-        for transaction in transactions:
-            statement += f"Transaction Type: {transaction.transaction_type}\n"
-            statement += f"Amount: ${transaction.amount}\n"
-            statement += f"Status: {transaction.status}\n"
-            statement += f"Timestamp: {transaction.timestamp}\n\n"
-
-        # Send the statement to the user's email using your email API
-        user_name = user.username
-        user_email = user.email
-        amount = sum(
-            transaction.amount for transaction in transactions
-        )  # Total amount in the statement
-        email_api_url = f"https://100085.pythonanywhere.com/api/email/"
-
-        email_content = """
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <meta http-equiv="X-UA-Compatible" content="IE=edge">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Your Transaction History</title>
-            </head>
-            <body>
-                <div style="font-family: Helvetica, Arial, sans-serif; min-width: 100px; overflow: auto; line-height: 1.6; margin: 50px auto; width: 70%; padding: 20px 0; border-bottom: 1px solid #eee;">
-                    <p style="font-size: 1.1em; text-align: center;">Dear {name},</p>
-                    <p style="font-size: 1.1em; text-align: center;">Here is your transaction history:</p>
-                    <pre>{statement}</pre>
-                </div>
-            </body>
-            </html>
-        """.format(
-            name=user_name, statement=statement
-        )
-
-        payload = {
-            "toname": user_name,
-            "toemail": user_email,
-            "subject": "Transaction History",
-            "email_content": email_content,
-        }
-
-        response = requests.post(email_api_url, json=payload)
-        print(response)
-        if response.status_code == 200:
+        # Ensure username is provided
+        if not username:
             return Response(
-                {"message": "Transaction history sent to your email"},
-                status=status.HTTP_200_OK,
+                {"message": "Username not provided"},
+                status=status.HTTP_400_BAD_REQUEST,
             )
-        else:
+
+        # Retrieve the user's information
+        try:
+            user_info = UserInfo.objects.get(username=username)
+            transactions = Transactions.objects.filter(username=username).order_by(
+                "-timestamp"
+            )
+            print(transactions)
+
+            # Format the transaction history into a statement (you can customize the format)
+            statement = "Transaction History:\n\n"
+            for transaction in transactions:
+                statement += f"Transaction Type: {transaction.transaction_type}\n"
+                statement += f"Amount: ${transaction.amount}\n"
+                statement += f"Status: {transaction.status}\n"
+                statement += f"Timestamp: {transaction.timestamp}\n\n"
+
+            # Send the statement to the user's email using your email API
+            user_name = user_info.username
+            user_email = user_info.email
+            amount = sum(
+                transaction.amount for transaction in transactions
+            )  # Total amount in the statement
+            email_api_url = f"https://100085.pythonanywhere.com/api/email/"
+
+            email_content = """
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Your Transaction History</title>
+                </head>
+                <body>
+                    <div style="font-family: Helvetica, Arial, sans-serif; min-width: 100px; overflow: auto; line-height: 1.6; margin: 50px auto; width: 70%; padding: 20px 0; border-bottom: 1px solid #eee;">
+                        <p style="font-size: 1.1em; text-align: center;">Dear {name},</p>
+                        <p style="font-size: 1.1em; text-align: center;">Here is your transaction history:</p>
+                        <pre>{statement}</pre>
+                    </div>
+                </body>
+                </html>
+            """.format(
+                name=user_name, statement=statement
+            )
+
+            payload = {
+                "toname": user_name,
+                "toemail": user_email,
+                "subject": "Transaction History",
+                "email_content": email_content,
+            }
+
+            response = requests.post(email_api_url, json=payload)
+            print(response)
+            if response.status_code == 200:
+                return Response(
+                    {"message": "Transaction history sent to your email"},
+                    status=status.HTTP_200_OK,
+                )
+            else:
+                return Response(
+                    {"message": "Failed to send transaction history"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
+        except UserInfo.DoesNotExist:
             return Response(
-                {"message": "Failed to send transaction history"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                {"message": "User not found"},
+                status=status.HTTP_404_NOT_FOUND,
             )
 
 

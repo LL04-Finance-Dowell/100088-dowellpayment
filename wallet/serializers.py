@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from .models import Wallet, Transaction, UserProfile, MoneyRequest
+from .models import Wallet, Transaction, UserProfile, MoneyRequest,Wallets,Transactions
 from django.utils.crypto import get_random_string
 
 
@@ -23,13 +23,13 @@ class UserSerializer(serializers.ModelSerializer):
 
 class WalletDetailSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Wallet
+        model = Wallets
         fields = "__all__"
 
 
 class TransactionSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Transaction
+        model = Transactions
         fields = "__all__"
 
 

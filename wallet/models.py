@@ -8,11 +8,22 @@ from django.utils.crypto import get_random_string
 class Wallets(models.Model):
     username = models.CharField(max_length=100)
     email = models.CharField(max_length=100,blank=True, null=True)
+    account_no = models.CharField(max_length=20, null=True, default="")
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     currency = models.CharField(max_length=100)
+    password = models.CharField(
+        max_length=4, null=True
+    )  # Add a new field for wallet password
+
+    def save(self, *args, **kwargs):
+        if not self.account_no:
+            # Generate a random 20-digit account number
+            self.account_no = "".join([str(random.randint(0, 9)) for _ in range(20)])
+
+        super(Wallets, self).save(*args, **kwargs)
 
     def __str__(self):
-        return self.username
+        return self.account_no
 
 class UserInfo(models.Model):
     username = models.CharField(max_length=100)
@@ -36,8 +47,8 @@ class Transactions(models.Model):
 
 
 class UserProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    firstname = models.CharField(max_length=100, null=True, blank=True)
+    username = models.CharField(max_length=100)
+    email = models.CharField(max_length=100,blank=True, null=True)
     lastname = models.CharField(max_length=100, null=True, blank=True)
     profile_picture = models.ImageField(
         default="profile_images/avatar.jpg",
