@@ -3,6 +3,7 @@ from . import views
 
 urlpatterns = [
     # wallet url
+    path("wallet-dashboard",views.WalletDashboard.as_view(),name="wallet_dashboard"),
     path("wallet_detail", views.WalletDetailView.as_view(), name="wallet_detail"),
     path(
         "transactions-history",

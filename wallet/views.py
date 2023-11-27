@@ -29,6 +29,9 @@ from .models import (
     UserProfile,
     MoneyRequest,
     PaymentInitialazation,
+    Wallets,
+    UserInfo,
+    Transactions,
 )
 from django.urls import reverse
 from django.conf import settings
@@ -70,6 +73,48 @@ if dowell_paypal_mode == "True":
     dowell_paypal_url = "https://api-m.paypal.com"
 else:
     dowell_paypal_url = "https://api-m.sandbox.paypal.com"
+
+
+class WalletDashboard(APIView):
+    def get(self,request):
+        session_id=request.GET.get("session_id",None)
+        if session_id == None:
+            return redirect('https://100014.pythonanywhere.com?redirect_url=http://127.0.0.1:8000/api/wallet/v1/wallet-dashboard')
+        url = "https://100014.pythonanywhere.com/api/userinfo/"
+        body = {"session_id":session_id}
+        headers = {
+            "Content-Type": "application/json"
+        }
+        res = requests.post(url, data=json.dumps(body), headers=headers).json()
+        username = res["userinfo"]["username"]
+        email = res["userinfo"]["email"]
+        print("username",username)
+        # return redirect ("https://www.google.com/")
+        if session_id:
+            print("gotten session id")
+            #get wallet data base on the username
+            wallets_data = False
+            try:
+                wallets = Wallets.objects.get(username=username)
+                wallets_data = True
+                print("there is wallet")
+            except:
+                print("no wallet")
+                wallets_data = False
+                pass
+            # print("wallets",wallets)
+            if wallets_data:
+                print("there is wallet confirm")
+                #return to wallet dashboard
+                return redirect (f"https://ll04-finance-dowell.github.io/100088-dowellwallet/?session_id={session_id}")
+            else:
+                print("no wallet confirm")
+                #create user data with user username
+                userinfo = UserInfo.objects.create(username=username,email=email)
+                #create wallet with user username
+                wallet = Wallets.objects.create(username=username,balance=0,currency="usd")
+                #return to wallet dashboard
+                return redirect (f"https://ll04-finance-dowell.github.io/100088-dowellwallet/?session_id={session_id}")
 
 class LoginView(APIView):
     def post(self, request):
