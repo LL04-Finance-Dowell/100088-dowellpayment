@@ -62,6 +62,8 @@ from .supported_currency import stripe_supported_currency
 import uuid
 import json
 import requests
+from django.utils.decorators import method_decorator
+from .decorator import user_is_authenticated
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -75,46 +77,32 @@ else:
     dowell_paypal_url = "https://api-m.sandbox.paypal.com"
 
 
+
+
+
+@method_decorator(user_is_authenticated, name='dispatch')
 class WalletDashboard(APIView):
-    def get(self,request):
-        session_id=request.GET.get("session_id",None)
-        if session_id == None:
-            return redirect('https://100014.pythonanywhere.com?redirect_url=http://127.0.0.1:8000/api/wallet/v1/wallet-dashboard')
-        url = "https://100014.pythonanywhere.com/api/userinfo/"
-        body = {"session_id":session_id}
-        headers = {
-            "Content-Type": "application/json"
-        }
-        res = requests.post(url, data=json.dumps(body), headers=headers).json()
-        username = res["userinfo"]["username"]
-        email = res["userinfo"]["email"]
-        print("username",username)
-        # return redirect ("https://www.google.com/")
-        if session_id:
-            print("gotten session id")
-            #get wallet data base on the username
+    def get(self,request,*args, **kwargs):
+        username = kwargs.get('username')
+        email = kwargs.get('email')
+        session_id = kwargs.get('sessionID')
+        wallets_data = False
+        try:
+            wallets = Wallets.objects.get(username=username)
+            wallets_data = True
+        except:
             wallets_data = False
-            try:
-                wallets = Wallets.objects.get(username=username)
-                wallets_data = True
-                print("there is wallet")
-            except:
-                print("no wallet")
-                wallets_data = False
-                pass
-            # print("wallets",wallets)
-            if wallets_data:
-                print("there is wallet confirm")
-                #return to wallet dashboard
-                return redirect (f"https://ll04-finance-dowell.github.io/100088-dowellwallet/?session_id={session_id}")
-            else:
-                print("no wallet confirm")
-                #create user data with user username
-                userinfo = UserInfo.objects.create(username=username,email=email)
-                #create wallet with user username
-                wallet = Wallets.objects.create(username=username,balance=0,currency="usd")
-                #return to wallet dashboard
-                return redirect (f"https://ll04-finance-dowell.github.io/100088-dowellwallet/?session_id={session_id}")
+            pass
+        if wallets_data:
+            #return to wallet dashboard
+            return redirect (f"https://ll04-finance-dowell.github.io/100088-dowellwallet/?session_id={session_id}")
+        else:
+            #create user data with user username
+            userinfo = UserInfo.objects.create(username=username,email=email)
+            #create wallet with user username
+            wallet = Wallets.objects.create(username=username,balance=0,currency="usd")
+            #return to wallet dashboard
+            return redirect (f"https://ll04-finance-dowell.github.io/100088-dowellwallet/?session_id={session_id}")
 
 class LoginView(APIView):
     def post(self, request):
