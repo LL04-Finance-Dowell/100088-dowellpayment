@@ -49,6 +49,7 @@ class Transactions(models.Model):
 class UserProfile(models.Model):
     username = models.CharField(max_length=100)
     email = models.CharField(max_length=100,blank=True, null=True)
+    firstname = models.CharField(max_length=100, null=True, blank=True)
     lastname = models.CharField(max_length=100, null=True, blank=True)
     profile_picture = models.ImageField(
         default="profile_images/avatar.jpg",
@@ -59,7 +60,6 @@ class UserProfile(models.Model):
     updated = models.DateTimeField(auto_now=True, null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
-    totp_key = models.CharField(max_length=16)
 
     def save(self, *args, **kwargs):
         # Call the super method to save the profile

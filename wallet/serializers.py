@@ -98,6 +98,9 @@ class DowellPaymentSerializer(serializers.Serializer):
 
 
 class PaymentAuthorizationSerializer(serializers.Serializer):
-    email = serializers.CharField(max_length=150)
-    password = serializers.CharField(max_length=128)
     initialization_id = serializers.CharField()
+
+class WalletPasswordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Wallets
+        fields = ('password',)

@@ -4,6 +4,7 @@ from . import views
 urlpatterns = [
     # wallet url
     path("wallet-dashboard",views.WalletDashboard.as_view(),name="wallet_dashboard"),
+    path("wallet-password",views.CreateWalletPassword.as_view()),
     path("wallet_detail", views.WalletDetailView.as_view(), name="wallet_detail"),
     path(
         "transactions-history",
@@ -40,15 +41,10 @@ urlpatterns = [
     # path("request", views.MoneyRequestView.as_view(), name="request"),
     # path("user-request", views.UserRequests.as_view()),
     # path("accept-request", views.AcceptRequestView.as_view()),
-    # external payment
-    path(
-        "external-payment", views.ExternalPaymentView.as_view(), name="external-payment"
-    ),
+    
     # userprofile
     path("profile", views.UserProfileDetail.as_view(), name="profile"),
-    # Delete/deactivate account
-    path("request-disable", views.RequestDisableView.as_view()),
-    path("disable", views.DisableAccountView.as_view()),
+    
     path("stripe-currency", views.GetStripeSupporteCurrency.as_view()),
     path("initialize-payment", views.PaymentRequestView.as_view()),
     path("authorize-payment", views.PaymentAuthoriazationView.as_view()),

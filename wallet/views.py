@@ -11,6 +11,7 @@ from .serializers import (
     ExternalPaymentSerializer,
     UserProfileSerializer,
     DowellPaymentSerializer,
+    WalletPasswordSerializer,
 )
 from django.utils.crypto import get_random_string
 from django.contrib.auth.models import User
@@ -945,101 +946,8 @@ class TransactionHistoryView(APIView):
             )
 
 
-"""
-
-MAKE PAYMENTS TO EXTERNAL SITES
-
-"""
 
 
-class ExternalPaymentView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        serializer = ExternalPaymentSerializer(data=request.data)
-
-        if serializer.is_valid():
-            user = request.user
-            data = serializer.validated_data
-            amount = data["amount"]
-            # Get the wallet password from the request data
-            wallet_password = request.data.get("wallet_password")
-
-            # Verify the wallet password
-            if not check_password(str(wallet_password), user.wallet.password):
-                return Response(
-                    {"message": "Incorrect wallet password"},
-                    status=status.HTTP_401_UNAUTHORIZED,
-                )
-            try:
-                user_wallet = Wallet.objects.get(user=user)
-
-                if user_wallet.balance >= amount:
-                    # Deduct the payment amount from the user's wallet balance
-                    user_wallet.balance -= Decimal(amount)
-                    user_wallet.save()
-
-                    # Create a transaction record
-                    transaction = Transaction(
-                        wallet=user_wallet,
-                        transaction_type="Payment",
-                        status="Completed",
-                        amount=amount,
-                    )
-                    transaction.save()
-
-                    # Pass the correct user object to the email function
-                    self.send_transaction_email(user, amount)
-
-                    return Response(
-                        {"message": "Payment successful"}, status=status.HTTP_200_OK
-                    )
-                else:
-                    return Response(
-                        {"message": "Insufficient wallet balance"},
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
-            except Wallet.DoesNotExist:
-                return Response(
-                    {"message": "User does not have a wallet"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def send_transaction_email(self, user, amount):
-        # API endpoint to send the email
-        url = f"https://100085.pythonanywhere.com/api/email/"
-        name = user.username
-        EMAIL_FROM_WEBSITE = """
-                    <!DOCTYPE html>
-                        <html lang="en">
-                        <head>
-                            <meta charset="UTF-8">
-                            <meta http-equiv="X-UA-Compatible" content="IE=edge">
-                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                            <title>Samanta Content Evaluator</title>
-                        </head>
-                        <body>
-                            <div style="font-family: Helvetica, Arial, sans-serif; min-width: 100px; overflow: auto; line-height: 1.6; margin: 50px auto; width: 70%; padding: 20px 0; border-bottom: 1px solid #eee;">
-                                <a href="#" style="font-size: 1.2em; color: #00466a; text-decoration: none; font-weight: 600; display: block; text-align: center;">Dowell UX Living Lab Wallet</a>
-                                <p style="font-size: 1.1em; text-align: center;">Dear {name},</p>
-                                <p style="font-size: 1.1em; text-align: center;">Your Payment of ${amount} to Dowell was successful.</p>
-                                <p style="font-size: 1.1em; text-align: center;">Thank you for using our platform.</p>
-                            </div>
-                        </body>
-                        </html>
-                        """
-
-        email_content = EMAIL_FROM_WEBSITE.format(name=name, amount=amount)
-        payload = {
-            "toname": name,
-            "toemail": user.email,
-            "subject": "Wallet Payment",
-            "email_content": email_content,
-        }
-        response = requests.post(url, json=payload)
-        print(response.text)
-        return response.text
 
 
 """
@@ -1048,34 +956,35 @@ USERPROFILE
 
 """
 
-
+@method_decorator(user_is_authenticated, name='dispatch')
 class UserProfileDetail(APIView):
-    permission_classes = [IsAuthenticated]
+    def get(self, request,*args, **kwargs):
+        username = kwargs.get('username')
+        try:
 
-    def get(self, request):
-        user = request.user
-        user_profile = UserProfile.objects.get(user=user)
-        serializer = UserProfileSerializer(user_profile)
+            user_profile = UserProfile.objects.get(username=username)
+            serializer = UserProfileSerializer(user_profile)
 
-        # Get user's email
-        email = request.user.email
+            wallet = Wallets.objects.get(username=username)
+            # Get wallet account number
+            account_no = wallet.account_no if wallet else None
 
-        # Assuming UserProfile has a ForeignKey relationship to Wallet
-        wallet = user.wallet
-        # Get wallet account number
-        account_no = wallet.account_no if wallet else None
+            # Add email and account_no to the serialized data
+            serialized_data = serializer.data
+            serialized_data["account_no"] = account_no
 
-        # Add email and account_no to the serialized data
-        serialized_data = serializer.data
-        serialized_data["email"] = email
-        serialized_data["account_no"] = account_no
+            return Response(
+                {"success": True, "data": serialized_data}, status=status.HTTP_200_OK
+            )
+        except:
+            return Response(
+                {"success": False, "Message": "Profile does not exist"}, status=status.HTTP_404_NOT_FOUND
+            )
 
-        return Response(
-            {"success": True, "data": serialized_data}, status=status.HTTP_200_OK
-        )
 
-    def post(self, request):
-        user_profile = UserProfile.objects.get(user=request.user)
+    def post(self, request,*args, **kwargs):
+        username = kwargs.get('username')
+        user_profile = UserProfile.objects.get(username=username)
 
         data = request.data
         if not data:
@@ -1109,136 +1018,6 @@ DELETE USER ACCOUNT
 
 """
 
-
-class DeleteAccountView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, format=None):
-        user = request.user
-        password = request.data.get("password")
-        if not user.check_password(password):
-            return Response(
-                {"detail": "Incorrect password."}, status=status.HTTP_400_BAD_REQUEST
-            )
-        user.delete()
-        # Log out the user
-        logout(request)
-        return Response(
-            {"detail": "Account deleted successfully."},
-            status=status.HTTP_204_NO_CONTENT,
-        )
-
-
-"""
-
-DEACTIVATE ACCOUNT
-
-
-"""
-
-
-class RequestDisableView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        user = request.user
-        user_profile, created = UserProfile.objects.get_or_create(user=user)
-        # Generate a TOTP key for the user
-        totp_key = self.generate_totp_key()
-        # Save the TOTP key to the user's profile
-        user_profile.totp_key = totp_key
-        user_profile.save()
-        # Send the TOTP key to the user via email or other communication method
-        self.send_otp_email(user, totp_key)
-
-        return Response(
-            {"Message": "OTP for Account disable sent to your email."},
-            status=status.HTTP_204_NO_CONTENT,
-        )
-
-    def generate_totp_key(self):
-        # Generate a random secret key as bytes
-        secret_key_bytes = secrets.token_bytes(20)  # 20 bytes (160 bits)
-        # Convert the bytes to a base32-encoded string
-        secret_key = base64.b32encode(secret_key_bytes).decode("utf-8")
-        # Calculate the expiration time (30 minutes from now)
-        expiration_time = timezone.now() + timezone.timedelta(minutes=30)
-        # Create a TOTP instance
-        totp = TOTP(
-            secret_key, interval=30
-        )  # Replace 'your-secret-key' with your secret key
-        # Generate the TOTP token
-        totp_key = totp.now()
-        return totp_key
-
-    def send_otp_email(self, user, totp_key):
-        # API endpoint to send the email
-        url = f"https://100085.pythonanywhere.com/api/email/"
-        name = user.username
-        expiration_time = timezone.now() + timezone.timedelta(
-            minutes=30
-        )  # 30 minutes from now
-        EMAIL_FROM_WEBSITE = """
-                    <!DOCTYPE html>
-                        <html lang="en">
-                        <head>
-                            <meta charset="UTF-8">
-                            <meta http-equiv="X-UA-Compatible" content="IE=edge">
-                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                            <title>Account Disabling OTP</title>
-                        </head>
-                        <body>
-                            <div style="font-family: Helvetica, Arial, sans-serif; min-width: 100px; overflow: auto; line-height: 2; margin: 50px auto; width: 70%; padding: 20px 0; border-bottom: 1px solid #eee;">
-                                <a href="#" style="font-size: 1.2em; color: #00466a; text-decoration: none; font-weight: 600; display: block; text-align: center;">Dowell UX Living Lab Wallet</a>
-                                <p style="font-size: 1.1em; text-align: center;">Dear {name}, you have requested an OTP to disable your account. Please enter the OTP below to proceed with the account disabling process.</p>
-                                <p style="font-size: 1.1em; text-align: center;">Your OTP for account disabling is: {totp}</p>
-                                <p style="font-size: 1.1em; text-align: center;">This OTP is valid until {expiration_time}.</p>
-                                <p style="font-size: 1.1em; text-align: center;">If you did not request this action, you can ignore this email.</p>
-                            </div>
-                        </body>
-                        </html>
-                    """
-        context = {"name": name, "totp": totp_key}
-
-        email_content = EMAIL_FROM_WEBSITE.format(
-            name=name, expiration_time=expiration_time, totp=totp_key
-        )
-        payload = {
-            "toname": name,
-            "toemail": user.email,
-            "subject": "OTP Verification",
-            "email_content": email_content,
-        }
-        response = requests.post(url, json=payload)
-        print(totp_key)
-        print(response.text)
-        return response.text
-
-
-class DisableAccountView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        otp_key = request.data.get("otp_key")
-        user = request.user
-        if user:
-            totp_key_from_profile = user.userprofile.totp_key
-            if totp_key_from_profile == otp_key:
-                # Disable the user
-                user.is_active = False
-                user.save()
-                return Response(
-                    {"Message": "Account temporarily disabled."},
-                    status=status.HTTP_200_OK,
-                )
-            else:
-                return Response(
-                    {"message": "Invalid OTP."}, status=status.HTTP_400_BAD_REQUEST
-                )
-        else:
-            return Response(
-                {"message": "User not found."}, status=status.HTTP_404_NOT_FOUND
-            )
 
 class GetStripeSupporteCurrency(APIView):
     def get(self, request):
@@ -1289,79 +1068,63 @@ class PaymentRequestView(APIView):
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
+@method_decorator(user_is_authenticated, name='dispatch')
 class PaymentAuthoriazationView(APIView):
     serializer_class = PaymentAuthorizationSerializer
-
-    def post(self, request):
+    def post(self, request,*args, **kwargs):
+        username = kwargs.get('username')
+        email = kwargs.get('email')
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            email = serializer.validated_data.get("email")
-            password = serializer.validated_data.get("password")
+        
             initialization_id = serializer.validated_data.get("initialization_id")
-
+            
             try:
-                user = User.objects.get(email=email)
-
-            except User.DoesNotExist:
-                return Response(
-                    {"success": False, "error": "Invalid credentials"},
-                    status=status.HTTP_400_BAD_REQUEST,
+                payment_initialization = PaymentInitialazation.objects.get(
+                    initialization_id=initialization_id
                 )
+                price = Decimal(payment_initialization.price)
+                currency = payment_initialization.currency
+                callback_url = payment_initialization.callback_url
 
-            user = authenticate(request, username=user.username, password=password)
-            if user is not None:
-                try:
-                    payment_initialization = PaymentInitialazation.objects.get(
-                        initialization_id=initialization_id
+                user_wallet = Wallets.objects.get(username=username)
+                user_balance = user_wallet.balance
+
+                if user_balance >= price:
+                    # Deduct the amount from the user's wallet
+                    user_wallet.balance -= price
+                    user_wallet.save()
+
+                    # Create a new Transaction entry
+                    new_transaction = Transactions.objects.create(
+                        username=username,
+                        email=email,
+                        transaction_type="Dowell payment",
+                        status="completed",
+                        amount=price,
+                        payment_id=payment_initialization,
+                        session_id='',
                     )
-                    price = Decimal(payment_initialization.price)
-                    currency = payment_initialization.currency
-                    callback_url = payment_initialization.callback_url
 
-                    user_wallet = Wallet.objects.get(user=user)
-                    user_balance = user_wallet.balance
-
-                    if user_balance >= price:
-                        # Deduct the amount from the user's wallet
-                        user_wallet.balance -= price
-                        user_wallet.save()
-
-                        # Create a new Transaction entry
-                        new_transaction = Transaction.objects.create(
-                            wallet=user_wallet,
-                            transaction_type="Dowell payment",
-                            status="completed",
-                            amount=price,
-                            payment_id=payment_initialization,
-                            session_id='',
-                        )
-
-                        redirect_url = f"{callback_url}?id={payment_initialization}"
-                        return Response(
-                            {"redirect_url": redirect_url}, status=status.HTTP_200_OK
-                        )
-                    else:
-                        return Response(
-                            {"message": "Insufficient balance"},
-                            status=status.HTTP_400_BAD_REQUEST,
-                        )
-
-                except PaymentInitialazation.DoesNotExist:
+                    redirect_url = f"{callback_url}?id={payment_initialization}"
                     return Response(
-                        {"message": "Invalid payment initialization ID"},
-                        status=status.HTTP_404_NOT_FOUND,
+                        {"redirect_url": redirect_url}, status=status.HTTP_200_OK
                     )
-                except Wallet.DoesNotExist:
+                else:
                     return Response(
-                        {"message": "User wallet not found"},
-                        status=status.HTTP_404_NOT_FOUND,
+                        {"message": "Insufficient balance"},
+                        status=status.HTTP_400_BAD_REQUEST,
                     )
 
-            else:
+            except PaymentInitialazation.DoesNotExist:
                 return Response(
-                    {"message": "Invalid credentials"},
-                    status=status.HTTP_401_UNAUTHORIZED,
+                    {"message": "Invalid payment initialization ID"},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+            except Wallets.DoesNotExist:
+                return Response(
+                    {"message": "User wallet not found"},
+                    status=status.HTTP_404_NOT_FOUND,
                 )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -1386,6 +1149,27 @@ class PaymentVerificationView(APIView):
                 {"success": False, "status": "Failed", "message": f"{err}"},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
+
+"""
+WALLET PASSWORD
+"""
+@method_decorator(user_is_authenticated, name='dispatch')
+class CreateWalletPassword(APIView):
+    serializer_class = WalletPasswordSerializer
+
+    def post(self,request,*args, **kwargs):
+        username = kwargs.get('username')
+        session_id=kwargs.get('session_id')
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            password = serializer.validated_data['password']
+            wallet = Wallets.objects.get(username=username)
+            wallet.password = make_password(password)
+            wallet.save()
+            return redirect(f"https://ll04-finance-dowell.github.io/100088-dowellwallet/?session_id={session_id}")
+        else:
+            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
 
 
 
