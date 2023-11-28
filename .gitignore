@@ -13,6 +13,7 @@ token.json
 /wallet/__pycache__
 /wallet/migrations/__pycache__
 /purchasing_power_parity/__pycache__
+/purchasing_power_parity/__pycache__/
 /payment/__pycache__
 /dowellpay/__pycache__
 /payment/utils/__pycache__
