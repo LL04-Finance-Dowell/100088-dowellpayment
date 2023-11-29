@@ -108,11 +108,11 @@ class WalletDashboard(APIView):
                 create_wallet = CreateUserWallet(username, email)
                 create_user_info = CreateUserInfo(username, email)
                 return redirect(
-                    f"https://ll04-finance-dowell.github.io/100088-dowellwallet/?session_id={session_id}"
+                    f"https://dowell-wallet.vercel.app/?session_id={session_id}"
                 )
 
             return redirect(
-                f"https://ll04-finance-dowell.github.io/100088-dowellwallet/?session_id={session_id}"
+                f"https://dowell-wallet.vercel.app/?session_id={session_id}"
             )
 
         except:
