@@ -68,6 +68,7 @@ from .utils.decorator import user_is_authenticated
 from .utils.dowellconnections import (
     GetUserWallet,
     CreateUserWallet,
+    GetUserInfo,
     CreateUserInfo,
     UpdateUserInfo,
     GetUserTransaction,
@@ -499,7 +500,8 @@ class WalletDetailView(APIView):
         wallets = GetUserWallet(username)["data"]
         user_data = {"username": username, "email": email}
         field = {"username": f"{username}"}
-        transactions = GetUserTransaction(field)["data"]
+        command = "fetch"
+        transactions = GetUserTransaction(field,command)["data"]
         data = {
             "user": user_data,  # Include user data in the response
             "wallet": wallets,
@@ -698,7 +700,8 @@ class PaypalPaymentCallback(APIView):
         try:
             payment_id = request.GET.get("token").split("?")[0]
             field = {"payment_id": f"{payment_id}"}
-            transaction = GetUserTransaction(field)
+            command = "find"
+            transaction = GetUserTransaction(field,command)
             url = f"{dowell_paypal_url}/v2/checkout/orders/{payment_id}"
             print("url", url)
             client_id = os.getenv("PAYPAL_CLIENT_ID", None)
@@ -729,7 +732,7 @@ class PaypalPaymentCallback(APIView):
                 if payment_status == "APPROVED":
                     get_wallet = GetUserWallet(username)
                     amount = response["purchase_units"][0]["amount"]["value"]
-                    if transaction["data"][0]["status"] == "Failed":
+                    if transaction["data"]["status"] == "Failed":
                         balance = get_wallet["data"][0]["balance"]
                         print("user-balance", balance)
                         updated_balance = balance + float(amount)
@@ -798,7 +801,8 @@ class StripePaymentCallback(APIView):
             payment_id = request.GET.get("payment_id").split("?")[0]
             
             field = {"payment_id": f"{payment_id}"}
-            transaction = GetUserTransaction(field)
+            command = "find"
+            transaction = GetUserTransaction(field,command)
             
             stripe_key = os.getenv("STRIPE_KEY", None)
             stripe.api_key = stripe_key
@@ -817,7 +821,7 @@ class StripePaymentCallback(APIView):
 
                 get_wallet = GetUserWallet(username)
 
-                if transaction["data"][0]["status"] == "Failed":
+                if transaction["data"]["status"] == "Failed":
                     balance = get_wallet["data"][0]["balance"]
                     print("user-balance", balance)
                     updated_balance = balance + amount
@@ -971,22 +975,29 @@ USERPROFILE
 @method_decorator(user_is_authenticated, name='dispatch')
 class UserProfileDetail(APIView):
     def get(self, request,*args, **kwargs):
+    
         username = kwargs.get('username')
+        email = kwargs.get('email')
+        firstname = kwargs.get('firstname')
+        lastname = kwargs.get('lastname')
+        phone = kwargs.get('phone')
+        profile_picture = kwargs.get('profile_picture')
+        sessionID = kwargs.get('sessionID')
+        user_wallet = GetUserWallet(username)
+        account_no = user_wallet["data"][0]["account_no"]
+        
         try:
-
-            user_profile = UserProfile.objects.get(username=username)
-            serializer = UserProfileSerializer(user_profile)
-
-            wallet = Wallets.objects.get(username=username)
-            # Get wallet account number
-            account_no = wallet.account_no if wallet else None
-
-            # Add email and account_no to the serialized data
-            serialized_data = serializer.data
-            serialized_data["account_no"] = account_no
-
+            data = {
+                "username":username,
+                "email":email,
+                "firstname":firstname,
+                "lastname":lastname,
+                "phone":phone,
+                "profile_picture":profile_picture,
+                "account_no":account_no,
+                }
             return Response(
-                {"success": True, "data": serialized_data}, status=status.HTTP_200_OK
+                {"success": True, "data": data}, status=status.HTTP_200_OK
             )
         except:
             return Response(
@@ -994,34 +1005,34 @@ class UserProfileDetail(APIView):
             )
 
 
-    def post(self, request,*args, **kwargs):
-        username = kwargs.get('username')
-        user_profile = UserProfile.objects.get(username=username)
+    # def post(self, request,*args, **kwargs):
+    #     username = kwargs.get('username')
+    #     user_profile = UserProfile.objects.get(username=username)
 
-        data = request.data
-        if not data:
-            return Response(
-                {"success": False, "error": "Request body can't be empty"},
-                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            )
+    #     data = request.data
+    #     if not data:
+    #         return Response(
+    #             {"success": False, "error": "Request body can't be empty"},
+    #             status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+    #         )
 
-        # You can validate and update the user profile data here.
-        serializer = UserProfileSerializer(user_profile, data, partial=True)
+    #     # You can validate and update the user profile data here.
+    #     serializer = UserProfileSerializer(user_profile, data, partial=True)
 
-        if serializer.is_valid():
-            serializer.save()
-            return Response(
-                {
-                    "success": True,
-                    "message": "user profile successfully updated",
-                    "data": serializer.data,
-                },
-                status=status.HTTP_200_OK,
-            )
-        return Response(
-            {"success": False, "error": serializer.errors},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
+    #     if serializer.is_valid():
+    #         serializer.save()
+    #         return Response(
+    #             {
+    #                 "success": True,
+    #                 "message": "user profile successfully updated",
+    #                 "data": serializer.data,
+    #             },
+    #             status=status.HTTP_200_OK,
+    #         )
+    #     return Response(
+    #         {"success": False, "error": serializer.errors},
+    #         status=status.HTTP_400_BAD_REQUEST,
+    #     )
 
 
 """
@@ -1091,58 +1102,61 @@ class PaymentAuthoriazationView(APIView):
             field = {"wallet_password":f"{wallet_password}"}
             user_wallet_pass = GetUserInfo(field)
             
-            username = user_wallet_pass["data"]["username"]
-            email = user_wallet_pass["data"]["email"]
-
-            try:
-                pay_initializaton_details = GetPayViaWallet(initialization_id)
-                
-                price = pay_initializaton_details["data"]["price"]
-                currency = pay_initializaton_details["data"]["currency"]
-                callback_url = pay_initializaton_details["data"]["callback_url"]
             
-                get_wallet = GetUserWallet(username)
-                balance = get_wallet["data"][0]["balance"]
+            if user_wallet_pass["data"] != None:
+                
+                username = user_wallet_pass["data"]["username"]
+                email = user_wallet_pass["data"]["email"]
 
-                if balance >= float(price):
+                try:
+                    pay_initializaton_details = GetPayViaWallet(initialization_id)
                     
-                    # Deduct the amount from the user's wallet
-                    updated_balance = balance - float(price)
-                    update_wallet = updateUserWallet(username, updated_balance)
-                    
-                    # Create a new Transaction entry
-                    today = date.today()
-                    transaction = CreateUserTransaction(
-                    username,
-                    email,
-                    price,
-                    initialization_id,
-                    "",
-                    today,
-                    transaction_type="Dowell payment",
-                    status="completed",
-                )
+                    price = pay_initializaton_details["data"]["price"]
+                    currency = pay_initializaton_details["data"]["currency"]
+                    callback_url = pay_initializaton_details["data"]["callback_url"]
+                
+                    get_wallet = GetUserWallet(username)
+                    balance = get_wallet["data"][0]["balance"]
 
-                    redirect_url = f"{callback_url}?id={initialization_id}"
-                    return Response(
-                        {"redirect_url": redirect_url}, status=status.HTTP_200_OK
-                    )
-                else:
-                    return Response(
-                        {"message": "Insufficient balance"},
-                        status=status.HTTP_400_BAD_REQUEST,
+                    if balance >= float(price):
+                        
+                        # Deduct the amount from the user's wallet
+                        updated_balance = balance - float(price)
+                        update_wallet = updateUserWallet(username, updated_balance)
+                        
+                        # Create a new Transaction entry
+                        today = date.today()
+                        transaction = CreateUserTransaction(
+                        username,
+                        email,
+                        price,
+                        initialization_id,
+                        "",
+                        today,
+                        transaction_type="Dowell payment",
+                        status="completed",
                     )
 
-            except:
+                        redirect_url = f"{callback_url}?id={initialization_id}"
+                        return Response(
+                            {"redirect_url": redirect_url}, status=status.HTTP_200_OK
+                        )
+                    else:
+                        return Response(
+                            {"message": "Insufficient balance"},
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
+
+                except:
+                    return Response(
+                        {"message": "Invalid payment initialization ID"},
+                        status=status.HTTP_404_NOT_FOUND,
+                    )
+            else:
                 return Response(
-                    {"message": "Invalid payment initialization ID"},
-                    status=status.HTTP_404_NOT_FOUND,
-                )
-            # except:
-            #     return Response(
-            #         {"message": "User wallet not found"},
-            #         status=status.HTTP_404_NOT_FOUND,
-            #     )
+                        {"message": "Invalid password"},
+                        status=status.HTTP_401_UNAUTHORIZED,
+                    )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -1154,8 +1168,14 @@ class PaymentVerificationView(APIView):
             # obj = Transaction.objects.get(payment_id=id)
             # print(obj)
             field = {"payment_id": f"{id}"}
-            transaction = GetUserTransaction(field)
-            if transaction["data"][0]["status"] == "completed":
+            command = "find"
+            transaction = GetUserTransaction(field,command)
+            if transaction['data'] == None:
+                return Response(
+                {"success": False, "status": "Failed"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+            if transaction["data"]["status"] == "completed":
                 return Response(
                     {"success": True, "status": "completed"}, status=status.HTTP_200_OK
                 )
