@@ -896,7 +896,8 @@ class TransactionHistoryView(APIView):
         # Retrieve the user's information
         try:
             field = {"username":f"{username}"}
-            transactions = GetUserTransaction(field)["data"]
+            command = "fetch"
+            transactions = GetUserTransaction(field,command)["data"]
             print(transactions)
 
             # Format the transaction history into a statement (you can customize the format)
@@ -905,7 +906,7 @@ class TransactionHistoryView(APIView):
                 statement += f"Transaction Type: {transaction.transaction_type}\n"
                 statement += f"Amount: ${transaction.amount}\n"
                 statement += f"Status: {transaction.status}\n"
-                statement += f"Timestamp: {transaction.timestamp}\n\n"
+                statement += f"Timestamp: {transaction.date}\n\n"
 
             # Send the statement to the user's email using your email API
             user_name = username
@@ -914,7 +915,7 @@ class TransactionHistoryView(APIView):
                 transaction.amount for transaction in transactions
             )  # Total amount in the statement
             email_api_url = f"https://100085.pythonanywhere.com/api/email/"
-
+            print("statement",statement)
             email_content = """
                 <!DOCTYPE html>
                 <html lang="en">
@@ -944,7 +945,7 @@ class TransactionHistoryView(APIView):
             }
 
             response = requests.post(email_api_url, json=payload)
-            print(response)
+            print("mail response",response)
             if response.status_code == 200:
                 return Response(
                     {"message": "Transaction history sent to your email"},
