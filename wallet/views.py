@@ -1070,13 +1070,7 @@ class PaymentRequestView(APIView):
             unique_id = uuid.uuid4()
             initialization_id = str(unique_id)
             payment = CreatePayViaWallet(price,currency,callback_url,initialization_id)
-            # payment = PaymentInitialazation.objects.create(
-            #     price=price,
-            #     currency=currency,
-            #     callback_url=callback_url,
-            #     initialization_id=initialization_id,
-            # )
-            # payment.save()
+           
             payment_info = {
                 "price": price,
             }
@@ -1165,8 +1159,7 @@ class PaymentVerificationView(APIView):
         data = request.data
         id = data["id"]
         try:
-            # obj = Transaction.objects.get(payment_id=id)
-            # print(obj)
+            
             field = {"payment_id": f"{id}"}
             command = "find"
             transaction = GetUserTransaction(field,command)
