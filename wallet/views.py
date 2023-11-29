@@ -72,6 +72,7 @@ from .utils.dowellconnections import (
     GetUserTransaction,
     CreateUserTransaction,
     updateUserWallet,
+    GetUserInfo,
     updateUserTransaction,
 )
 from dotenv import load_dotenv
@@ -883,21 +884,12 @@ GET TRANSACTIONS HISTORY
 class TransactionHistoryView(APIView):
     def get(self, request, *args, **kwargs):
         username = kwargs.get("username")
+        email = kwargs.get('email')
         print(username)
-
-        # Ensure username is provided
-        if not username:
-            return Response(
-                {"message": "Username not provided"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
         # Retrieve the user's information
         try:
-            user_info = UserInfo.objects.get(username=username)
-            transactions = Transactions.objects.filter(username=username).order_by(
-                "-timestamp"
-            )
+            field = {"username":f"{username}"}
+            transactions = GetUserTransaction(field)["data"]
             print(transactions)
 
             # Format the transaction history into a statement (you can customize the format)
@@ -909,8 +901,8 @@ class TransactionHistoryView(APIView):
                 statement += f"Timestamp: {transaction.timestamp}\n\n"
 
             # Send the statement to the user's email using your email API
-            user_name = user_info.username
-            user_email = user_info.email
+            user_name = username
+            user_email = email
             amount = sum(
                 transaction.amount for transaction in transactions
             )  # Total amount in the statement
@@ -956,7 +948,7 @@ class TransactionHistoryView(APIView):
                     {"message": "Failed to send transaction history"},
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 )
-        except UserInfo.DoesNotExist:
+        except:
             return Response(
                 {"message": "User not found"},
                 status=status.HTTP_404_NOT_FOUND,
