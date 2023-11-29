@@ -98,6 +98,7 @@ class DowellPaymentSerializer(serializers.Serializer):
 
 
 class PaymentAuthorizationSerializer(serializers.Serializer):
+    wallet_password = serializers.CharField()
     initialization_id = serializers.CharField()
 
 class WalletPasswordSerializer(serializers.ModelSerializer):

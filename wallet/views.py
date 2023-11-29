@@ -1078,6 +1078,9 @@ class PaymentAuthoriazationView(APIView):
         if serializer.is_valid():
         
             initialization_id = serializer.validated_data.get("initialization_id")
+            user_email = serializer.validated_data.get('email')
+            wallet_password = serializer.validated_data.get('wallet_password')
+
             
             try:
                 payment_initialization = PaymentInitialazation.objects.get(
