@@ -7,7 +7,7 @@ from .models import (
     PaymentInitialazation,
     Wallets,
     UserInfo,
-    Transactions
+    Transactions,
 )
 
 admin.site.register(Wallet)

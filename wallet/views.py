@@ -64,7 +64,16 @@ import uuid
 import json
 import requests
 from django.utils.decorators import method_decorator
-from .decorator import user_is_authenticated
+from .utils.decorator import user_is_authenticated
+from .utils.dowellconnections import (
+    GetUserWallet,
+    CreateUserWallet,
+    CreateUserInfo,
+    GetUserTransaction,
+    CreateUserTransaction,
+    updateUserWallet,
+    updateUserTransaction,
+)
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -78,41 +87,32 @@ else:
     dowell_paypal_url = "https://api-m.sandbox.paypal.com"
 
 
-
-
-
-@method_decorator(user_is_authenticated, name='dispatch')
+@method_decorator(user_is_authenticated, name="dispatch")
 class WalletDashboard(APIView):
     def get(self, request, *args, **kwargs):
-        username = kwargs.get('username')
-        email = kwargs.get('email')
-        session_id = kwargs.get('sessionID')
-        wallets_data = False
-        
+        username = kwargs.get("username")
+        email = kwargs.get("email")
+        session_id = kwargs.get("sessionID")
+
         try:
             # Check if wallet data exists for the user
-            wallets = Wallets.objects.get(username=username)
-            wallets_data = True
-            print(wallets.account_no)
-        except Wallets.DoesNotExist:
+            wallets = GetUserWallet(username)
+
+            if wallets["data"] == []:
+                print("----yes------")
+                create_wallet = CreateUserWallet(username, email)
+                create_user_info = CreateUserInfo(username, email)
+                return redirect(
+                    f"https://ll04-finance-dowell.github.io/100088-dowellwallet/?session_id={session_id}"
+                )
+
+            return redirect(
+                f"https://ll04-finance-dowell.github.io/100088-dowellwallet/?session_id={session_id}"
+            )
+
+        except:
+            print("something went wrong")
             pass
-
-        if wallets_data:
-            # Wallet data exists, redirect to wallet dashboard
-            return redirect(f"https://ll04-finance-dowell.github.io/100088-dowellwallet/?session_id={session_id}")
-        else:
-            
-            # Create user data with username and email
-            userinfo, created = UserInfo.objects.get_or_create(username=username, defaults={'email': email})
-
-            # Create wallet only if user info was created or exists
-            if created or userinfo:
-                wallet = Wallets.objects.create(username=username, email=email, balance=0, currency="usd")
-                
-                # Redirect to wallet dashboard
-                return redirect(f"https://ll04-finance-dowell.github.io/100088-dowellwallet/?session_id={session_id}")
-            else:
-                print("Failed to create UserInfo or UserInfo already exists")
 
 
 class LoginView(APIView):
@@ -487,35 +487,32 @@ class OTPVerificationView(APIView):
             )
 
 
-@method_decorator(user_is_authenticated, name='dispatch')
+@method_decorator(user_is_authenticated, name="dispatch")
 class WalletDetailView(APIView):
-
-    def get(self, request,*args, **kwargs):
-        username = kwargs.get('username')
-        wallet = Wallets.objects.get(username=username)
-        transactions = Transactions.objects.filter(username=username).order_by("-timestamp")
-        wallet_serializer = WalletDetailSerializer(wallet)
-        transactions_serializer = TransactionSerializer(transactions, many=True)
-
-        userdata = UserInfo.objects.get(username=username)
-        user_data = {
-            "username":userdata.username,
-            "email":userdata.email
-        }
-
+    def get(self, request, *args, **kwargs):
+        username = kwargs.get("username")
+        email = kwargs.get("email")
+        wallets = GetUserWallet(username)["data"]
+        user_data = {"username": username, "email": email}
+        field = {"username": f"{username}"}
+        transactions = GetUserTransaction(field)["data"]
         data = {
             "user": user_data,  # Include user data in the response
-            "wallet": wallet_serializer.data,
-            "transactions": transactions_serializer.data,
+            "wallet": wallets,
+            "transactions": transactions,
         }
 
         return Response(data, status=status.HTTP_200_OK)
 
+
+
+@method_decorator(user_is_authenticated, name="dispatch")
 class PaypalPayment(APIView):
-    permission_classes = [IsAuthenticated]
-    def post(self, request):
+    def post(self, request,*args, **kwargs):
+        username = kwargs.get("username")
+        email = kwargs.get("email")
+        sessionID = kwargs.get("sessionID")
         try:
-            print("user", request.user)
             data = request.data
             serializer = PaymentSerializer(data=data)
             if serializer.is_valid():
@@ -531,7 +528,7 @@ class PaypalPayment(APIView):
             client_id = os.getenv("PAYPAL_CLIENT_ID", None)
             client_secret = os.getenv("PAYPAL_SECRET_KEY", None)
             encoded_auth = base64.b64encode((f"{client_id}:{client_secret}").encode())
-            
+
             headers = {
                 "Content-Type": "application/json",
                 "Authorization": f"Basic {encoded_auth.decode()}",
@@ -555,14 +552,14 @@ class PaypalPayment(APIView):
                             "locale": "en-US",
                             "landing_page": "LOGIN",
                             "user_action": "PAY_NOW",
-                            "return_url": f"{'http://127.0.0.1:8000/api/wallet/v1/paypal-callback'}",
-                            "cancel_url": f"{'http://127.0.0.1:8000/api/wallet/v1/paypal-callback'}",
+                            "return_url": f"{'http://127.0.0.1:8000/api/wallet/v1/paypal-callback'}?session_id={sessionID}",
+                            "cancel_url": f"{'http://127.0.0.1:8000/api/wallet/v1/paypal-callback'}?session_id={sessionID}",
                         }
                     }
                 },
-    }
+            }
             response = requests.post(url, headers=headers, data=json.dumps(body)).json()
-           
+
             if "name" in response and response["name"] == "UNPROCESSABLE_ENTITY":
                 return Response(
                     {
@@ -582,18 +579,19 @@ class PaypalPayment(APIView):
                     },
                     status=status.HTTP_401_UNAUTHORIZED,
                 )
-                
-            user_wallet = Wallet.objects.get(user=request.user)
+            today = date.today()
             payment_id = response["id"]
-            
-            transaction = Transaction(
-                wallet=user_wallet,
+
+            transaction = CreateUserTransaction(
+                username,
+                email,
+                amount,
+                payment_id,
+                "",
+                today,
                 transaction_type="Deposit",
                 status="Failed",
-                amount=amount,
-                payment_id=payment_id,
             )
-            transaction.save()
             approve_payment = response["links"][1]["href"]
             return Response(
                 {
@@ -602,20 +600,24 @@ class PaypalPayment(APIView):
                 },
                 status=status.HTTP_200_OK,
             )
-            
+
         except Exception as e:
             return Response(
                 {"success": False, "message": "something went wrong", "error": f"{e}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        
-        
-class StripePayment(APIView):
-    permission_classes = [IsAuthenticated]
 
-    def post(self, request):
+
+@method_decorator(user_is_authenticated, name="dispatch")
+class StripePayment(APIView):
+    
+
+    def post(self, request, *args, **kwargs):
+        username = kwargs.get("username")
+        email = kwargs.get("email")
+        sessionID = kwargs.get("sessionID")
+
         try:
-            print("user", request.user)
             data = request.data
             serializer = PaymentSerializer(data=data)
             if serializer.is_valid():
@@ -631,8 +633,6 @@ class StripePayment(APIView):
             today = date.today()
             unique_id = uuid.uuid4()
             payment_id = str(unique_id)
-
-            user_wallet = Wallet.objects.get(user=request.user)
 
             stripe_key = os.getenv("STRIPE_KEY", None)
             stripe.api_key = stripe_key
@@ -651,8 +651,8 @@ class StripePayment(APIView):
                     }
                 ],
                 mode="payment",
-                success_url=f"{'http://127.0.0.1:8000/api/wallet/v1/stripe-callback'}?payment_id={payment_id}",
-                cancel_url=f"{'http://127.0.0.1:8000/api/wallet/v1/stripe-callback'}?payment_id={payment_id}",
+                success_url=f"{'http://127.0.0.1:8000/api/wallet/v1/stripe-callback'}?payment_id={payment_id}?session_id={sessionID}",
+                cancel_url=f"{'http://127.0.0.1:8000/api/wallet/v1/stripe-callback'}?payment_id={payment_id}?session_id={sessionID}",
                 billing_address_collection="required",
                 payment_intent_data={
                     "metadata": {
@@ -663,15 +663,16 @@ class StripePayment(APIView):
                 },
             )
             # print(session)
-            transaction = Transaction(
-                wallet=user_wallet,
+            transaction = CreateUserTransaction(
+                username,
+                email,
+                amount,
+                payment_id,
+                session.id,
+                today,
                 transaction_type="Deposit",
                 status="Failed",
-                amount=amount,
-                session_id=session.id,
-                payment_id=payment_id,
             )
-            transaction.save()
             return Response(
                 {"success": True, "approval_url": f"{session.url}"},
                 status=status.HTTP_200_OK,
@@ -683,15 +684,19 @@ class StripePayment(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+@method_decorator(user_is_authenticated, name="dispatch")
 class PaypalPaymentCallback(APIView):
-    def get(self, request):
-        try:
-            payment_id = request.GET.get("token")
-            print("payment_id",payment_id)
-            transaction = Transaction.objects.get(payment_id=payment_id)
+    def get(self, request,*args, **kwargs):
+        username = kwargs.get("username")
+        email = kwargs.get("email")
+        sessionID = kwargs.get("sessionID")
 
+        try:
+            payment_id = request.GET.get("token").split("?")[0]
+            field = {"payment_id": f"{payment_id}"}
+            transaction = GetUserTransaction(field)
             url = f"{dowell_paypal_url}/v2/checkout/orders/{payment_id}"
-            print("url",url)
+            print("url", url)
             client_id = os.getenv("PAYPAL_CLIENT_ID", None)
             client_secret = os.getenv("PAYPAL_SECRET_KEY", None)
             encoded_auth = base64.b64encode((f"{client_id}:{client_secret}").encode())
@@ -701,7 +706,7 @@ class PaypalPaymentCallback(APIView):
                 "Prefer": "return=representation",
             }
             response = requests.get(url, headers=headers).json()
-            print("response",response)
+            print("response", response)
 
             try:
                 if response["name"] == "RESOURCE_NOT_FOUND":
@@ -718,17 +723,17 @@ class PaypalPaymentCallback(APIView):
             except:
                 payment_status = response["status"]
                 if payment_status == "APPROVED":
+                    get_wallet = GetUserWallet(username)
                     amount = response["purchase_units"][0]["amount"]["value"]
-                    wallet = transaction.wallet
-                    if transaction.status == "Failed":
-                        wallet.balance += Decimal(amount)
-                        wallet.save()
-                    transaction.status = "sucessful"
-                    transaction.save()
-                    # Get the user's email address and name
-                    user_email = transaction.wallet.user.email
-                    user_name = transaction.wallet.user.username
-                    self.send_transaction_email(user_name, user_email, amount)
+                    if transaction["data"][0]["status"] == "Failed":
+                        balance = get_wallet["data"][0]["balance"]
+                        print("user-balance", balance)
+                        updated_balance = balance + float(amount)
+                        update_wallet = updateUserWallet(username, updated_balance)
+                    field = {"payment_id": f"{payment_id}"}
+                    update_field = {"status": "sucessful"}
+                    update_transaction = updateUserTransaction(field, update_field)
+                    self.send_transaction_email(username, email, amount)
 
             # redirect to frontend url page
             redirect_url = f"https://100088.pythonanywhere.com/api/success"
@@ -779,35 +784,46 @@ class PaypalPaymentCallback(APIView):
 
 
 # Stripe verify Payment classs
+@method_decorator(user_is_authenticated, name="dispatch")
 class StripePaymentCallback(APIView):
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
+        username = kwargs.get("username")
+        email = kwargs.get("email")
+        sessionID = kwargs.get("sessionID")
         try:
-            payment_id = request.GET.get("payment_id")
-            transaction = Transaction.objects.get(payment_id=payment_id)
-
+            payment_id = request.GET.get("payment_id").split("?")[0]
+            
+            field = {"payment_id": f"{payment_id}"}
+            transaction = GetUserTransaction(field)
+            
             stripe_key = os.getenv("STRIPE_KEY", None)
             stripe.api_key = stripe_key
 
-            payment_session = stripe.checkout.Session.retrieve(transaction.session_id)
-            # print(payment_session)
+            payment_session = stripe.checkout.Session.retrieve(
+                transaction["data"][0]["session_id"]
+            )
+            
             payment_status = payment_session["payment_status"]
             state = payment_session["status"]
 
             # Check the payment status
             if payment_status == "paid" and state == "complete":
                 amount = payment_session["amount_total"] / 100
-                # Access the associated wallet
-                wallet = transaction.wallet
 
-                if transaction.status == "Failed":
-                    wallet.balance += Decimal(amount)
-                    wallet.save()
-                transaction.status = "sucessful"
-                transaction.save()
-                # Get the user's email address and name
-                user_email = transaction.wallet.user.email
-                user_name = transaction.wallet.user.username
-                self.send_transaction_email(user_name, user_email, amount)
+
+                get_wallet = GetUserWallet(username)
+
+                if transaction["data"][0]["status"] == "Failed":
+                    balance = get_wallet["data"][0]["balance"]
+                    print("user-balance", balance)
+                    updated_balance = balance + amount
+                    update_wallet = updateUserWallet(username, updated_balance)
+                   
+                field = {"payment_id": f"{payment_id}"}
+                update_field = {"status": "sucessful"}
+                update_transaction = updateUserTransaction(field, update_field)
+               
+                self.send_transaction_email(username, email, amount)
 
             # redirect to frontend url page
             redirect_url = f"https://100088.pythonanywhere.com/api/success"
@@ -862,10 +878,11 @@ GET TRANSACTIONS HISTORY
 
 """
 
-@method_decorator(user_is_authenticated, name='dispatch')
+
+@method_decorator(user_is_authenticated, name="dispatch")
 class TransactionHistoryView(APIView):
-    def get(self, request,*args,**kwargs):
-        username = kwargs.get('username')
+    def get(self, request, *args, **kwargs):
+        username = kwargs.get("username")
         print(username)
 
         # Ensure username is provided
@@ -1017,8 +1034,6 @@ class UserProfileDetail(APIView):
 DELETE USER ACCOUNT
 
 """
-
-
 class GetStripeSupporteCurrency(APIView):
     def get(self, request):
         return Response(
@@ -1172,7 +1187,6 @@ class CreateWalletPassword(APIView):
             return redirect(f"https://ll04-finance-dowell.github.io/100088-dowellwallet/?session_id={session_id}")
         else:
             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-
 
 
 
@@ -1418,8 +1432,6 @@ DISPLAY ALL REQUESTS
 #         )
 
 
-
-
 # @method_decorator(csrf_exempt, name="dispatch")
 # class SendMoney(APIView):
 #     permission_classes = [IsAuthenticated]
@@ -1614,4 +1626,3 @@ DISPLAY ALL REQUESTS
 #         response = requests.post(url, json=payload)
 #         print(response.text)
 #         return response.text
-
