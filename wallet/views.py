@@ -1181,9 +1181,9 @@ class CreateWalletPassword(APIView):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             password = serializer.validated_data['password']
-            wallet = Wallets.objects.get(username=username)
-            wallet.password = make_password(password)
-            wallet.save()
+            userinfo = UserInfo.objects.get(username=username)
+            userinfo.password = make_password(password)
+            userinfo.save()
             return redirect(f"https://ll04-finance-dowell.github.io/100088-dowellwallet/?session_id={session_id}")
         else:
             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)

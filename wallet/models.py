@@ -11,9 +11,6 @@ class Wallets(models.Model):
     account_no = models.CharField(max_length=20, null=True, default="")
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     currency = models.CharField(max_length=100)
-    password = models.CharField(
-        max_length=4, null=True
-    )  # Add a new field for wallet password
 
     def save(self, *args, **kwargs):
         if not self.account_no:
@@ -29,6 +26,9 @@ class Wallets(models.Model):
 class UserInfo(models.Model):
     username = models.CharField(max_length=100)
     email = models.CharField(max_length=100, blank=True, null=True)
+    password = models.CharField(
+        max_length=4, null=True
+    )  # Add a new field for wallet password
 
     def __str__(self):
         return self.username
