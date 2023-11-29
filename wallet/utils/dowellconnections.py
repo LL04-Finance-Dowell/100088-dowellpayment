@@ -185,8 +185,9 @@ def UpdateUserInfo(username, wallet_password):
     return json_data
 
 
-def GetUserTransaction(field):
+def GetUserTransaction(field,command):
     print("field",field)
+    print("command",command)
     headers = {
         "content-type": "application/json",
     }
@@ -200,7 +201,7 @@ def GetUserTransaction(field):
         "document": "WalletTransactions",
         "team_member_ID": "1257001",
         "function_ID": "ABCDE",
-        "command": "fetch",
+        "command": command,
         "field": field,
         "update_field": {},
         "platform": "bangalore",
