@@ -69,11 +69,14 @@ from .utils.dowellconnections import (
     GetUserWallet,
     CreateUserWallet,
     CreateUserInfo,
+    UpdateUserInfo,
     GetUserTransaction,
     CreateUserTransaction,
     updateUserWallet,
     GetUserInfo,
     updateUserTransaction,
+    CreatePayViaWallet,
+    GetPayViaWallet,
 )
 from dotenv import load_dotenv
 
@@ -1055,14 +1058,14 @@ class PaymentRequestView(APIView):
 
             unique_id = uuid.uuid4()
             initialization_id = str(unique_id)
-
-            payment = PaymentInitialazation.objects.create(
-                price=price,
-                currency=currency,
-                callback_url=callback_url,
-                initialization_id=initialization_id,
-            )
-            payment.save()
+            payment = CreatePayViaWallet(price,currency,callback_url,initialization_id)
+            # payment = PaymentInitialazation.objects.create(
+            #     price=price,
+            #     currency=currency,
+            #     callback_url=callback_url,
+            #     initialization_id=initialization_id,
+            # )
+            # payment.save()
             payment_info = {
                 "price": price,
             }
@@ -1075,48 +1078,52 @@ class PaymentRequestView(APIView):
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@method_decorator(user_is_authenticated, name='dispatch')
+# @method_decorator(user_is_authenticated, name='dispatch')
 class PaymentAuthoriazationView(APIView):
     serializer_class = PaymentAuthorizationSerializer
     def post(self, request,*args, **kwargs):
-        username = kwargs.get('username')
-        email = kwargs.get('email')
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
         
             initialization_id = serializer.validated_data.get("initialization_id")
-            user_email = serializer.validated_data.get('email')
+            # user_email = serializer.validated_data.get('email')
             wallet_password = serializer.validated_data.get('wallet_password')
-
+            field = {"wallet_password":f"{wallet_password}"}
+            user_wallet_pass = GetUserInfo(field)
             
+            username = user_wallet_pass["data"]["username"]
+            email = user_wallet_pass["data"]["email"]
+
             try:
-                payment_initialization = PaymentInitialazation.objects.get(
-                    initialization_id=initialization_id
-                )
-                price = Decimal(payment_initialization.price)
-                currency = payment_initialization.currency
-                callback_url = payment_initialization.callback_url
+                pay_initializaton_details = GetPayViaWallet(initialization_id)
+                
+                price = pay_initializaton_details["data"]["price"]
+                currency = pay_initializaton_details["data"]["currency"]
+                callback_url = pay_initializaton_details["data"]["callback_url"]
+            
+                get_wallet = GetUserWallet(username)
+                balance = get_wallet["data"][0]["balance"]
 
-                user_wallet = Wallets.objects.get(username=username)
-                user_balance = user_wallet.balance
-
-                if user_balance >= price:
+                if balance >= float(price):
+                    
                     # Deduct the amount from the user's wallet
-                    user_wallet.balance -= price
-                    user_wallet.save()
-
+                    updated_balance = balance - float(price)
+                    update_wallet = updateUserWallet(username, updated_balance)
+                    
                     # Create a new Transaction entry
-                    new_transaction = Transactions.objects.create(
-                        username=username,
-                        email=email,
-                        transaction_type="Dowell payment",
-                        status="completed",
-                        amount=price,
-                        payment_id=payment_initialization,
-                        session_id='',
-                    )
+                    today = date.today()
+                    transaction = CreateUserTransaction(
+                    username,
+                    email,
+                    price,
+                    initialization_id,
+                    "",
+                    today,
+                    transaction_type="Dowell payment",
+                    status="completed",
+                )
 
-                    redirect_url = f"{callback_url}?id={payment_initialization}"
+                    redirect_url = f"{callback_url}?id={initialization_id}"
                     return Response(
                         {"redirect_url": redirect_url}, status=status.HTTP_200_OK
                     )
@@ -1126,16 +1133,16 @@ class PaymentAuthoriazationView(APIView):
                         status=status.HTTP_400_BAD_REQUEST,
                     )
 
-            except PaymentInitialazation.DoesNotExist:
+            except:
                 return Response(
                     {"message": "Invalid payment initialization ID"},
                     status=status.HTTP_404_NOT_FOUND,
                 )
-            except Wallets.DoesNotExist:
-                return Response(
-                    {"message": "User wallet not found"},
-                    status=status.HTTP_404_NOT_FOUND,
-                )
+            # except:
+            #     return Response(
+            #         {"message": "User wallet not found"},
+            #         status=status.HTTP_404_NOT_FOUND,
+            #     )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -1144,9 +1151,11 @@ class PaymentVerificationView(APIView):
         data = request.data
         id = data["id"]
         try:
-            obj = Transaction.objects.get(payment_id=id)
-            print(obj)
-            if obj.status == "completed":
+            # obj = Transaction.objects.get(payment_id=id)
+            # print(obj)
+            field = {"payment_id": f"{id}"}
+            transaction = GetUserTransaction(field)
+            if transaction["data"][0]["status"] == "completed":
                 return Response(
                     {"success": True, "status": "completed"}, status=status.HTTP_200_OK
                 )
@@ -1172,10 +1181,8 @@ class CreateWalletPassword(APIView):
         session_id=kwargs.get('session_id')
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            password = serializer.validated_data['password']
-            userinfo = UserInfo.objects.get(username=username)
-            userinfo.password = make_password(password)
-            userinfo.save()
+            password = serializer.validated_data['wallet_password']
+            update_user_pass = UpdateUserInfo(username,password)
             return redirect(f"https://ll04-finance-dowell.github.io/100088-dowellwallet/?session_id={session_id}")
         else:
             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)

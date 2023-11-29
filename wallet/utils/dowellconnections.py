@@ -129,7 +129,7 @@ def CreateUserInfo(username, email):
     return json_data
 
 
-def GetUserInfo(username):
+def GetUserInfo(field):
     headers = {
         "content-type": "application/json",
     }
@@ -144,9 +144,7 @@ def GetUserInfo(username):
         "team_member_ID": "1258001",
         "function_ID": "ABCDE",
         "command": "find",
-        "field": {
-            "username": f"{username}",
-        },
+        "field": field,
         "update_field": {},
         "platform": "bangalore",
     }
@@ -278,3 +276,65 @@ def updateUserTransaction(field,update_field):
     print(json_data)
     return json_data
 
+
+
+def CreatePayViaWallet(price, currency,callback_url,initialization_id):
+    headers = {
+        "content-type": "application/json",
+    }
+
+    url = "http://uxlivinglab.pythonanywhere.com/"
+
+    data = {
+        "cluster": "dowellpayment",
+        "database": "dowellpayment",
+        "collection": "WalletPayInitializations",
+        "document": "WalletPayInitializations",
+        "team_member_ID": "1259001",
+        "function_ID": "ABCDE",
+        "command": "insert",
+        "field": {
+            "price": price,
+            "currency": f"{currency}",
+            "callback_url": f"{callback_url}",
+            "initialization_id":f"{initialization_id}"
+        },
+        "update_field": {},
+        "platform": "bangalore",
+    }
+
+    response = requests.post(url, json=data, headers=headers)
+    json_data = json.loads(response.json())
+    print("---wallet-payment-initializing-----")
+    print(json_data)
+    return json_data
+
+
+
+def GetPayViaWallet(initialization_id):
+    headers = {
+        "content-type": "application/json",
+    }
+
+    url = "http://uxlivinglab.pythonanywhere.com/"
+
+    data = {
+        "cluster": "dowellpayment",
+        "database": "dowellpayment",
+        "collection": "WalletPayInitializations",
+        "document": "WalletPayInitializations",
+        "team_member_ID": "1259001",
+        "function_ID": "ABCDE",
+        "command": "find",
+        "field": {
+            "initialization_id":f"{initialization_id}"
+        },
+        "update_field": {},
+        "platform": "bangalore",
+    }
+
+    response = requests.post(url, json=data, headers=headers)
+    json_data = json.loads(response.json())
+    print("---get-payment-ini-----")
+    print(json_data)
+    return json_data
