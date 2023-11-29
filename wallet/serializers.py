@@ -108,7 +108,5 @@ class PaymentAuthorizationSerializer(serializers.Serializer):
     wallet_password = serializers.CharField()
     initialization_id = serializers.CharField()
 
-class WalletPasswordSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Wallets
-        fields = ('password',)
+class WalletPasswordSerializer(serializers.Serializer):
+    wallet_password = serializers.CharField()
