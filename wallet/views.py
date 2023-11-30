@@ -109,11 +109,11 @@ class WalletDashboard(APIView):
                 create_wallet = CreateUserWallet(username, email)
                 create_user_info = CreateUserInfo(username, email)
                 return redirect(
-                    f"http://localhost:3000/100088-dowellwallet/?session_id={session_id}"
+                    f"http://localhost:3000/wallet-password?session_id={session_id}"
                 )
             print("----yes2------")
             return redirect(
-                f"http://localhost:3000/100088-dowellwallet/?session_id={session_id}"
+                f"http://localhost:3000/?session_id={session_id}"
             )
 
         except:
@@ -718,14 +718,14 @@ class PaypalPaymentCallback(APIView):
 
             try:
                 if response["name"] == "RESOURCE_NOT_FOUND":
-                    redirect_url = f"http://localhost:3000/100088-dowellwallet/?session_id={sessionID}"
+                    redirect_url = f"http://localhost:3000/?session_id={sessionID}"
                     response = HttpResponseRedirect(redirect_url)
                     return response
             except:
                 pass
             try:
                 if response["error"] == "invalid_client":
-                    redirect_url = f"http://localhost:3000/100088-dowellwallet/?session_id={sessionID}"
+                    redirect_url = f"http://localhost:3000?session_id={sessionID}"
                     response = HttpResponseRedirect(redirect_url)
                     return response
             except:
@@ -744,13 +744,13 @@ class PaypalPaymentCallback(APIView):
                     self.send_transaction_email(username, email, amount)
 
             # redirect to frontend url page
-            redirect_url = f"http://localhost:3000/100088-dowellwallet/?session_id={sessionID}"
+            redirect_url = f"http://localhost:3000/?session_id={sessionID}"
             response = HttpResponseRedirect(redirect_url)
             return response
 
         except Exception as e:
             print("error", e)
-            redirect_url = f"http://localhost:3000/100088-dowellwallet/?session_id={sessionID}"
+            redirect_url = f"http://localhost:3000/?session_id={sessionID}"
             response = HttpResponseRedirect(redirect_url)
             return response
 
@@ -837,12 +837,12 @@ class StripePaymentCallback(APIView):
                 self.send_transaction_email(username, email, amount)
 
             # redirect to frontend url page
-            redirect_url = f"http://localhost:3000/100088-dowellwallet/?session_id={sessionID}"
+            redirect_url = f"http://localhost:3000/?session_id={sessionID}"
             response = HttpResponseRedirect(redirect_url)
             return response
         except Exception as e:
             print("error", e)
-            redirect_url = f"http://localhost:3000/100088-dowellwallet/?session_id={sessionID}"
+            redirect_url = f"http://localhost:3000/?session_id={sessionID}"
             response = HttpResponseRedirect(redirect_url)
             return response
 
@@ -1200,7 +1200,7 @@ class CreateWalletPassword(APIView):
         if serializer.is_valid():
             password = serializer.validated_data['wallet_password']
             update_user_pass = UpdateUserInfo(username,password)
-            return redirect(f"https://ll04-finance-dowell.github.io/100088-dowellwallet/?session_id={session_id}")
+            return redirect(f"http://localhost:3000/?session_id={session_id}")
         else:
             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
