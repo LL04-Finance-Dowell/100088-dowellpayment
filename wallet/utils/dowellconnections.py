@@ -27,7 +27,7 @@ def GetUserWallet(username):
     response = requests.post(url, json=data, headers=headers)
     json_data = json.loads(response.json())
     print("---geting-user-wallet")
-    print(json_data)
+    # print(json_data)
     return json_data
 
 
@@ -63,7 +63,7 @@ def CreateUserWallet(username, email, balance=0, currency="usd"):
     response = requests.post(url, json=data, headers=headers)
     json_data = json.loads(response.json())
     print("----creating-user-wallet------")
-    print(json_data)
+    # print(json_data)
     return json_data
 
 def updateUserWallet(username,balance):
@@ -93,7 +93,7 @@ def updateUserWallet(username,balance):
     response = requests.post(url, json=data, headers=headers)
     json_data = json.loads(response.json())
     print("---updating-user-wallet")
-    print(json_data)
+    # print(json_data)
     return json_data
 
 
@@ -125,7 +125,7 @@ def CreateUserInfo(username, email):
     response = requests.post(url, json=data, headers=headers)
     json_data = json.loads(response.json())
     print("---creating-user-info-----")
-    print(json_data)
+    # print(json_data)
     return json_data
 
 
@@ -152,7 +152,7 @@ def GetUserInfo(field):
     response = requests.post(url, json=data, headers=headers)
     json_data = json.loads(response.json())
     print("---getting-user-info-----")
-    print(json_data)
+    # print(json_data)
     return json_data
 
 
@@ -181,7 +181,7 @@ def UpdateUserInfo(username, wallet_password):
     response = requests.post(url, json=data, headers=headers)
     json_data = json.loads(response.json())
     print("---updating-user-info-----")
-    print(json_data)
+    # print(json_data)
     return json_data
 
 
@@ -209,7 +209,7 @@ def GetUserTransaction(field,command):
     response = requests.post(url, json=data, headers=headers)
     json_data = json.loads(response.json())
     print("---geting-user-transactions")
-    print(json_data)
+    # print(json_data)
     return json_data
 
 
@@ -247,7 +247,7 @@ def CreateUserTransaction(
     response = requests.post(url, json=data, headers=headers)
     json_data = json.loads(response.json())
     print("---creating-transacton-info-----")
-    print(json_data)
+    # print(json_data)
     return json_data
 
 
@@ -274,7 +274,7 @@ def updateUserTransaction(field,update_field):
     response = requests.post(url, json=data, headers=headers)
     json_data = json.loads(response.json())
     print("---updating-user-transaction")
-    print(json_data)
+    # print(json_data)
     return json_data
 
 
@@ -307,7 +307,7 @@ def CreatePayViaWallet(price, currency,callback_url,initialization_id):
     response = requests.post(url, json=data, headers=headers)
     json_data = json.loads(response.json())
     print("---wallet-payment-initializing-----")
-    print(json_data)
+    # print(json_data)
     return json_data
 
 
@@ -337,5 +337,5 @@ def GetPayViaWallet(initialization_id):
     response = requests.post(url, json=data, headers=headers)
     json_data = json.loads(response.json())
     print("---get-payment-ini-----")
-    print(json_data)
+    # print(json_data)
     return json_data
