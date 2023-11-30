@@ -92,7 +92,7 @@ else:
     dowell_paypal_url = "https://api-m.sandbox.paypal.com"
 
 
-@method_decorator(user_is_authenticated, name="dispatch")
+@method_decorator(user_is_authenticated, name="get")
 class WalletDashboard(APIView):
     def get(self, request, *args, **kwargs):
         username = kwargs.get("username")

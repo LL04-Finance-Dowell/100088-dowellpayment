@@ -27,7 +27,7 @@ def user_is_authenticated(view_func):
                 body = {"session_id": session_id}
                 headers = {"Content-Type": "application/json"}
                 res = requests.post(url, data=json.dumps(body), headers=headers).json()
-
+                print("res",res)
                 username = res["userinfo"]["username"]
                 email = res["userinfo"]["email"]
                 firstname = res["userinfo"]["first_name"]
@@ -37,6 +37,7 @@ def user_is_authenticated(view_func):
 
                 # Call the original view function with the username and email
                 
+
                 return view_func(
                     request,
                     username=username,
@@ -51,7 +52,8 @@ def user_is_authenticated(view_func):
                 )
             except Exception as e:
                 print('error',e)
-                redirect_url = "https://100014.pythonanywhere.com?redirect_url=http://127.0.0.1:8000/api/wallet/v1/wallet-dashboard/"
+                redirect_url = "https://100014.pythonanywhere.com?redirect_url=http://localhost:3000/100088-dowellwallet/"
+                # redirect_url = "https://100014.pythonanywhere.com?redirect_url=http://127.0.0.1:8000/api/wallet/v1/wallet-dashboard/"
                 return redirect(redirect_url)
 
     return wrapper
