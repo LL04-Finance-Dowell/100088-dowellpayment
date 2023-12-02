@@ -52,7 +52,7 @@ def user_is_authenticated(view_func):
                 )
             except Exception as e:
                 print('error',e)
-                redirect_url = "https://100014.pythonanywhere.com?redirect_url=http://localhost:3000/100088-dowellwallet/"
+                redirect_url = "https://100014.pythonanywhere.com?redirect_url=http://localhost:3000/"
                 # redirect_url = "https://100014.pythonanywhere.com?redirect_url=http://127.0.0.1:8000/api/wallet/v1/wallet-dashboard/"
                 return redirect(redirect_url)
 

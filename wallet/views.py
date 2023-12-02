@@ -112,8 +112,12 @@ class WalletDashboard(APIView):
                     f"http://localhost:3000/wallet-password?session_id={session_id}"
                 )
             print("----yes2------")
+            field = {"username":username}
+            get_userinfo = GetUserInfo(field)["data"]
+
+            print("user info exist",get_userinfo)
             return redirect(
-                f"http://localhost:3000/?session_id={session_id}"
+                f"http://localhost:3000?session_id={session_id}"
             )
 
         except:
@@ -502,6 +506,8 @@ class WalletDetailView(APIView):
         user_data = {"username": username, "email": email}
         field = {"username": f"{username}"}
         command = "fetch"
+        user_info = GetUserInfo(field)["data"]
+        print(user_info)
         transactions = GetUserTransaction(field,command)["data"]
         data = {
             "user": user_data,  # Include user data in the response
@@ -896,29 +902,32 @@ class TransactionHistoryView(APIView):
         username = kwargs.get("username")
         email = kwargs.get('email')
         print(username)
+        print(email)
         # Retrieve the user's information
         try:
-            field = {"username":f"{username}"}
+            field = {"username": f"{username}"}
             command = "fetch"
-            transactions = GetUserTransaction(field,command)["data"]
+            transactions = GetUserTransaction(field, command)["data"]
             print(transactions)
 
             # Format the transaction history into a statement (you can customize the format)
             statement = "Transaction History:\n\n"
             for transaction in transactions:
-                statement += f"Transaction Type: {transaction.transaction_type}\n"
-                statement += f"Amount: ${transaction.amount}\n"
-                statement += f"Status: {transaction.status}\n"
-                statement += f"Timestamp: {transaction.date}\n\n"
+                statement += f"Transaction Type: {transaction['transaction_type']}\n"
+                statement += f"Amount: ${transaction['amount']}\n"
+                statement += f"Status: {transaction['status']}\n"
+                statement += f"Timestamp: {transaction['date']}\n\n"
+
+            print("Reached statement preparation")
 
             # Send the statement to the user's email using your email API
             user_name = username
+            print("Reached email preparation")
             user_email = email
-            amount = sum(
-                transaction.amount for transaction in transactions
-            )  # Total amount in the statement
+            print("User email:", user_email)
             email_api_url = f"https://100085.pythonanywhere.com/api/email/"
-            print("statement",statement)
+            print("Reached email API")
+            print("Statement:", statement)
             email_content = """
                 <!DOCTYPE html>
                 <html lang="en">
@@ -948,6 +957,7 @@ class TransactionHistoryView(APIView):
             }
 
             response = requests.post(email_api_url, json=payload)
+            print("sent email")
             print("mail response",response)
             if response.status_code == 200:
                 return Response(
@@ -1079,7 +1089,7 @@ class PaymentRequestView(APIView):
                 "price": price,
             }
             # Redirect user to login page with payment ID as request params
-            redirect_url = f"https://dowell-wallet.vercel.app/payment-login/?initialization_id={initialization_id}&price={price}"
+            redirect_url = f"http://localhost:3000/payment-login/?initialization_id={initialization_id}&price={price}"
 
             return Response(
                 {"redirect_url": redirect_url, "payment_info": payment_info},
@@ -1095,6 +1105,7 @@ class PaymentAuthoriazationView(APIView):
         if serializer.is_valid():
         
             initialization_id = serializer.validated_data.get("initialization_id")
+            print("gotten id" + initialization_id)
             # user_email = serializer.validated_data.get('email')
             wallet_password = serializer.validated_data.get('wallet_password')
             field = {"wallet_password":f"{wallet_password}"}
@@ -1193,16 +1204,26 @@ WALLET PASSWORD
 class CreateWalletPassword(APIView):
     serializer_class = WalletPasswordSerializer
 
-    def post(self,request,*args, **kwargs):
+    def post(self, request, *args, **kwargs):
         username = kwargs.get('username')
-        session_id=kwargs.get('session_id')
+        session_id = kwargs.get('session_id')
         serializer = self.serializer_class(data=request.data)
+
         if serializer.is_valid():
             password = serializer.validated_data['wallet_password']
-            update_user_pass = UpdateUserInfo(username,password)
-            return redirect(f"http://localhost:3000/?session_id={session_id}")
+            update_user_pass = UpdateUserInfo(username, password)
+            redirect_url = f'http://localhost:3000/?session_id={session_id}'
+            
+            # Craft your response
+            data = {
+                'success': True,
+                'redirect_url': redirect_url,
+                'message': 'Wallet password updated successfully.'
+            }
+
+            return Response(data, status=status.HTTP_200_OK)
         else:
-            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 

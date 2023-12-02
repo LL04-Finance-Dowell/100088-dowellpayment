@@ -7,7 +7,7 @@ urlpatterns = [
     path("wallet-password",views.CreateWalletPassword.as_view()),
     path("wallet_detail/", views.WalletDetailView.as_view(), name="wallet_detail"),
     path(
-        "transactions-history",
+        "transactions-history/",
         views.TransactionHistoryView.as_view(),
         name="transactions-history",
     ),
