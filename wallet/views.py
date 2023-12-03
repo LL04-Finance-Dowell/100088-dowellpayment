@@ -1097,6 +1097,7 @@ class PaymentRequestView(APIView):
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 # @method_decorator(user_is_authenticated, name='dispatch')
 class PaymentAuthoriazationView(APIView):
     serializer_class = PaymentAuthorizationSerializer
