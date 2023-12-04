@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate, login, logout
+from rest_framework_simplejwt.tokens import AccessToken
 from .serializers import (
     UserRegistrationSerializer,
     PaymentAuthorizationSerializer,
@@ -21,6 +22,8 @@ from django.contrib.auth.models import User
 from requests.exceptions import RequestException
 import requests
 import random
+import jwt
+from datetime import datetime, timedelta
 from django.contrib.auth.hashers import make_password, check_password
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
@@ -55,6 +58,9 @@ import uuid
 import secrets
 from django.utils import timezone
 import stripe
+from rest_framework.decorators import authentication_classes, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from decimal import Decimal
 import os
@@ -123,6 +129,49 @@ class WalletDashboard(APIView):
         except:
             print("something went wrong")
             pass
+
+@method_decorator(user_is_authenticated, name="dispatch")
+class WalletLogin(APIView):
+    def post(self, request, *args, **kwargs):
+        username = kwargs.get("username")
+        wallet_password = request.data.get("wallet_password")
+        
+        try:
+            field = {"username": f"{username}"}
+            user_info = GetUserInfo(field)["data"]
+            print(user_info)
+            print(wallet_password)
+            user_id = user_info.get('_id')
+            print(user_id)
+            
+            if 'wallet_password' in user_info and user_info['wallet_password'] == wallet_password:
+                # Create a payload without 'id' for the access token
+                payload = {
+                    'id':user_id,
+                    'username': user_info.get('username'),
+                    'email': user_info.get('email'),
+                    # Add other necessary attributes based on the structure of user_info
+                    'exp': datetime.utcnow() + timedelta(days=1)  # Set token expiration time (e.g., 1 day from now)
+                }
+                
+                access_token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
+                decoded_token = jwt.decode(access_token, settings.SECRET_KEY, algorithms=['HS256'])
+                print(decoded_token)
+                return Response({'token': access_token})
+            else:
+                return Response({'error': 'Invalid credentials', "userinfo": user_info}, status=401)
+        except UserInfo.DoesNotExist:
+            return Response({'error': 'User not found'}, status=404)
+
+
+#  Check if the user information matches the provided credentials
+#             if user_info and user_info.get('wallet_password') == wallet_password:
+#                 # Manipulate user_info to include 'id' attribute expected by Simple JWT
+#                 user_info['id'] = user_info.pop('_id')
+
+#                 # If authentication succeeds, create a token
+#                 access_token = AccessToken.for_user(user_info)
+#                 return Response({'token': str(access_token)})
 
 
 class LoginView(APIView):
@@ -499,6 +548,7 @@ class OTPVerificationView(APIView):
 
 @method_decorator(user_is_authenticated, name="dispatch")
 class WalletDetailView(APIView):
+    permission_classes = (IsAuthenticated)
     def get(self, request, *args, **kwargs):
         username = kwargs.get("username")
         email = kwargs.get("email")
@@ -974,9 +1024,6 @@ class TransactionHistoryView(APIView):
                 {"message": "User not found"},
                 status=status.HTTP_404_NOT_FOUND,
             )
-
-
-
 
 
 
