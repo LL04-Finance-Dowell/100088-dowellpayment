@@ -70,7 +70,7 @@ import uuid
 import json
 import requests
 from django.utils.decorators import method_decorator
-from .utils.decorator import user_is_authenticated
+from .utils.decorator import user_is_authenticated, jwt_decode
 from .utils.dowellconnections import (
     GetUserWallet,
     CreateUserWallet,
@@ -139,24 +139,19 @@ class WalletLogin(APIView):
         try:
             field = {"username": f"{username}"}
             user_info = GetUserInfo(field)["data"]
-            print(user_info)
-            print(wallet_password)
             user_id = user_info.get('_id')
-            print(user_id)
-            
             if 'wallet_password' in user_info and user_info['wallet_password'] == wallet_password:
                 # Create a payload without 'id' for the access token
                 payload = {
                     'id':user_id,
                     'username': user_info.get('username'),
                     'email': user_info.get('email'),
+                    "token_type": "access",
                     # Add other necessary attributes based on the structure of user_info
                     'exp': datetime.utcnow() + timedelta(days=1)  # Set token expiration time (e.g., 1 day from now)
                 }
-                
                 access_token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
                 decoded_token = jwt.decode(access_token, settings.SECRET_KEY, algorithms=['HS256'])
-                print(decoded_token)
                 return Response({'token': access_token})
             else:
                 return Response({'error': 'Invalid credentials', "userinfo": user_info}, status=401)
@@ -546,10 +541,11 @@ class OTPVerificationView(APIView):
             )
 
 
-@method_decorator(user_is_authenticated, name="dispatch")
+@method_decorator(jwt_decode, name="dispatch")
 class WalletDetailView(APIView):
-    permission_classes = (IsAuthenticated)
+
     def get(self, request, *args, **kwargs):
+    
         username = kwargs.get("username")
         email = kwargs.get("email")
         wallets = GetUserWallet(username)["data"]
@@ -557,16 +553,15 @@ class WalletDetailView(APIView):
         field = {"username": f"{username}"}
         command = "fetch"
         user_info = GetUserInfo(field)["data"]
-        print(user_info)
         transactions = GetUserTransaction(field,command)["data"]
         data = {
             "user": user_data,  # Include user data in the response
             "wallet": wallets,
             "transactions": transactions,
         }
-
+        
         return Response(data, status=status.HTTP_200_OK)
-
+       
 
 
 @method_decorator(user_is_authenticated, name="dispatch")
