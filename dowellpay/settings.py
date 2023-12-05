@@ -209,6 +209,7 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOW_HEADERS = [
     # Add other headers as needed
     'content-type',
+    'Authorization',
     'accept',
     'origin',
     'mode',

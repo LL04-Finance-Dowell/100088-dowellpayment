@@ -98,7 +98,7 @@ else:
     dowell_paypal_url = "https://api-m.sandbox.paypal.com"
 
 
-@method_decorator(user_is_authenticated, name="get")
+@method_decorator(jwt_decode, name="get")
 class WalletDashboard(APIView):
     def get(self, request, *args, **kwargs):
         username = kwargs.get("username")
@@ -152,7 +152,7 @@ class WalletLogin(APIView):
                 }
                 access_token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
                 decoded_token = jwt.decode(access_token, settings.SECRET_KEY, algorithms=['HS256'])
-                return Response({'token': access_token})
+                return Response({'access_token': access_token})
             else:
                 return Response({'error': 'Invalid credentials', "userinfo": user_info}, status=401)
         except UserInfo.DoesNotExist:
@@ -564,7 +564,7 @@ class WalletDetailView(APIView):
        
 
 
-@method_decorator(user_is_authenticated, name="dispatch")
+@method_decorator(jwt_decode, name="dispatch")
 class PaypalPayment(APIView):
     def post(self, request,*args, **kwargs):
         username = kwargs.get("username")
@@ -666,7 +666,7 @@ class PaypalPayment(APIView):
             )
 
 
-@method_decorator(user_is_authenticated, name="dispatch")
+@method_decorator(jwt_decode, name="dispatch")
 class StripePayment(APIView):
     
 
@@ -742,7 +742,7 @@ class StripePayment(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-@method_decorator(user_is_authenticated, name="dispatch")
+@method_decorator(jwt_decode, name="dispatch")
 class PaypalPaymentCallback(APIView):
     def get(self, request,*args, **kwargs):
         username = kwargs.get("username")
@@ -843,7 +843,7 @@ class PaypalPaymentCallback(APIView):
 
 
 # Stripe verify Payment classs
-@method_decorator(user_is_authenticated, name="dispatch")
+@method_decorator(jwt_decode, name="dispatch")
 class StripePaymentCallback(APIView):
     def get(self, request, *args, **kwargs):
         username = kwargs.get("username")
@@ -941,7 +941,7 @@ GET TRANSACTIONS HISTORY
 """
 
 
-@method_decorator(user_is_authenticated, name="dispatch")
+@method_decorator(jwt_decode, name="dispatch")
 class TransactionHistoryView(APIView):
     def get(self, request, *args, **kwargs):
         username = kwargs.get("username")
@@ -1028,7 +1028,7 @@ USERPROFILE
 
 """
 
-@method_decorator(user_is_authenticated, name='dispatch')
+@method_decorator(jwt_decode, name="dispatch")
 class UserProfileDetail(APIView):
     def get(self, request,*args, **kwargs):
     
@@ -1243,7 +1243,7 @@ class PaymentVerificationView(APIView):
 """
 WALLET PASSWORD
 """
-@method_decorator(user_is_authenticated, name='dispatch')
+@method_decorator(jwt_decode, name="dispatch")
 class CreateWalletPassword(APIView):
     serializer_class = WalletPasswordSerializer
 
