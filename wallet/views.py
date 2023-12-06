@@ -291,9 +291,9 @@ class PasswordResetRequestView(APIView):
                 </body>
                 </html>
             """
-        email_content = EMAIL_FROM_WEBSITE.format(name=name, otp_key=otp_key)
+        email_content = EMAIL_FROM_WEBSITE.format(name=username, otp_key=otp_key)
         payload = {
-            "toname": name,
+            "toname": username,
             "toemail": email,
             "subject": "Password Reset",
             "email_content": email_content,
