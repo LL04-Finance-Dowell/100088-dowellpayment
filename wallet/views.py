@@ -206,22 +206,16 @@ class LogoutView(APIView):
             {"message": "Not logged in"}, status=status.HTTP_401_UNAUTHORIZED
         )
 
-
+@method_decorator(jwt_decode,name="dispatch")
 class PasswordResetRequestView(APIView):
-    def post(self, request):
-        data = request.data
-        email = data["email"]
+    def post(self, request,*args, **kwargs):
+        username = kwargs.get('username')
+        email = kwargs.get('email')
         print(email)
         try:
-            user = User.objects.get(email=email)
-            # Generate a TOTP key for the user
-            totp_key = self.generate_totp_key()
-            # Save the TOTP key to the user's profile
-            user_profile, created = UserProfile.objects.get_or_create(user=user)
-            user_profile.totp_key = totp_key
-            user_profile.save()
-            # Send the TOTP key to the user via email or other communication method
-            self.send_password_reset_email(user, totp_key)
+            otp_key = self.generate_totp_key()
+            update_user_otp = UpdateUserInfo(username, otp_key)
+            self.send_password_reset_email(email,username, otp_key)
 
             return Response({"message": "TOTP key sent to your email"})
         except User.DoesNotExist:
@@ -229,10 +223,10 @@ class PasswordResetRequestView(APIView):
                 {"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
             )
 
-    def send_password_reset_email(self, user, totp_key):
+    def send_password_reset_email(self, username,email, totp_key):
         # API endpoint to send the email
         url = f"https://100085.pythonanywhere.com/api/email/"
-        name = user.username
+        name = username
         EMAIL_FROM_WEBSITE = """
                 <!DOCTYPE html>
                 <html lang="en">
@@ -257,7 +251,7 @@ class PasswordResetRequestView(APIView):
         email_content = EMAIL_FROM_WEBSITE.format(name=name, totp_key=totp_key)
         payload = {
             "toname": name,
-            "toemail": user.email,
+            "toemail": email,
             "subject": "Password Reset",
             "email_content": email_content,
         }
@@ -278,29 +272,24 @@ class PasswordResetRequestView(APIView):
         print(totp_key)
         return totp_key
 
-
+@method_decorator(jwt_decode,name="dispatch")
 class ResetPasswordOtpVerify(APIView):
-    def post(self, request):
-        data = request.data
-        email = data["email"]
-        otp = data["otp"]
+    def post(self,request,*args, **kwargs):
+        username = kwargs.get("username")
+        email = kwargs.get("email")
+        otp = request.data.get("otp")
+        
         try:
-            user = User.objects.get(email=email)
-        except User.DoesNotExist:
-            return Response(
-                {"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
-            )
-        try:
-            user_profile = UserProfile.objects.get(user=user)
-        except UserProfile.DoesNotExist:
-            return Response(
-                {"error": "User profile not found"}, status=status.HTTP_404_NOT_FOUND
-            )
-        stored_otp_key = user_profile.totp_key
-        if otp == stored_otp_key:
-            new_password = data["new_password"]
-            user.set_password(new_password)
-            user.save()
+            field = {"username": f"{username}"}
+            command = "fetch"
+            user_info = GetUserInfo(field)["data"]
+            user_otp = user_info.get("otp")
+        except:
+            return Response({"Success":True})
+        if otp == user_otp:
+            new_password = request.data.get("new_password")
+            password = new_password
+            set_new_password = UpdateUserInfo(username,password)
             return Response(
                 {"message": "Password reset successful"}, status=status.HTTP_200_OK
             )
