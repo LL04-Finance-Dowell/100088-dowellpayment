@@ -85,6 +85,10 @@ from .utils.dowellconnections import (
     CreatePayViaWallet,
     GetPayViaWallet,
 )
+
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import check_password
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -134,13 +138,44 @@ class WalletDashboard(APIView):
 class WalletLogin(APIView):
     def post(self, request, *args, **kwargs):
         username = kwargs.get("username")
+        email = kwargs.get("email")
+
         wallet_password = request.data.get("wallet_password")
         
         try:
+            wallets = GetUserWallet(username)
+
+            if wallets["data"] == []:
+                print("----creating a new user wallet ------")
+                create_wallet = CreateUserWallet(username, email)
+
+                # Hash the password
+                hashed_password = make_password(wallet_password)
+                create_user_info = CreateUserInfo(username, email,hashed_password)
+
+                payload = {
+                    'id':f"{username}",
+                    'username': f"{username}",
+                    'email': f"{email}",
+                    "token_type": "access",
+                    'exp': datetime.utcnow() + timedelta(days=1)  
+                    }
+                
+                access_token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
+                return Response({'access_token': access_token})
+
+
+
             field = {"username": f"{username}"}
             user_info = GetUserInfo(field)["data"]
+            print("user_info",user_info)
             user_id = user_info.get('_id')
-            if 'wallet_password' in user_info and user_info['wallet_password'] == wallet_password:
+
+            # Check if the input password matches the stored hashed password
+            password_matches = check_password(wallet_password, user_info['wallet_password'])
+            print("password_matches",password_matches)
+
+            if 'wallet_password' in user_info and password_matches:
                 # Create a payload without 'id' for the access token
                 payload = {
                     'id':user_id,
@@ -1231,7 +1266,41 @@ class PaymentVerificationView(APIView):
 
 """
 WALLET PASSWORD
+
 """
+
+@method_decorator(user_is_authenticated, name='dispatch')
+class SetUpWalletPassword(APIView):
+    def post(self,request,*args, **kwargs):
+        
+        try:
+            username = kwargs.get('username')
+            wallet_password = request.data.get("wallet_password")
+
+            # Hash the password
+            hashed_password = make_password(wallet_password)
+            user_info = UpdateUserInfo(username, hashed_password)
+            return Response(
+                    {
+                        "success": True,
+                        "message": "password setup successfully",
+                    },
+                    status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                )
+        except Exception as e:
+            return Response(
+                    {
+                        "success": False,
+                        "error": f"{e}",
+                        "message": "something went wrong",
+                    },
+                    status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                )
+
+
+        
+
+
 @method_decorator(jwt_decode, name="dispatch")
 class CreateWalletPassword(APIView):
     serializer_class = WalletPasswordSerializer
