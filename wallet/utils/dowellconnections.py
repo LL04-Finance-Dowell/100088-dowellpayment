@@ -98,7 +98,7 @@ def updateUserWallet(username,balance):
 
 
 
-def CreateUserInfo(username, email,hashed_password):
+def CreateUserInfo(username, email,hashed_password,otp_key):
     headers = {
         "content-type": "application/json",
     }
@@ -117,6 +117,7 @@ def CreateUserInfo(username, email,hashed_password):
             "username": f"{username}",
             "email": f"{email}",
             "wallet_password": f"{hashed_password}",
+            "otp":f"{otp_key}",
         },
         "update_field": {},
         "platform": "bangalore",
@@ -156,7 +157,7 @@ def GetUserInfo(field):
     return json_data
 
 
-def UpdateUserInfo(username, hashed_password):
+def UpdateUserInfo(username, hashed_password,otp_key):
     headers = {
         "content-type": "application/json",
     }
@@ -174,7 +175,7 @@ def UpdateUserInfo(username, hashed_password):
         "field": {
             "username": f"{username}",
         },
-        "update_field": {"wallet_password": f"{hashed_password}"},
+        "update_field": {"wallet_password": f"{hashed_password}","otp":f"{otp_key}"},
         "platform": "bangalore",
     }
 

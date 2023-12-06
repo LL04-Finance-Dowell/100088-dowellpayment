@@ -241,7 +241,7 @@ class LogoutView(APIView):
             {"message": "Not logged in"}, status=status.HTTP_401_UNAUTHORIZED
         )
 
-@method_decorator(jwt_decode,name="dispatch")
+@method_decorator(user_is_authenticated, name="dispatch")
 class PasswordResetRequestView(APIView):
     def post(self, request,*args, **kwargs):
         username = kwargs.get('username')
@@ -249,8 +249,15 @@ class PasswordResetRequestView(APIView):
         print(email)
         try:
             otp_key = self.generate_totp_key()
-            update_user_otp = UpdateUserInfo(username, otp_key)
-            self.send_password_reset_email(email,username, otp_key)
+            print(otp_key)
+            field = {"username": f"{username}"}
+            command = "fetch"
+            user_info = GetUserInfo(field)["data"]
+            Wallet_password = user_info.get("wallet_password")
+            print(Wallet_password)
+            hashed_password = make_password(Wallet_password)
+            update_user_otp = UpdateUserInfo(username,otp_key,hashed_password)
+            self.send_password_reset_email(email,username,otp_key)
 
             return Response({"message": "TOTP key sent to your email"})
         except User.DoesNotExist:
@@ -258,10 +265,11 @@ class PasswordResetRequestView(APIView):
                 {"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
             )
 
-    def send_password_reset_email(self, username,email, totp_key):
+    def send_password_reset_email(self, username,email, otp_key):
         # API endpoint to send the email
         url = f"https://100085.pythonanywhere.com/api/email/"
-        name = username
+        print(username)
+        print(email)
         EMAIL_FROM_WEBSITE = """
                 <!DOCTYPE html>
                 <html lang="en">
@@ -276,14 +284,14 @@ class PasswordResetRequestView(APIView):
                         <a href="#" style="font-size: 1.2em; color: #00466a; text-decoration: none; font-weight: 600; display: block; text-align: center;">Dowell UX Living Lab Wallet</a>
                         <p style="font-size: 1.1em; text-align: center;">Dear {name}, you have requested a password reset.</p>
                         <p style="font-size: 1.1em; text-align: center;">To reset your password, click the link below:</p>
-                        <p style="font-size: 1.1em; text-align: center;">Your OTP is: {totp_key}</p>
+                        <p style="font-size: 1.1em; text-align: center;">Your OTP is: {otp_key}</p>
                         <p style="font-size: 1.1em; text-align: center;">If you did not request this password reset, you can ignore this email.</p>
                         
                     </div>
                 </body>
                 </html>
             """
-        email_content = EMAIL_FROM_WEBSITE.format(name=name, totp_key=totp_key)
+        email_content = EMAIL_FROM_WEBSITE.format(name=name, otp_key=otp_key)
         payload = {
             "toname": name,
             "toemail": email,
