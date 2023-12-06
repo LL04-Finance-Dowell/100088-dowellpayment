@@ -157,7 +157,7 @@ def GetUserInfo(field):
     return json_data
 
 
-def UpdateUserInfo(username, hashed_password,otp_key):
+def UpdateUserInfo(field, update_field):
     headers = {
         "content-type": "application/json",
     }
@@ -172,10 +172,8 @@ def UpdateUserInfo(username, hashed_password,otp_key):
         "team_member_ID": "1258001",
         "function_ID": "ABCDE",
         "command": "update",
-        "field": {
-            "username": f"{username}",
-        },
-        "update_field": {"wallet_password": f"{hashed_password}","otp":f"{otp_key}"},
+        "field": field,
+        "update_field":update_field,
         "platform": "bangalore",
     }
 

@@ -250,14 +250,10 @@ class PasswordResetRequestView(APIView):
         try:
             otp_key = self.generate_totp_key()
             print(otp_key)
-            field = {"username": f"{username}"}
-            command = "fetch"
-            user_info = GetUserInfo(field)["data"]
-            Wallet_password = user_info.get("wallet_password")
-            print(Wallet_password)
-            hashed_password = make_password(Wallet_password)
-            update_user_otp = UpdateUserInfo(username,otp_key,hashed_password)
-            self.send_password_reset_email(email,username,otp_key)
+            field ={"username":f"{username}"}
+            update_field = {"otp":f"{otp_key}"}
+            update_user_otp = UpdateUserInfo(field,update_field)
+            self.send_password_reset_email(username,email,otp_key)
 
             return Response({"message": "TOTP key sent to your email"})
         except User.DoesNotExist:
@@ -299,6 +295,7 @@ class PasswordResetRequestView(APIView):
             "email_content": email_content,
         }
         response = requests.post(url, json=payload)
+        print(response.json())
         return response.text
 
     def generate_totp_key(self):
@@ -331,8 +328,10 @@ class ResetPasswordOtpVerify(APIView):
             return Response({"Success":True})
         if otp == user_otp:
             new_password = request.data.get("new_password")
-            password = new_password
-            set_new_password = UpdateUserInfo(username,password)
+            
+            field ={"username":f"{username}"}
+            update_field = {"wallet_password":f"{new_password}"}
+            set_new_password = UpdateUserInfo(field,update_field)
             return Response(
                 {"message": "Password reset successful"}, status=status.HTTP_200_OK
             )
@@ -1287,7 +1286,9 @@ class SetUpWalletPassword(APIView):
 
             # Hash the password
             hashed_password = make_password(wallet_password)
-            user_info = UpdateUserInfo(username, hashed_password)
+            field ={"username":f"{username}"}
+            update_field = {"wallet_password":f"{hashed_password}"}
+            user_info = UpdateUserInfo(field, update_field)
             return Response(
                     {
                         "success": True,
@@ -1320,7 +1321,9 @@ class CreateWalletPassword(APIView):
 
         if serializer.is_valid():
             password = serializer.validated_data['wallet_password']
-            update_user_pass = UpdateUserInfo(username, password)
+            field = {"username":f"{username}"}
+            update_field = {"wallet_password":f"{password}"}
+            update_user_pass = UpdateUserInfo(field, update_field)
             redirect_url = f'http://localhost:3000/?session_id={session_id}'
             
             # Craft your response
