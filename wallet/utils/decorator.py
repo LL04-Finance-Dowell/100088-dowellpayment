@@ -1,6 +1,7 @@
 import json
 import requests
 from django.shortcuts import render, redirect
+from django.http import JsonResponse
 import jwt
 from django.http import HttpResponseBadRequest
 from django.conf import settings
@@ -66,6 +67,8 @@ def user_is_authenticated(view_func):
 
 
 
+
+
 def jwt_decode(view_func):
     """
     Decorator to check if the user is authenticated.
@@ -110,17 +113,23 @@ def jwt_decode(view_func):
                     jwt_username = decoded_payload.get('username')
     
                     if username != jwt_username:
-                        print("--------------it is not equal--------------")
-                        return HttpResponseBadRequest("Unauthorized")
+
+                        data = {'success':False,"message":"Unauthorized"}
+                        response = JsonResponse(data,status=401)
+                        return response
                     
                     # Add any other necessary attributes based on the structure of your payload
 
-                except jwt.ExpiredSignatureError:
-                    return HttpResponseBadRequest("Token has expired")
-                except jwt.InvalidTokenError as e:
-                    print("Invalid Token Error:", e)
-                    return HttpResponseBadRequest("Invalid token")
+                except jwt.ExpiredSignatureError as e:
+                    data = {'success':False,"message":f"{e}"}
+                    response = JsonResponse(data,status=401)
+                    return response
 
+                except jwt.InvalidTokenError as e:
+                    data = {'success':False,"message":f"{e}"}
+                    response = JsonResponse(data,status=401)
+                    return response
+                   
                 # Call the original view function with the username and email
             
                 return view_func(

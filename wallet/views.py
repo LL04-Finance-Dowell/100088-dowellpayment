@@ -189,7 +189,7 @@ class WalletLogin(APIView):
                 decoded_token = jwt.decode(access_token, settings.SECRET_KEY, algorithms=['HS256'])
                 return Response({'access_token': access_token})
             else:
-                return Response({'error': 'Invalid credentials', "userinfo": user_info}, status=401)
+                return Response({'error': 'Invalid credentials'}, status=401)
         except UserInfo.DoesNotExist:
             return Response({'error': 'User not found'}, status=404)
 
@@ -1293,7 +1293,7 @@ class SetUpWalletPassword(APIView):
                         "success": True,
                         "message": "password setup successfully",
                     },
-                    status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    status=status.HTTP_201_CREATED,
                 )
         except Exception as e:
             return Response(
