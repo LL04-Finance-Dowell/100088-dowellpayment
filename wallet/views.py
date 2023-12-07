@@ -1284,7 +1284,9 @@ class SetUpWalletPassword(APIView):
         try:
             username = kwargs.get('username')
             otp = request.data.get("otp")
+            print(otp)
             wallet_password = request.data.get("wallet_password")
+            print(wallet_password)
             
             # Ensure OTP and wallet_password are provided
             if not (otp and wallet_password):
@@ -1296,7 +1298,7 @@ class SetUpWalletPassword(APIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
             
-            field = {"otp": otp}
+            field = {"otp":f"{otp}"}
             user_info = GetUserInfo(field)["data"]
             user_otp = user_info.get("otp")
 
