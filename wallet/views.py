@@ -170,7 +170,9 @@ class WalletLogin(APIView):
             user_info = GetUserInfo(field)["data"]
             print("user_info",user_info)
             user_id = user_info.get('_id')
-
+            print(user_info['wallet_password'])
+            password = check_password(user_info['wallet_password'])
+            print(password)
             # Check if the input password matches the stored hashed password
             password_matches = check_password(wallet_password, user_info['wallet_password'])
             print("password_matches",password_matches)
@@ -1278,39 +1280,71 @@ WALLET PASSWORD
 
 @method_decorator(user_is_authenticated, name='dispatch')
 class SetUpWalletPassword(APIView):
-    def post(self,request,*args, **kwargs):
-        
+    def post(self, request, *args, **kwargs):
         try:
             username = kwargs.get('username')
             otp = request.data.get("otp")
-            field = {"otp":f"{otp}"}
-            user_info = GetUserInfo(field)["data"]
-            user_otp = user_info.get("otp")
-            print(otp)
-            print(user_otp)
-            if user_otp == otp:
-                wallet_password = request.data.get("wallet_password")
-                # Hash the password
-                hashed_password = make_password(wallet_password)
-                field ={"username":f"{username}"}
-                update_field = {"wallet_password":f"{hashed_password}"}
-                user_info = UpdateUserInfo(field, update_field)
-            return Response(
-                    {
-                        "success": True,
-                        "message": "password setup successfully",
-                    },
-                    status=status.HTTP_201_CREATED,
-                )
-        except Exception as e:
-            return Response(
+            wallet_password = request.data.get("wallet_password")
+            
+            # Ensure OTP and wallet_password are provided
+            if not (otp and wallet_password):
+                return Response(
                     {
                         "success": False,
-                        "error": f"{e}",
-                        "message": "something went wrong",
+                        "message": "OTP and wallet password are required.",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            
+            field = {"otp": otp}
+            user_info = GetUserInfo(field)["data"]
+            user_otp = user_info.get("otp")
+
+            # Validate OTP
+            if user_otp != otp:
+                return Response(
+                    {
+                        "success": False,
+                        "message": "Invalid OTP.",
                     },
                     status=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 )
+
+            # Hash the password
+            hashed_password = make_password(wallet_password)
+            field = {"username": username}
+            update_field = {"wallet_password": hashed_password}
+            user_info = UpdateUserInfo(field, update_field)
+            
+            return Response(
+                {
+                    "success": True,
+                    "message": "Password set up successfully.",
+                },
+                status=status.HTTP_201_CREATED,
+            )
+        
+        except KeyError as e:
+            # Handle KeyError when expected keys are missing in request.data
+            return Response(
+                {
+                    "success": False,
+                    "error": f"KeyError: {e}.",
+                    "message": "Missing key in request data.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        except Exception as e:
+            # Handle other exceptions
+            return Response(
+                {
+                    "success": False,
+                    "error": f"{e}",
+                    "message": "Something went wrong.",
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
         
