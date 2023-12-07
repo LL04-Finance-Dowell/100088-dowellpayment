@@ -469,7 +469,7 @@ class StripePayment(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-@method_decorator(jwt_decode, name="dispatch")
+@method_decorator(user_is_authenticated, name='dispatch')
 class PaypalPaymentCallback(APIView):
     def get(self, request,*args, **kwargs):
         username = kwargs.get("username")
@@ -570,7 +570,7 @@ class PaypalPaymentCallback(APIView):
 
 
 # Stripe verify Payment classs
-@method_decorator(jwt_decode, name="dispatch")
+@method_decorator(user_is_authenticated, name='dispatch')
 class StripePaymentCallback(APIView):
     def get(self, request, *args, **kwargs):
         username = kwargs.get("username")
