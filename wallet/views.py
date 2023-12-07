@@ -1282,13 +1282,19 @@ class SetUpWalletPassword(APIView):
         
         try:
             username = kwargs.get('username')
-            wallet_password = request.data.get("wallet_password")
-
-            # Hash the password
-            hashed_password = make_password(wallet_password)
-            field ={"username":f"{username}"}
-            update_field = {"wallet_password":f"{hashed_password}"}
-            user_info = UpdateUserInfo(field, update_field)
+            otp = request.data.get("otp")
+            field = {"otp":f"{otp}"}
+            user_info = GetUserInfo(field)["data"]
+            user_otp = user_info.get("otp")
+            print(otp)
+            print(user_otp)
+            if user_otp == otp:
+                wallet_password = request.data.get("wallet_password")
+                # Hash the password
+                hashed_password = make_password(wallet_password)
+                field ={"username":f"{username}"}
+                update_field = {"wallet_password":f"{hashed_password}"}
+                user_info = UpdateUserInfo(field, update_field)
             return Response(
                     {
                         "success": True,
