@@ -194,53 +194,6 @@ class WalletLogin(APIView):
             return Response({'error': 'User not found'}, status=404)
 
 
-#  Check if the user information matches the provided credentials
-#             if user_info and user_info.get('wallet_password') == wallet_password:
-#                 # Manipulate user_info to include 'id' attribute expected by Simple JWT
-#                 user_info['id'] = user_info.pop('_id')
-
-#                 # If authentication succeeds, create a token
-#                 access_token = AccessToken.for_user(user_info)
-#                 return Response({'token': str(access_token)})
-
-
-class LoginView(APIView):
-    def post(self, request):
-        email = request.data.get("email")
-        password = request.data.get("password")
-
-        try:
-            user = User.objects.get(email=email)
-        except User.DoesNotExist:
-            return Response(
-                {"success": False, "error": "Invalid credentials"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # If the user with the given email exists, we can proceed to authentication.
-        user = authenticate(request, username=user.username, password=password)
-
-        if user is not None:
-            # Authentication successful
-            refresh = RefreshToken.for_user(user)
-            access_token = str(refresh.access_token)
-            return Response({"success": True, "access_token": access_token})
-        else:
-            return Response(
-                {"success": False, "error": "Invalid credentials"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-
-class LogoutView(APIView):
-    def post(self, request):
-        if request.user.is_authenticated:
-            request.session.flush()
-            return Response({"message": "Logout successful"}, status=status.HTTP_200_OK)
-        return Response(
-            {"message": "Not logged in"}, status=status.HTTP_401_UNAUTHORIZED
-        )
-
 @method_decorator(user_is_authenticated, name="dispatch")
 class PasswordResetRequestView(APIView):
     def post(self, request,*args, **kwargs):
@@ -343,233 +296,6 @@ class ResetPasswordOtpVerify(APIView):
         """AFTER THIS THE USER SHOULD BE REDIRECTED TO THE RESET PASSWORD TO ENTER A NEW PASSWORD"""
 
 
-class ResendOTPView(APIView):
-    def post(self, request):
-        email = request.data.get("email")
-        try:
-            user = User.objects.get(email=email)
-            user_profile, created = UserProfile.objects.get_or_create(user=user)
-            # Generate a TOTP key for the user
-            totp_key = self.generate_totp_key()
-            # Save the TOTP key to the user's profile
-            user_profile.totp_key = totp_key
-            user_profile.save()
-            # Send the TOTP key to the user via email or other communication method
-            self.send_otp_email(user, totp_key)
-
-            return Response(
-                {"message": "OTP sent to your email"}, status=status.HTTP_200_OK
-            )
-        except User.DoesNotExist:
-            return Response(
-                {"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
-            )
-
-    def send_otp_email(self, user, totp_key):
-        # API endpoint to send the email
-        url = f"https://100085.pythonanywhere.com/api/email/"
-        name = user.username
-        EMAIL_FROM_WEBSITE = """
-                    <!DOCTYPE html>
-                        <html lang="en">
-                        <head>
-                            <meta charset="UTF-8">
-                            <meta http-equiv="X-UA-Compatible" content="IE=edge">
-                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                            <title>Samanta Content Evaluator</title>
-                        </head>
-                        <body>
-                            <div style="font-family: Helvetica, Arial, sans-serif; min-width: 100px; overflow: auto; line-height: 2; margin: 50px auto; width: 70%; padding: 20px 0; border-bottom: 1px solid #eee;">
-                                <a href="#" style="font-size: 1.2em; color: #00466a; text-decoration: none; font-weight: 600; display: block; text-align: center;">Dowell UX Living Lab Wallet</a>
-                                <p style="font-size: 1.1em; text-align: center;">Dear {name},</p>
-                                <p style="font-size: 1.1em; text-align: center;">Your OTP for verification is: {totp}</p>
-                                <p style="font-size: 1.1em; text-align: center;">If you did not request an OTP with us, you can ignore this email.</p>
-                            </div>
-                        </body>
-                        </html>
-                    """
-
-        email_content = EMAIL_FROM_WEBSITE.format(name=name, totp=totp_key)
-        payload = {
-            "toname": name,
-            "toemail": user.email,
-            "subject": "OTP Verification",
-            "email_content": email_content,
-        }
-        response = requests.post(url, json=payload)
-        print(totp_key)
-        print(response.text)
-        return response.text
-
-    def generate_totp_key(self):
-        # Generate a random secret key as bytes
-        secret_key_bytes = secrets.token_bytes(20)  # 20 bytes (160 bits)
-        # Convert the bytes to a base32-encoded string
-        secret_key = base64.b32encode(secret_key_bytes).decode("utf-8")
-        # Create a TOTP instance
-        totp = TOTP(
-            secret_key, interval=30
-        )  # Replace 'your-secret-key' with your secret key
-        # Generate the TOTP token
-        totp_key = totp.now()
-        return totp_key
-
-
-class UserRegistrationView(APIView):
-    def post(self, request):
-        serializer = UserRegistrationSerializer(data=request.data)
-        if serializer.is_valid():
-            phone_number = request.data.get("phone_number")
-            first_name = request.data.get("first_name")
-            last_name = request.data.get("last_name")
-
-            # Check if a user with the same email already exists
-            email = serializer.validated_data["email"]
-            username = email
-            if User.objects.filter(email=email).exists():
-                return Response(
-                    {"error": "Email already in use."},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            # Generate a TOTP key for the user
-            totp_key = self.generate_totp_key()
-            # Create a new user with the User model
-            user = User.objects.create_user(
-                email=email,
-                username=username,
-                password=serializer.validated_data["password"],
-                is_active=False,  # User starts as inactive
-            )
-            user.save()
-
-            # Create a UserProfile for the new user
-            user_profile = UserProfile(
-                user=user,
-                totp_key=totp_key,
-                firstname=first_name,
-                lastname=last_name,
-                phone_number=phone_number
-                # You can handle profile picture separately, depending on your requirements
-            )
-            user_profile.save()
-
-            print(f"account created for {user}")
-            self.send_verification_email(user, totp_key, request)
-            # Check if a Wallet already exists for the user
-            # Check if a Wallet already exists for the user
-            wallet, created = Wallet.objects.get_or_create(user=user)
-
-            # Update the wallet password if provided
-            wallet_password = request.data.get("wallet_password")
-            if wallet_password:
-                wallet.password = make_password(str(wallet_password))
-                wallet.save()
-            print(f"created wallet {wallet}")
-            if created:
-                # Wallet was created
-                pass
-
-            return Response(
-                {
-                    "success": True,
-                    "message": "Please check your email for verification instructions.",
-                },
-                status=status.HTTP_201_CREATED,
-            )
-        return Response(
-            {"success": False, "error": serializer.errors},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-
-    def generate_totp_key(self):
-        # Generate a random secret key as bytes
-        secret_key_bytes = secrets.token_bytes(20)  # 20 bytes (160 bits)
-        # Convert the bytes to a base32-encoded string
-        secret_key = base64.b32encode(secret_key_bytes).decode("utf-8")
-        # Calculate the expiration time (30 minutes from now)
-        expiration_time = timezone.now() + timezone.timedelta(minutes=30)
-        # Create a TOTP instance
-        totp = TOTP(
-            secret_key, interval=30
-        )  # Replace 'your-secret-key' with your secret key
-        # Generate the TOTP token
-        totp_key = totp.now()
-        print(totp_key)
-        return totp_key
-
-    def send_verification_email(self, user, totp_key, email):
-        # API endpoint to send the email
-        url = f"https://100085.pythonanywhere.com/api/email/"
-        name = user.username
-        expiration_time = timezone.now() + timezone.timedelta(
-            minutes=30
-        )  # 30 minutes from now
-        EMAIL_FROM_WEBSITE = """
-                    <!DOCTYPE html>
-                        <html lang="en">
-                        <head>
-                            <meta charset="UTF-8">
-                            <meta http-equiv="X-UA-Compatible" content="IE=edge">
-                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                            <title>Samanta Content Evaluator</title>
-                        </head>
-                        <body>
-                            <div style="font-family: Helvetica, Arial, sans-serif; min-width: 100px; overflow: auto; line-height: 2; margin: 50px auto; width: 70%; padding: 20px 0; border-bottom: 1px solid #eee;">
-                                <a href="#" style="font-size: 1.2em; color: #00466a; text-decoration: none; font-weight: 600; display: block; text-align: center;">Dowell UX Living Lab Wallet</a>
-                                <p style="font-size: 1.1em; text-align: center;">Dear {name}, thank you for registering to our platform. Enter the OTP below to verify your email.</p>
-                                <p style="font-size: 1.1em; text-align: center;">Your OTP for verification is: {totp}</p>
-                                <p style="font-size: 1.1em; text-align: center;">This OTP is valid until {expiration_time}.</p>
-                                <p style="font-size: 1.1em; text-align: center;">If you did not create an account with us, you can ignore this email.</p>
-                            </div>
-                        </body>
-                        </html>
-                    """
-        context = {"name": name, "totp": totp_key}
-
-        email_content = EMAIL_FROM_WEBSITE.format(
-            name=name, expiration_time=expiration_time, totp=totp_key, email=email
-        )
-        payload = {
-            "toname": name,
-            "toemail": user.email,
-            "subject": "OTP Verification",
-            "email_content": email_content,
-        }
-        response = requests.post(url, json=payload)
-        print(totp_key)
-        print(response.text)
-        return response.text
-
-
-@method_decorator(csrf_exempt, name="dispatch")
-class OTPVerificationView(APIView):
-    def post(self, request):
-        totp_key = request.data.get("otp_key")
-        email = request.data.get("email")
-
-        try:
-            user = User.objects.get(email=email)
-        except User.DoesNotExist:
-            user = None
-
-        if user:
-            totp_key_from_profile = user.userprofile.totp_key
-            if totp_key_from_profile == totp_key:
-                # Activate the user
-                user.is_active = True
-                user.save()
-                return Response(
-                    {"message": "Account verified and activated."},
-                    status=status.HTTP_200_OK,
-                )
-            else:
-                return Response(
-                    {"message": "Invalid OTP."}, status=status.HTTP_400_BAD_REQUEST
-                )
-        else:
-            return Response(
-                {"message": "User not found."}, status=status.HTTP_404_NOT_FOUND
-            )
 
 
 @method_decorator(jwt_decode, name="dispatch")
@@ -1815,3 +1541,283 @@ DISPLAY ALL REQUESTS
 #         response = requests.post(url, json=payload)
 #         print(response.text)
 #         return response.text
+
+
+
+
+# class ResendOTPView(APIView):
+#     def post(self, request):
+#         email = request.data.get("email")
+#         try:
+#             user = User.objects.get(email=email)
+#             user_profile, created = UserProfile.objects.get_or_create(user=user)
+#             # Generate a TOTP key for the user
+#             totp_key = self.generate_totp_key()
+#             # Save the TOTP key to the user's profile
+#             user_profile.totp_key = totp_key
+#             user_profile.save()
+#             # Send the TOTP key to the user via email or other communication method
+#             self.send_otp_email(user, totp_key)
+
+#             return Response(
+#                 {"message": "OTP sent to your email"}, status=status.HTTP_200_OK
+#             )
+#         except User.DoesNotExist:
+#             return Response(
+#                 {"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
+#             )
+
+#     def send_otp_email(self, user, totp_key):
+#         # API endpoint to send the email
+#         url = f"https://100085.pythonanywhere.com/api/email/"
+#         name = user.username
+#         EMAIL_FROM_WEBSITE = """
+#                     <!DOCTYPE html>
+#                         <html lang="en">
+#                         <head>
+#                             <meta charset="UTF-8">
+#                             <meta http-equiv="X-UA-Compatible" content="IE=edge">
+#                             <meta name="viewport" content="width=device-width, initial-scale=1.0">
+#                             <title>Samanta Content Evaluator</title>
+#                         </head>
+#                         <body>
+#                             <div style="font-family: Helvetica, Arial, sans-serif; min-width: 100px; overflow: auto; line-height: 2; margin: 50px auto; width: 70%; padding: 20px 0; border-bottom: 1px solid #eee;">
+#                                 <a href="#" style="font-size: 1.2em; color: #00466a; text-decoration: none; font-weight: 600; display: block; text-align: center;">Dowell UX Living Lab Wallet</a>
+#                                 <p style="font-size: 1.1em; text-align: center;">Dear {name},</p>
+#                                 <p style="font-size: 1.1em; text-align: center;">Your OTP for verification is: {totp}</p>
+#                                 <p style="font-size: 1.1em; text-align: center;">If you did not request an OTP with us, you can ignore this email.</p>
+#                             </div>
+#                         </body>
+#                         </html>
+#                     """
+
+#         email_content = EMAIL_FROM_WEBSITE.format(name=name, totp=totp_key)
+#         payload = {
+#             "toname": name,
+#             "toemail": user.email,
+#             "subject": "OTP Verification",
+#             "email_content": email_content,
+#         }
+#         response = requests.post(url, json=payload)
+#         print(totp_key)
+#         print(response.text)
+#         return response.text
+
+#     def generate_totp_key(self):
+#         # Generate a random secret key as bytes
+#         secret_key_bytes = secrets.token_bytes(20)  # 20 bytes (160 bits)
+#         # Convert the bytes to a base32-encoded string
+#         secret_key = base64.b32encode(secret_key_bytes).decode("utf-8")
+#         # Create a TOTP instance
+#         totp = TOTP(
+#             secret_key, interval=30
+#         )  # Replace 'your-secret-key' with your secret key
+#         # Generate the TOTP token
+#         totp_key = totp.now()
+#         return totp_key
+
+
+# class UserRegistrationView(APIView):
+#     def post(self, request):
+#         serializer = UserRegistrationSerializer(data=request.data)
+#         if serializer.is_valid():
+#             phone_number = request.data.get("phone_number")
+#             first_name = request.data.get("first_name")
+#             last_name = request.data.get("last_name")
+
+#             # Check if a user with the same email already exists
+#             email = serializer.validated_data["email"]
+#             username = email
+#             if User.objects.filter(email=email).exists():
+#                 return Response(
+#                     {"error": "Email already in use."},
+#                     status=status.HTTP_400_BAD_REQUEST,
+#                 )
+#             # Generate a TOTP key for the user
+#             totp_key = self.generate_totp_key()
+#             # Create a new user with the User model
+#             user = User.objects.create_user(
+#                 email=email,
+#                 username=username,
+#                 password=serializer.validated_data["password"],
+#                 is_active=False,  # User starts as inactive
+#             )
+#             user.save()
+
+#             # Create a UserProfile for the new user
+#             user_profile = UserProfile(
+#                 user=user,
+#                 totp_key=totp_key,
+#                 firstname=first_name,
+#                 lastname=last_name,
+#                 phone_number=phone_number
+#                 # You can handle profile picture separately, depending on your requirements
+#             )
+#             user_profile.save()
+
+#             print(f"account created for {user}")
+#             self.send_verification_email(user, totp_key, request)
+#             # Check if a Wallet already exists for the user
+#             # Check if a Wallet already exists for the user
+#             wallet, created = Wallet.objects.get_or_create(user=user)
+
+#             # Update the wallet password if provided
+#             wallet_password = request.data.get("wallet_password")
+#             if wallet_password:
+#                 wallet.password = make_password(str(wallet_password))
+#                 wallet.save()
+#             print(f"created wallet {wallet}")
+#             if created:
+#                 # Wallet was created
+#                 pass
+
+#             return Response(
+#                 {
+#                     "success": True,
+#                     "message": "Please check your email for verification instructions.",
+#                 },
+#                 status=status.HTTP_201_CREATED,
+#             )
+#         return Response(
+#             {"success": False, "error": serializer.errors},
+#             status=status.HTTP_400_BAD_REQUEST,
+#         )
+
+#     def generate_totp_key(self):
+#         # Generate a random secret key as bytes
+#         secret_key_bytes = secrets.token_bytes(20)  # 20 bytes (160 bits)
+#         # Convert the bytes to a base32-encoded string
+#         secret_key = base64.b32encode(secret_key_bytes).decode("utf-8")
+#         # Calculate the expiration time (30 minutes from now)
+#         expiration_time = timezone.now() + timezone.timedelta(minutes=30)
+#         # Create a TOTP instance
+#         totp = TOTP(
+#             secret_key, interval=30
+#         )  # Replace 'your-secret-key' with your secret key
+#         # Generate the TOTP token
+#         totp_key = totp.now()
+#         print(totp_key)
+#         return totp_key
+
+#     def send_verification_email(self, user, totp_key, email):
+#         # API endpoint to send the email
+#         url = f"https://100085.pythonanywhere.com/api/email/"
+#         name = user.username
+#         expiration_time = timezone.now() + timezone.timedelta(
+#             minutes=30
+#         )  # 30 minutes from now
+#         EMAIL_FROM_WEBSITE = """
+#                     <!DOCTYPE html>
+#                         <html lang="en">
+#                         <head>
+#                             <meta charset="UTF-8">
+#                             <meta http-equiv="X-UA-Compatible" content="IE=edge">
+#                             <meta name="viewport" content="width=device-width, initial-scale=1.0">
+#                             <title>Samanta Content Evaluator</title>
+#                         </head>
+#                         <body>
+#                             <div style="font-family: Helvetica, Arial, sans-serif; min-width: 100px; overflow: auto; line-height: 2; margin: 50px auto; width: 70%; padding: 20px 0; border-bottom: 1px solid #eee;">
+#                                 <a href="#" style="font-size: 1.2em; color: #00466a; text-decoration: none; font-weight: 600; display: block; text-align: center;">Dowell UX Living Lab Wallet</a>
+#                                 <p style="font-size: 1.1em; text-align: center;">Dear {name}, thank you for registering to our platform. Enter the OTP below to verify your email.</p>
+#                                 <p style="font-size: 1.1em; text-align: center;">Your OTP for verification is: {totp}</p>
+#                                 <p style="font-size: 1.1em; text-align: center;">This OTP is valid until {expiration_time}.</p>
+#                                 <p style="font-size: 1.1em; text-align: center;">If you did not create an account with us, you can ignore this email.</p>
+#                             </div>
+#                         </body>
+#                         </html>
+#                     """
+#         context = {"name": name, "totp": totp_key}
+
+#         email_content = EMAIL_FROM_WEBSITE.format(
+#             name=name, expiration_time=expiration_time, totp=totp_key, email=email
+#         )
+#         payload = {
+#             "toname": name,
+#             "toemail": user.email,
+#             "subject": "OTP Verification",
+#             "email_content": email_content,
+#         }
+#         response = requests.post(url, json=payload)
+#         print(totp_key)
+#         print(response.text)
+#         return response.text
+
+
+# @method_decorator(csrf_exempt, name="dispatch")
+# class OTPVerificationView(APIView):
+#     def post(self, request):
+#         totp_key = request.data.get("otp_key")
+#         email = request.data.get("email")
+
+#         try:
+#             user = User.objects.get(email=email)
+#         except User.DoesNotExist:
+#             user = None
+
+#         if user:
+#             totp_key_from_profile = user.userprofile.totp_key
+#             if totp_key_from_profile == totp_key:
+#                 # Activate the user
+#                 user.is_active = True
+#                 user.save()
+#                 return Response(
+#                     {"message": "Account verified and activated."},
+#                     status=status.HTTP_200_OK,
+#                 )
+#             else:
+#                 return Response(
+#                     {"message": "Invalid OTP."}, status=status.HTTP_400_BAD_REQUEST
+#                 )
+#         else:
+#             return Response(
+#                 {"message": "User not found."}, status=status.HTTP_404_NOT_FOUND
+#             )
+
+
+
+#  Check if the user information matches the provided credentials
+#             if user_info and user_info.get('wallet_password') == wallet_password:
+#                 # Manipulate user_info to include 'id' attribute expected by Simple JWT
+#                 user_info['id'] = user_info.pop('_id')
+
+#                 # If authentication succeeds, create a token
+#                 access_token = AccessToken.for_user(user_info)
+#                 return Response({'token': str(access_token)})
+
+
+# class LoginView(APIView):
+#     def post(self, request):
+#         email = request.data.get("email")
+#         password = request.data.get("password")
+
+#         try:
+#             user = User.objects.get(email=email)
+#         except User.DoesNotExist:
+#             return Response(
+#                 {"success": False, "error": "Invalid credentials"},
+#                 status=status.HTTP_400_BAD_REQUEST,
+#             )
+
+#         # If the user with the given email exists, we can proceed to authentication.
+#         user = authenticate(request, username=user.username, password=password)
+
+#         if user is not None:
+#             # Authentication successful
+#             refresh = RefreshToken.for_user(user)
+#             access_token = str(refresh.access_token)
+#             return Response({"success": True, "access_token": access_token})
+#         else:
+#             return Response(
+#                 {"success": False, "error": "Invalid credentials"},
+#                 status=status.HTTP_400_BAD_REQUEST,
+#             )
+
+
+# class LogoutView(APIView):
+#     def post(self, request):
+#         if request.user.is_authenticated:
+#             request.session.flush()
+#             return Response({"message": "Logout successful"}, status=status.HTTP_200_OK)
+#         return Response(
+#             {"message": "Not logged in"}, status=status.HTTP_401_UNAUTHORIZED
+#         )
