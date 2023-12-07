@@ -1298,10 +1298,10 @@ class SetUpWalletPassword(APIView):
             
             field = {"otp":f"{otp}"}
             user_info = GetUserInfo(field)["data"]
-            user_otp = user_info.get("otp")
+            user_otp = str(user_info.get("otp")).strip()  # Normalize user_otp
+            provided_otp = str(otp).strip()  # Normalize provided OTP
 
-            # Validate OTP
-            if user_otp != otp:
+            if user_otp != provided_otp:
                 return Response(
                     {
                         "success": False,
