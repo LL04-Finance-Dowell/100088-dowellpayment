@@ -23,8 +23,9 @@ def user_is_authenticated(view_func):
 
         if session_id is None:
             print("session is none")
-            redirect_url = "https://100014.pythonanywhere.com?redirect_url=http://localhost:3000/"
-            return redirect(redirect_url)
+            data = {'success':False,"url":f"https://100014.pythonanywhere.com?redirect_url=http://localhost:3000/login/"}
+            response = JsonResponse(data,status=400)
+            return response
         else:
             try:
                 print("----get-session",session_id)
@@ -58,9 +59,9 @@ def user_is_authenticated(view_func):
                 )
             except Exception as e:
                 print('error',e)
-                redirect_url = "https://100014.pythonanywhere.com?redirect_url=http://localhost:3000/"
-                # redirect_url = "https://100014.pythonanywhere.com?redirect_url=http://127.0.0.1:8000/api/wallet/v1/wallet-dashboard/"
-                return redirect(redirect_url)
+                data = {'success':False,"url":f"https://100014.pythonanywhere.com?redirect_url=http://localhost:3000/login/"}
+                response = JsonResponse(data,status=400)
+                return response
 
     return wrapper
 
@@ -83,8 +84,9 @@ def jwt_decode(view_func):
 
         if session_id is None:
             print("session is none")
-            redirect_url = "https://100014.pythonanywhere.com?redirect_url=http://localhost:3000/login/"
-            return redirect(redirect_url)
+            data = {'success':False,"url":f"https://100014.pythonanywhere.com?redirect_url=http://localhost:3000/login/"}
+            response = JsonResponse(data,status=400)
+            return response
         else:
             try:
 
@@ -146,9 +148,10 @@ def jwt_decode(view_func):
                 )
             except Exception as e:
                 print('error',e)
-                # redirect_url = "https://100014.pythonanywhere.com?redirect_url=http://localhost:3000/"
-                redirect_url = "https://100014.pythonanywhere.com?redirect_url=http://localhost:3000/login/"
-                return redirect(redirect_url)
+                data = {'success':False,"url":f"https://100014.pythonanywhere.com?redirect_url=http://localhost:3000/login/"}
+                response = JsonResponse(data,status=400)
+                return response
+               
 
     return wrapper
 
