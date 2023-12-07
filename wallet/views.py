@@ -170,9 +170,7 @@ class WalletLogin(APIView):
             user_info = GetUserInfo(field)["data"]
             print("user_info",user_info)
             user_id = user_info.get('_id')
-            print(user_info['wallet_password'])
-            password = check_password(user_info['wallet_password'])
-            print(password)
+           
             # Check if the input password matches the stored hashed password
             password_matches = check_password(wallet_password, user_info['wallet_password'])
             print("password_matches",password_matches)
