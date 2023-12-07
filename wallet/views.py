@@ -102,37 +102,7 @@ else:
     dowell_paypal_url = "https://api-m.sandbox.paypal.com"
 
 
-@method_decorator(jwt_decode, name="get")
-class WalletDashboard(APIView):
-    def get(self, request, *args, **kwargs):
-        username = kwargs.get("username")
-        email = kwargs.get("email")
-        session_id = kwargs.get("sessionID")
 
-        try:
-            # Check if wallet data exists for the user
-            # https://ll04-finance-dowell.github.io/100088-dowellwallet
-            wallets = GetUserWallet(username)
-
-            if wallets["data"] == []:
-                print("----yes------")
-                create_wallet = CreateUserWallet(username, email)
-                create_user_info = CreateUserInfo(username, email)
-                return redirect(
-                    f"http://localhost:3000/wallet-password?session_id={session_id}"
-                )
-            print("----yes2------")
-            field = {"username":username}
-            get_userinfo = GetUserInfo(field)["data"]
-
-            print("user info exist",get_userinfo)
-            return redirect(
-                f"http://localhost:3000?session_id={session_id}"
-            )
-
-        except:
-            print("something went wrong")
-            pass
 
 @method_decorator(user_is_authenticated, name="dispatch")
 class WalletLogin(APIView):
@@ -141,7 +111,7 @@ class WalletLogin(APIView):
         email = kwargs.get("email")
 
         wallet_password = request.data.get("wallet_password")
-        
+
         try:
             wallets = GetUserWallet(username)
 
@@ -158,9 +128,9 @@ class WalletLogin(APIView):
                     'username': f"{username}",
                     'email': f"{email}",
                     "token_type": "access",
-                    'exp': datetime.utcnow() + timedelta(days=1)  
+                    'exp': datetime.utcnow() + timedelta(days=1)
                     }
-                
+
                 access_token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
                 return Response({'access_token': access_token})
 
@@ -170,7 +140,7 @@ class WalletLogin(APIView):
             user_info = GetUserInfo(field)["data"]
             print("user_info",user_info)
             user_id = user_info.get('_id')
-           
+
             # Check if the input password matches the stored hashed password
             password_matches = check_password(wallet_password, user_info['wallet_password'])
             print("password_matches",password_matches)
@@ -235,7 +205,7 @@ class PasswordResetRequestView(APIView):
                         <p style="font-size: 1.1em; text-align: center;">To reset your password, click the link below:</p>
                         <p style="font-size: 1.1em; text-align: center;">Your OTP is: {otp_key}</p>
                         <p style="font-size: 1.1em; text-align: center;">If you did not request this password reset, you can ignore this email.</p>
-                        
+
                     </div>
                 </body>
                 </html>
@@ -271,7 +241,7 @@ class ResetPasswordOtpVerify(APIView):
         username = kwargs.get("username")
         email = kwargs.get("email")
         otp = request.data.get("otp")
-        
+
         try:
             field = {"username": f"{username}"}
             command = "fetch"
@@ -281,7 +251,7 @@ class ResetPasswordOtpVerify(APIView):
             return Response({"Success":True})
         if otp == user_otp:
             new_password = request.data.get("new_password")
-            
+
             field ={"username":f"{username}"}
             update_field = {"wallet_password":f"{new_password}"}
             set_new_password = UpdateUserInfo(field,update_field)
@@ -302,7 +272,7 @@ class ResetPasswordOtpVerify(APIView):
 class WalletDetailView(APIView):
 
     def get(self, request, *args, **kwargs):
-    
+
         username = kwargs.get("username")
         email = kwargs.get("email")
         wallets = GetUserWallet(username)["data"]
@@ -316,9 +286,9 @@ class WalletDetailView(APIView):
             "wallet": wallets,
             "transactions": transactions,
         }
-        
+
         return Response(data, status=status.HTTP_200_OK)
-       
+
 
 
 @method_decorator(jwt_decode, name="dispatch")
@@ -425,7 +395,7 @@ class PaypalPayment(APIView):
 
 @method_decorator(jwt_decode, name="dispatch")
 class StripePayment(APIView):
-    
+
 
     def post(self, request, *args, **kwargs):
         username = kwargs.get("username")
@@ -608,18 +578,18 @@ class StripePaymentCallback(APIView):
         sessionID = kwargs.get("sessionID")
         try:
             payment_id = request.GET.get("payment_id").split("?")[0]
-            
+
             field = {"payment_id": f"{payment_id}"}
             command = "find"
             transaction = GetUserTransaction(field,command)
-            
+
             stripe_key = os.getenv("STRIPE_KEY", None)
             stripe.api_key = stripe_key
 
             payment_session = stripe.checkout.Session.retrieve(
                 transaction["data"]["session_id"]
             )
-            
+
             payment_status = payment_session["payment_status"]
             state = payment_session["status"]
 
@@ -637,11 +607,11 @@ class StripePaymentCallback(APIView):
                     print("user-balance", balance)
                     updated_balance = balance + amount
                     update_wallet = updateUserWallet(username, updated_balance)
-                   
+
                 field = {"payment_id": f"{payment_id}"}
                 update_field = {"status": "sucessful"}
                 update_transaction = updateUserTransaction(field, update_field)
-               
+
                 self.send_transaction_email(username, email, amount)
 
             # redirect to frontend url page
@@ -788,7 +758,7 @@ USERPROFILE
 @method_decorator(jwt_decode, name="dispatch")
 class UserProfileDetail(APIView):
     def get(self, request,*args, **kwargs):
-    
+
         username = kwargs.get('username')
         email = kwargs.get('email')
         firstname = kwargs.get('firstname')
@@ -798,7 +768,7 @@ class UserProfileDetail(APIView):
         sessionID = kwargs.get('sessionID')
         user_wallet = GetUserWallet(username)
         account_no = user_wallet["data"][0]["account_no"]
-        
+
         try:
             data = {
                 "username":username,
@@ -883,7 +853,7 @@ class PaymentRequestView(APIView):
             unique_id = uuid.uuid4()
             initialization_id = str(unique_id)
             payment = CreatePayViaWallet(price,currency,callback_url,initialization_id)
-           
+
             payment_info = {
                 "price": price,
             }
@@ -903,36 +873,36 @@ class PaymentAuthoriazationView(APIView):
     def post(self, request,*args, **kwargs):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-        
+
             initialization_id = serializer.validated_data.get("initialization_id")
             print("gotten id" + initialization_id)
             # user_email = serializer.validated_data.get('email')
             wallet_password = serializer.validated_data.get('wallet_password')
             field = {"wallet_password":f"{wallet_password}"}
             user_wallet_pass = GetUserInfo(field)
-            
-            
+
+
             if user_wallet_pass["data"] != None:
-                
+
                 username = user_wallet_pass["data"]["username"]
                 email = user_wallet_pass["data"]["email"]
 
                 try:
                     pay_initializaton_details = GetPayViaWallet(initialization_id)
-                    
+
                     price = pay_initializaton_details["data"]["price"]
                     currency = pay_initializaton_details["data"]["currency"]
                     callback_url = pay_initializaton_details["data"]["callback_url"]
-                
+
                     get_wallet = GetUserWallet(username)
                     balance = get_wallet["data"][0]["balance"]
 
                     if balance >= float(price):
-                        
+
                         # Deduct the amount from the user's wallet
                         updated_balance = balance - float(price)
                         update_wallet = updateUserWallet(username, updated_balance)
-                        
+
                         # Create a new Transaction entry
                         today = date.today()
                         transaction = CreateUserTransaction(
@@ -974,7 +944,7 @@ class PaymentVerificationView(APIView):
         data = request.data
         id = data["id"]
         try:
-            
+
             field = {"payment_id": f"{id}"}
             command = "find"
             transaction = GetUserTransaction(field,command)
@@ -1011,7 +981,7 @@ class SetUpWalletPassword(APIView):
             print(otp)
             wallet_password = request.data.get("wallet_password")
             print(wallet_password)
-            
+
             # Ensure OTP and wallet_password are provided
             if not (otp and wallet_password):
                 return Response(
@@ -1021,7 +991,7 @@ class SetUpWalletPassword(APIView):
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            
+
             field = {"otp":f"{otp}"}
             user_info = GetUserInfo(field)["data"]
             user_otp = str(user_info.get("otp")).strip()  # Normalize user_otp
@@ -1041,7 +1011,7 @@ class SetUpWalletPassword(APIView):
             field = {"username": username}
             update_field = {"wallet_password": hashed_password}
             user_info = UpdateUserInfo(field, update_field)
-            
+
             return Response(
                 {
                     "success": True,
@@ -1049,7 +1019,7 @@ class SetUpWalletPassword(APIView):
                 },
                 status=status.HTTP_201_CREATED,
             )
-        
+
         except KeyError as e:
             # Handle KeyError when expected keys are missing in request.data
             return Response(
@@ -1060,7 +1030,7 @@ class SetUpWalletPassword(APIView):
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        
+
         except Exception as e:
             # Handle other exceptions
             return Response(
@@ -1073,7 +1043,7 @@ class SetUpWalletPassword(APIView):
             )
 
 
-        
+
 
 
 @method_decorator(jwt_decode, name="dispatch")
@@ -1091,7 +1061,7 @@ class CreateWalletPassword(APIView):
             update_field = {"wallet_password":f"{password}"}
             update_user_pass = UpdateUserInfo(field, update_field)
             redirect_url = f'http://localhost:3000/?session_id={session_id}'
-            
+
             # Craft your response
             data = {
                 'success': True,
@@ -1821,3 +1791,35 @@ DISPLAY ALL REQUESTS
 #         return Response(
 #             {"message": "Not logged in"}, status=status.HTTP_401_UNAUTHORIZED
 #         )
+
+#@method_decorator(jwt_decode, name="get")
+# class WalletDashboard(APIView):
+#     def get(self, request, *args, **kwargs):
+#         username = kwargs.get("username")
+#         email = kwargs.get("email")
+#         session_id = kwargs.get("sessionID")
+
+#         try:
+#             # Check if wallet data exists for the user
+#             # https://ll04-finance-dowell.github.io/100088-dowellwallet
+#             wallets = GetUserWallet(username)
+
+#             if wallets["data"] == []:
+#                 print("----yes------")
+#                 create_wallet = CreateUserWallet(username, email)
+#                 create_user_info = CreateUserInfo(username, email)
+#                 return redirect(
+#                     f"http://localhost:3000/wallet-password?session_id={session_id}"
+#                 )
+#             print("----yes2------")
+#             field = {"username":username}
+#             get_userinfo = GetUserInfo(field)["data"]
+
+#             print("user info exist",get_userinfo)
+#             return redirect(
+#                 f"http://localhost:3000?session_id={session_id}"
+#             )
+
+#         except:
+#             print("something went wrong")
+#             pass
