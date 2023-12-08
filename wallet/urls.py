@@ -14,6 +14,7 @@ urlpatterns = [
         name="transactions-history",
     ),
     path("resend-otp", views.ResendOTPView.as_view(), name="resend-otp"),
+    path("get-user",views.GetUser.as_view()),
 
     # accounts urls
     # path("signup", views.UserRegistrationView.as_view(), name="register"),

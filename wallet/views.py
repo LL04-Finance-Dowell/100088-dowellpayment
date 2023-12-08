@@ -178,7 +178,10 @@ class PasswordResetRequestView(APIView):
             update_user_otp = UpdateUserInfo(field,update_field)
             self.send_password_reset_email(username,email,otp_key)
 
-            return Response({"message": "TOTP key sent to your email"})
+            return Response({
+                "message": "TOTP key sent to your email",
+                "email":email
+                             })
         except User.DoesNotExist:
             return Response(
                 {"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
@@ -666,7 +669,17 @@ class StripePaymentCallback(APIView):
 GET TRANSACTIONS HISTORY
 
 """
-
+@method_decorator(user_is_authenticated, name="dispatch")
+class GetUser(APIView):
+    def get(self,request,*args, **kwargs):
+        username = kwargs.get("username")
+        field = {"username":f"{username}"}
+        command = "fetch"
+        user_info = GetUserInfo(field)["data"]
+        return Response({
+            "success":True,
+            "user_info":user_info
+        })
 
 @method_decorator(jwt_decode, name="dispatch")
 class TransactionHistoryView(APIView):
