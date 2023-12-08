@@ -13,11 +13,12 @@ urlpatterns = [
         views.TransactionHistoryView.as_view(),
         name="transactions-history",
     ),
+    path("resend-otp", views.ResendOTPView.as_view(), name="resend-otp"),
+
     # accounts urls
     # path("signup", views.UserRegistrationView.as_view(), name="register"),
     # path("login", views.LoginView.as_view(), name="login"),
     # path("logout", views.LogoutView.as_view(), name="logout"),
-    # path("resend-otp", views.ResendOTPView.as_view(), name="resend-otp"),
     # path("verify-email", views.OTPVerificationView.as_view()),
     path(
         "request-reset-password",

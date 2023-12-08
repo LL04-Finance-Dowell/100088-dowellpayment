@@ -1074,6 +1074,75 @@ class CreateWalletPassword(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@method_decorator(user_is_authenticated, name="dispatch")
+class ResendOTPView(APIView):
+    def post(self, request,*args, **kwargs):
+        email = kwargs.get("email")
+        username = kwargs.get("username")
+        try:
+            # Generate a TOTP key for the user
+            otp_key = self.generate_totp_key()
+            # Save the TOTP key to the user's profile
+            field ={"username":f"{username}"}
+            update_field = {"otp":f"{otp_key}"}
+            set_new_password = UpdateUserInfo(field,update_field)
+            # Send the TOTP key to the user via email or other communication method
+            self.send_otp_email(username,email, otp_key)
+
+            return Response(
+                {"message": "OTP sent to your email"}, status=status.HTTP_200_OK
+            )
+        except User.DoesNotExist:
+            return Response(
+                {"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+    def send_otp_email(self, username,email, otp_key):
+        # API endpoint to send the email
+        url = f"https://100085.pythonanywhere.com/api/email/"
+        EMAIL_FROM_WEBSITE = """
+                    <!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta http-equiv="X-UA-Compatible" content="IE=edge">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                            <title>Samanta Content Evaluator</title>
+                        </head>
+                        <body>
+                            <div style="font-family: Helvetica, Arial, sans-serif; min-width: 100px; overflow: auto; line-height: 2; margin: 50px auto; width: 70%; padding: 20px 0; border-bottom: 1px solid #eee;">
+                                <a href="#" style="font-size: 1.2em; color: #00466a; text-decoration: none; font-weight: 600; display: block; text-align: center;">Dowell UX Living Lab Wallet</a>
+                                <p style="font-size: 1.1em; text-align: center;">Dear {name},</p>
+                                <p style="font-size: 1.1em; text-align: center;">Your OTP for verification is: {totp}</p>
+                                <p style="font-size: 1.1em; text-align: center;">If you did not request an OTP with us, you can ignore this email.</p>
+                            </div>
+                        </body>
+                        </html>
+                    """
+
+        email_content = EMAIL_FROM_WEBSITE.format(name=username, totp=otp_key)
+        payload = {
+            "toname": username,
+            "toemail": email,
+            "subject": "OTP Verification",
+            "email_content": email_content,
+        }
+        response = requests.post(url, json=payload)
+        print(response.text)
+        return response.text
+
+    def generate_totp_key(self):
+        # Generate a random secret key as bytes
+        secret_key_bytes = secrets.token_bytes(20)  # 20 bytes (160 bits)
+        # Convert the bytes to a base32-encoded string
+        secret_key = base64.b32encode(secret_key_bytes).decode("utf-8")
+        # Create a TOTP instance
+        totp = TOTP(
+            secret_key, interval=30
+        )  # Replace 'your-secret-key' with your secret key
+        # Generate the TOTP token
+        totp_key = totp.now()
+        return totp_key
+
 
 # # class MoneyRequestView(APIView):
 # #     permission_classes = [IsAuthenticated]
