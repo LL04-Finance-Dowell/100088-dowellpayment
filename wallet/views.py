@@ -166,22 +166,39 @@ class WalletLogin(APIView):
 
 @method_decorator(user_is_authenticated, name="dispatch")
 class PasswordResetRequestView(APIView):
-    def post(self, request,*args, **kwargs):
+    def post(self, request, *args, **kwargs):
         username = kwargs.get('username')
         email = kwargs.get('email')
         print(email)
         try:
             otp_key = self.generate_totp_key()
             print(otp_key)
-            field ={"username":f"{username}"}
-            update_field = {"otp":f"{otp_key}"}
-            update_user_otp = UpdateUserInfo(field,update_field)
-            self.send_password_reset_email(username,email,otp_key)
+            
+            # Check if wallet exists
+            wallets = GetUserWallet(username)
+            if wallets["data"] == []:
+                print("----creating a new user wallet ------")
+                create_wallet = CreateUserWallet(username, email)
+                
+                # Hash the password for the wallet
+                wallet_password = "0000"
+                hashed_wallet_password = make_password(wallet_password)
+                
+                # Create user info for wallet
+                create_user_info = CreateUserInfo(username, email, hashed_wallet_password)
+            
+            # Update user OTP
+            field = {"username": f"{username}"}
+            update_field = {"otp": f"{otp_key}"}
+            update_user_otp = UpdateUserInfo(field, update_field)
+            
+            # Send password reset email
+            self.send_password_reset_email(username, email, otp_key)
 
             return Response({
                 "message": "TOTP key sent to your email",
-                "email":email
-                             })
+                "email": email
+            })
         except User.DoesNotExist:
             return Response(
                 {"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
