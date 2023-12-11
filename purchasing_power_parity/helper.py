@@ -135,16 +135,16 @@ def get_ppp_data(
     email = email
     base_price_in_country = f"{base_price} {base_currency_code}"
     calculated_price_in_target_country = (
-        f"{target_currency_exchange_rate:.2f} {target_currency_code}"
+        f"{target_currency_exchange_rate:.5f} {target_currency_code}"
     )
     price_in_base_country = (
-        f"{base_currency_exchange_rate:.2f} {base_country_currency_code}"
+        f"{base_currency_exchange_rate:.5f} {base_country_currency_code}"
     )
     basecountry = base_country
     targetcountry = target_country
-    target_price = f"{purchasing_power:.2f} {target_country_currency_code}"
+    target_price = f"{purchasing_power:.5f} {target_country_currency_code}"
     calculated_price_base_on_ppp = (
-        f"{target_currency_exchange_rate:.2f} {target_currency_code}"
+        f"{target_currency_exchange_rate:.5f} {target_currency_code}"
     )
     send_mail(
         email,
@@ -174,49 +174,13 @@ def get_ppp_data(
             "base_currency_code": base_currency_code,
             "target_currency_code": target_currency_code,
             f"base_price_in_{base_country}": f"{base_price} {base_currency_code}",
-            f"calculated_price_in_{target_country}": f"{target_currency_exchange_rate:.2f} {target_currency_code}",
-            "price_in_base_country": f"{base_currency_exchange_rate:.2f} {base_country_currency_code}",
-            "exchange_rate": f"{exchange_rate:.4f}",
-            "target_price": f"{purchasing_power:.2f} {target_country_currency_code}",
-            "calculated_price_base_on_ppp": f"{target_currency_exchange_rate:.2f} {target_currency_code}",
+            f"calculated_price_in_{target_country}": f"{target_currency_exchange_rate:.5f} {target_currency_code}",
+            "price_in_base_country": f"{base_currency_exchange_rate:.5f} {base_country_currency_code}",
+            "exchange_rate": f"{exchange_rate:.5f}",
+            "target_price": f"{purchasing_power:.5f} {target_country_currency_code}",
+            "calculated_price_base_on_ppp": f"{target_currency_exchange_rate:.5f} {target_currency_code}",
         },
         status=status.HTTP_200_OK,
     )
 
 
-# {
-#             "success": True,
-#             "message": "Expected values",
-#             "base_currency_exchange_rate": f"{base_currency_exchange_rate} {base_country_currency_code}",
-#             "purchasing_power": f"{purchasing_power} {target_country_currency_code}",
-#             "target_currency_exchange_rate": f"{target_currency_exchange_rate} {target_currency_code}",
-#         },
-
-
-# def get_all_currency_name():
-#     obj = PPPCalculation.objects.all()
-#     currency_name_list = []
-#     country_name_list = []
-#     for item in obj:
-#         if item.currency_name not in currency_name_list:
-#             currency_name_list.append(item.currency_name)
-#         if item.country_name not in country_name_list:
-#             country_name_list.append(item.country_name)
-
-#     currency_name_list.sort()
-#     country_name_list.sort()
-#     currency_name = []
-#     country_name = []
-#     for currency in currency_name_list:
-#         currency_name.append({"currency_name": currency})
-#     for country in country_name_list:
-#         country_name.append({"country_name": country})
-#     return Response(
-#         {
-#             "success": True,
-#             "message": "List of country and currency name",
-#             "currency_name": currency_name,
-#             "country_name": country_name,
-#         },
-#         status=status.HTTP_200_OK,
-#     )
