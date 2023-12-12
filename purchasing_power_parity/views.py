@@ -114,9 +114,9 @@ class SendResponseToClient(APIView):
 
             email = data["email"]
             base_currency = data["base_currency"]
-            base_currency_code = data["base_currency_code"]
+            base_currency_code =data["base_currency_code"]
             target_currency = data["target_currency"]
-            target_currency_code = data["target_currency_code"]
+            target_currency_code =data["target_currency_code"]
             exchange_rate = data["exchange_rate"]
             # base_price_in_base_country = data["base_price_in_base_country"]
             # calculated_price_in_target_country = data["calculated_price_in_target_country"]
@@ -129,14 +129,25 @@ class SendResponseToClient(APIView):
             url = "https://100085.pythonanywhere.com/api/email/"
 
             EMAIL_FROM_WEBSITE = """
-                <!DOCTYPE html>
-                <html lang="en">
-                <head>
-                    <meta charset="UTF-8" />
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-                    <title>DoWell World Price Indicator</title>
-                </head>
-                <body
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8" />
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                <title>DoWell World Price Indicator</title>
+            </head>
+            <body
+                style="
+                font-family: Arial, sans-serif;
+                background-color: #ffffff;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                justify-content: center;
+                "
+            >
+                <div style="width: 100%; background-color: #ffffff;">
+                <header
                     style="
                     color: #fff;
                     display: flex;
@@ -192,15 +203,41 @@ class SendResponseToClient(APIView):
                         </p>
                         <p>DoWell UX Living Lab Team</p>
                     </div>
-                </body>
-                </html>
-                """
+                    </section>
+                </main>
+
+                <footer
+                    style="
+                    background-color: #005733;
+                    color: #fff;
+                    text-align: center;
+                    padding: 10px;
+                    "
+                >
+                    <a
+                    href="https://www.uxlivinglab.org/"
+                    style="
+                        text-align: center;
+                        color: white;
+                        margin-bottom: 20px;
+                        padding-bottom: 10px;
+                    "
+                    >DoWell UX Living Lab</a
+                    >
+                    <p style="margin-top: 10px; font-size: 13px;">
+                    &copy; 2023-All rights reserved.
+                    </p>
+                </footer>
+                </div>
+            </body>
+            </html>
+            """
 
             email_content = EMAIL_FROM_WEBSITE.format(
                 email=email,
                 base_currency=base_currency,
-                base_currency_code=base_currency_code,
-                target_currency_code=target_currency_code,
+                base_currency_code = base_currency_code,
+                target_currency_code = target_currency_code,
                 target_currency=target_currency,
                 exchange_rate=exchange_rate,
                 base_country=base_country,
@@ -211,7 +248,8 @@ class SendResponseToClient(APIView):
                 target_price=target_price,
                 calculated_price_base_on_ppp=calculated_price_base_on_ppp,
             )
-            date = datetime.now().strftime("%Y-%m-%d")
+
+            date = datetime.now().strftime('%Y-%m-%d')
 
             payload = {
                 "toname": f"{email}",
@@ -219,11 +257,8 @@ class SendResponseToClient(APIView):
                 "subject": f"Result from DoWell World Price Indicator on {date}",
                 "email_content": email_content,
             }
-            # pdf_file.close()
             response = requests.post(url, json=payload)
-
-            # print(response.text)
-            print(response)
+            print(response.text)
             return Response(
                 {"success": True, "message": "Mail sent successfully"},
                 status=status.HTTP_200_OK,
@@ -239,21 +274,7 @@ class SendResponseToClient(APIView):
             )
 
 
-import os
-from django.conf import settings
-from django.http import HttpResponse
 
-
-def serve_pdf(request, pdf_filename):
-    pdf_path = os.path.join(settings.MEDIA_ROOT, pdf_filename)
-
-    if os.path.exists(pdf_path):
-        with open(pdf_path, "rb") as pdf_file:
-            response = HttpResponse(pdf_file.read(), content_type="application/pdf")
-            response["Content-Disposition"] = f'attachment; filename="{pdf_filename}"'
-            return response
-    else:
-        return HttpResponse("PDF not found", status=404)
 
 
 # FOR PUBLIC USAGE

@@ -92,7 +92,7 @@ def send_mail(
             <li>Base Price In {base_country} : {base_price_in_country}</li>
             <li>Calculated Price In {target_country} : {calculated_price_in_target_country}</li>
             <li>Calculated Price Based On PPP : {calculated_price_base_on_ppp}</li>
-            <li>Exchange rate. 1 {base_currency_code} = {exchange_rate:.4f} {target_currency_code} </li>
+            <li>Exchange rate. 1 {base_currency_code} = {exchange_rate:.5f} {target_currency_code} </li>
           </ul>
           <div style="margin: 20px;">
             <p>DoWell UX Living Lab Team</p>
