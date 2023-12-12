@@ -973,17 +973,19 @@ class PaymentVerificationView(APIView):
     def post(self, request):
         data = request.data
         id = data["id"]
+        print(id)
         try:
 
             field = {"payment_id": f"{id}"}
             command = "find"
             transaction = GetUserTransaction(field,command)
+            print(transaction)
             if transaction['data'] == None:
                 return Response(
                 {"success": False, "status": "Failed"},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
-            if transaction["data"]["status"] == "completed":
+            if transaction["data"]["status"] == "sucessful":
                 return Response(
                     {"success": True, "status": "completed"}, status=status.HTTP_200_OK
                 )
