@@ -82,14 +82,14 @@
                     <td align="right" style="padding-right: 50px">
                       <p>DOWELL RESEARCH PTE. LTD</p>
                       <p>#42-00 6 BATTERY ROAD</p>
-                      <!-- <p>Singapore, 049909, SINGAPORE</p> -->
-                      <p>{{company_address}}</p>
+                      <p>Singapore, 049909, SINGAPORE</p>
+                      <!-- <p>{{company_address}}</p> -->
                     </td>
                   </tr>
                   <tr>
                     <td style="padding-left: 10">
                       <h1 style="padding-top: 20px; padding-bottom: 20px">
-                        Invoice
+                        INVOICE
                       </h1>
                     </td>
                   </tr>
@@ -137,6 +137,12 @@
                       <p style="font-weight: 600">
                         Payment Method:
                         <span style="font-weight: 400">{{payment_method}}</span>
+                      </p>
+                      <p style="font-weight: 600">
+                        {% if territory %}
+                        Place of Supply:
+                        <span style="font-weight: 400">Other Territory</span>
+                        {% endif %}
                       </p>
                     </td>
                   </tr>

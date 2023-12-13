@@ -252,9 +252,9 @@ def verify_paypal(
 
             print("country_code",country_code)
             if country_code != 'SG':
-                company_address = "Other Territory"
+                territory = "Other Territory"
             else:
-                company_address = "Singapore, 049909, SINGAPORE"
+                territory = None
 
 
             try:
@@ -282,7 +282,7 @@ def verify_paypal(
                     invoice_number,
                     order_number,
                     payment_method,
-                    company_address,
+                    territory,
                 )
 
             """USE THIS MAIL TEMPLATE IF VOUCHER CODE IS INCLUDED IN THE PAYMENT DATA """
@@ -302,7 +302,7 @@ def verify_paypal(
                     invoice_number,
                     order_number,
                     payment_method,
-                    company_address,
+                    territory,
                 )
 
             """CONNECT TO DOWELL DATABASE AND UPDATE THE PAYMENT DETAILS"""

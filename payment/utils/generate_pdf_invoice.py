@@ -18,8 +18,13 @@ def generate_invoice(
     desc,
     amount,
     currency,
-    company_address,
+    territory,
 ):
+    
+    territory_exist = bool(territory)
+    print("territory_exist",territory_exist)
+    
+
     email_content = f"""
 <html>
   <head>
@@ -118,10 +123,11 @@ def generate_invoice(
         <div class="company-details-text-container">
           <p>DOWELL RESEARCH PTE. LTD</p>
           <p>#42-00 6 BATTERY ROAD</p>
-          {company_address}
+          <p>Singapore, 049909, SINGAPORE</p>
+          
         </div>
       </div>
-      <h1 style="margin-top: 40px; margin-bottom: 10px">Invoice</h1>
+      <h1 style="margin-top: 40px; margin-bottom: 10px">INVOICE</h1>
       <div class="invoice-details">
         <div style="width: 45%">
           <div style="display: flex; flex-wrap: nowrap; margin-bottom: 10px">
@@ -184,6 +190,20 @@ def generate_invoice(
               {payment_method}</span
             >
           </div>
+          <div style=" {'display: flex;' if territory_exist else 'display: none;'} flex-wrap: nowrap; margin-bottom: 10px ">
+            <strong style="white-space: nowrap; margin-right: 10px"
+              >Place of Supply :
+            </strong>
+            <span
+              style="
+                word-wrap: break-word;
+                text-overflow: ellipsis;
+                overflow: hidden;
+              "
+            >
+              Other Territory</span
+            >
+          </div>
         </div>
       </div>
       <div class="tableContainer">
@@ -240,8 +260,11 @@ def generate_invoice_with_voucher(
     amount,
     currency,
     voucher_code,
-    company_address,
+    territory,
 ):
+    
+    territory_exist = bool(territory)
+    print("territory_exist",territory_exist)
     email_content = f"""
 
                 <html>
@@ -341,10 +364,11 @@ def generate_invoice_with_voucher(
         <div class="company-details-text-container">
           <p>DOWELL RESEARCH PTE. LTD</p>
           <p>#42-00 6 BATTERY ROAD</p>
-          {company_address}
+          <p>Singapore, 049909, SINGAPORE</p>
+          
         </div>
       </div>
-      <h1 style="margin-top: 40px; margin-bottom: 10px">Invoice</h1>
+      <h1 style="margin-top: 40px; margin-bottom: 10px">INVOICE</h1>
       <div class="invoice-details">
         <div style="width: 45%">
           <div style="display: flex; flex-wrap: nowrap; margin-bottom: 10px">
@@ -413,6 +437,20 @@ def generate_invoice_with_voucher(
           {voucher_code}
         </span>
       </div>
+      <div style=" {'display: flex;' if territory_exist else 'display: none;'} flex-wrap: nowrap; margin-bottom: 10px ">
+            <strong style="white-space: nowrap; margin-right: 10px"
+              >Place of Supply :
+            </strong>
+            <span
+              style="
+                word-wrap: break-word;
+                text-overflow: ellipsis;
+                overflow: hidden;
+              "
+            >
+              Other Territory</span
+            >
+          </div>
         </div>
       </div>
       <div class="tableContainer">

@@ -192,9 +192,9 @@ def verify_stripe(
 
         
         if country != 'SG':
-            company_address = "Other Territory"
+            territory = "Other Territory"
         else:
-            company_address = "Singapore, 049909, SINGAPORE"
+            territory = None
 
         if city == None and country == "SG":
             city = "Singapore"
@@ -227,7 +227,7 @@ def verify_stripe(
                 invoice_number,
                 order_number,
                 payment_method,
-                company_address,
+                territory,
             )
 
         """USE THIS MAIL TEMPLATE IF VOUCHER CODE IS INCLUDED IN THE PAYMENT DATA """
@@ -247,7 +247,7 @@ def verify_stripe(
                 invoice_number,
                 order_number,
                 payment_method,
-                company_address,
+                territory,
             )
         """CONNECT TO DOWELL DATABASE AND UPDATE THE PAYMENT DETAILS"""
         transaction_update = model_instance_update(
