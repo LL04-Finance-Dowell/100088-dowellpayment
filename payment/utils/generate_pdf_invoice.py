@@ -18,6 +18,7 @@ def generate_invoice(
     desc,
     amount,
     currency,
+    company_address,
 ):
     email_content = f"""
 <html>
@@ -117,7 +118,7 @@ def generate_invoice(
         <div class="company-details-text-container">
           <p>DOWELL RESEARCH PTE. LTD</p>
           <p>#42-00 6 BATTERY ROAD</p>
-          <p>Singapore, 049909, SINGAPORE</p>
+          {company_address}
         </div>
       </div>
       <h1 style="margin-top: 40px; margin-bottom: 10px">Invoice</h1>
@@ -239,6 +240,7 @@ def generate_invoice_with_voucher(
     amount,
     currency,
     voucher_code,
+    company_address,
 ):
     email_content = f"""
 
@@ -339,7 +341,7 @@ def generate_invoice_with_voucher(
         <div class="company-details-text-container">
           <p>DOWELL RESEARCH PTE. LTD</p>
           <p>#42-00 6 BATTERY ROAD</p>
-          <p>Singapore, 049909, SINGAPORE</p>
+          {company_address}
         </div>
       </div>
       <h1 style="margin-top: 40px; margin-bottom: 10px">Invoice</h1>

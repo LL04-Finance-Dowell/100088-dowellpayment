@@ -24,6 +24,7 @@ def send_mail_one(
     invoice_number,
     order_number,
     payment_method,
+    company_address,
 ):
     pdf_url = generate_invoice(
         name,
@@ -37,6 +38,7 @@ def send_mail_one(
         desc,
         amount,
         currency,
+        company_address,
     )
     order_template = "payment/order.html"
 
@@ -54,6 +56,7 @@ def send_mail_one(
     postal_code = postal_code if postal_code else ""
     ref = ref_id if ref_id else ""
 
+
     context = {
         "amount": amount,
         "currency": currency,
@@ -70,6 +73,7 @@ def send_mail_one(
         "date": date,
         "payment_method": payment_method,
         "pdf_url": pdf_url,
+        "company_address":company_address,
     }
 
     # Email data
@@ -105,6 +109,7 @@ def send_mail_two(
     invoice_number,
     order_number,
     payment_method,
+    company_address
 ):
     order_template = "payment/order_two.html"
 
@@ -121,6 +126,7 @@ def send_mail_two(
         amount,
         currency,
         voucher_code,
+        company_address,
     )
 
     # API endpoint to send the email
@@ -155,6 +161,7 @@ def send_mail_two(
         "date": date,
         "payment_method": payment_method,
         "pdf_url": pdf_url,
+        "company_address":company_address,
     }
 
     # Email data

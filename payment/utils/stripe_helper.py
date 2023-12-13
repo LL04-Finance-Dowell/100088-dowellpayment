@@ -162,10 +162,10 @@ def verify_stripe(
             city = payment_session["customer_details"]["address"]["city"]
         except:
             city = ""
-        # try:
-        #     country = payment_session["customer_details"]["address"]["country"]
-        # except:
-        #     country = ""
+        try:
+            country = payment_session["customer_details"]["address"]["country"]
+        except:
+            country = ""
         try:
             state = payment_session["customer_details"]["address"]["state"]
             print("state", state)
@@ -189,6 +189,15 @@ def verify_stripe(
             ref_id = ""
         desc = transaction["data"]["desc"]
         date = transaction["data"]["date"]
+
+        
+        if country != 'SG':
+            company_address = "Other Territory"
+        else:
+            company_address = "Singapore, 049909, SINGAPORE"
+
+        if city == None and country == "SG":
+            city = "Singapore"
 
         payment_method = "Stripe"
 
@@ -218,6 +227,7 @@ def verify_stripe(
                 invoice_number,
                 order_number,
                 payment_method,
+                company_address,
             )
 
         """USE THIS MAIL TEMPLATE IF VOUCHER CODE IS INCLUDED IN THE PAYMENT DATA """
@@ -237,6 +247,7 @@ def verify_stripe(
                 invoice_number,
                 order_number,
                 payment_method,
+                company_address,
             )
         """CONNECT TO DOWELL DATABASE AND UPDATE THE PAYMENT DETAILS"""
         transaction_update = model_instance_update(
