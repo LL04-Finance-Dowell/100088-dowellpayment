@@ -14,6 +14,13 @@ from .serializers import (
     DowellPaymentSerializer,
     WalletPasswordSerializer,
 )
+from .utils.sendmail import (
+    send_otp_email,
+    send_password_reset_email,
+    send_transaction_email,
+    
+)
+from .utils.generate_otp import generate_totp_key
 from django.utils.crypto import get_random_string
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
@@ -171,7 +178,7 @@ class PasswordResetRequestView(APIView):
         email = kwargs.get('email')
         print(email)
         try:
-            otp_key = self.generate_totp_key()
+            otp_key = generate_totp_key()
             print(otp_key)
             
             # Check if wallet exists
@@ -193,7 +200,7 @@ class PasswordResetRequestView(APIView):
             update_user_otp = UpdateUserInfo(field, update_field)
             
             # Send password reset email
-            self.send_password_reset_email(username, email, otp_key)
+            send_password_reset_email(username, email, otp_key)
 
             return Response({
                 "message": "TOTP key sent to your email",
@@ -204,56 +211,9 @@ class PasswordResetRequestView(APIView):
                 {"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
             )
 
-    def send_password_reset_email(self, username,email, otp_key):
-        # API endpoint to send the email
-        url = f"https://100085.pythonanywhere.com/api/email/"
-        print(username)
-        print(email)
-        EMAIL_FROM_WEBSITE = """
-                <!DOCTYPE html>
-                <html lang="en">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta http-equiv="X-UA-Compatible" content="IE edge">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Samanta Content Evaluator</title>
-                </head>
-                <body>
-                    <div style="font-family: Helvetica, Arial, sans-serif; min-width: 100px; overflow: auto; line-height: 2; margin: 50px auto; width: 70%; padding: 20px 0; border-bottom: 1px solid #eee;">
-                        <a href="#" style="font-size: 1.2em; color: #00466a; text-decoration: none; font-weight: 600; display: block; text-align: center;">Dowell UX Living Lab Wallet</a>
-                        <p style="font-size: 1.1em; text-align: center;">Dear {name}, you have requested a password reset.</p>
-                        <p style="font-size: 1.1em; text-align: center;">To reset your password, click the link below:</p>
-                        <p style="font-size: 1.1em; text-align: center;">Your OTP is: {otp_key}</p>
-                        <p style="font-size: 1.1em; text-align: center;">If you did not request this password reset, you can ignore this email.</p>
+    
 
-                    </div>
-                </body>
-                </html>
-            """
-        email_content = EMAIL_FROM_WEBSITE.format(name=username, otp_key=otp_key)
-        payload = {
-            "toname": username,
-            "toemail": email,
-            "subject": "Password Reset",
-            "email_content": email_content,
-        }
-        response = requests.post(url, json=payload)
-        print(response.json())
-        return response.text
-
-    def generate_totp_key(self):
-        # Generate a random secret key as bytes
-        secret_key_bytes = secrets.token_bytes(20)  # 20 bytes (160 bits)
-        # Convert the bytes to a base32-encoded string
-        secret_key = base64.b32encode(secret_key_bytes).decode("utf-8")
-        # Create a TOTP instance
-        totp = TOTP(
-            secret_key, interval=30
-        )  # Replace 'your-secret-key' with your secret key
-        # Generate the TOTP token
-        totp_key = totp.now()
-        print(totp_key)
-        return totp_key
+    
 
 @method_decorator(jwt_decode,name="dispatch")
 class ResetPasswordOtpVerify(APIView):
@@ -539,7 +499,7 @@ class PaypalPaymentCallback(APIView):
                     field = {"payment_id": f"{payment_id}"}
                     update_field = {"status": "sucessful"}
                     update_transaction = updateUserTransaction(field, update_field)
-                    self.send_transaction_email(username, email, amount)
+                    send_transaction_email(username, email, amount)
 
             # redirect to frontend url page
             redirect_url = f"http://localhost:3000/?session_id={sessionID}"
@@ -551,42 +511,6 @@ class PaypalPaymentCallback(APIView):
             redirect_url = f"http://localhost:3000/?session_id={sessionID}"
             response = HttpResponseRedirect(redirect_url)
             return response
-
-    def send_transaction_email(self, user_name, user_email, amount):
-        # API endpoint to send the email
-        url = f"https://100085.pythonanywhere.com/api/email/"
-        name = user_name
-        EMAIL_FROM_WEBSITE = """
-                    <!DOCTYPE html>
-                        <html lang="en">
-                        <head>
-                            <meta charset="UTF-8">
-                            <meta http-equiv="X-UA-Compatible" content="IE=edge">
-                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                            <title>Samanta Content Evaluator</title>
-                        </head>
-                        <body>
-                            <div style="font-family: Helvetica, Arial, sans-serif; min-width: 100px; overflow: auto; line-height: 1.6; margin: 50px auto; width: 70%; padding: 20px 0; border-bottom: 1px solid #eee;">
-                                <a href="#" style="font-size: 1.2em; color: #00466a; text-decoration: none; font-weight: 600; display: block; text-align: center;">Dowell UX Living Lab Wallet</a>
-                                <p style="font-size: 1.1em; text-align: center;">Dear {name},</p>
-                                <p style="font-size: 1.1em; text-align: center;">Your deposit was successful.</p>
-                                <p style="font-size: 1.1em; text-align: center;">You have added an amount of ${amount} to your wallet.</p>
-                                <p style="font-size: 1.1em; text-align: center;">Thank you for using our platform.</p>
-                            </div>
-                        </body>
-                        </html>
-                        """
-
-        email_content = EMAIL_FROM_WEBSITE.format(name=name, amount=amount)
-        payload = {
-            "toname": name,
-            "toemail": user_email,
-            "subject": "Walllet Deposit",
-            "email_content": email_content,
-        }
-        response = requests.post(url, json=payload)
-        print(response.text)
-        return response.text
 
 
 # Stripe verify Payment classs
@@ -632,7 +556,7 @@ class StripePaymentCallback(APIView):
                 update_field = {"status": "sucessful"}
                 update_transaction = updateUserTransaction(field, update_field)
 
-                self.send_transaction_email(username, email, amount)
+                send_transaction_email(username, email, amount)
 
             # redirect to frontend url page
             redirect_url = f"http://localhost:3000/?session_id={sessionID}"
@@ -643,42 +567,6 @@ class StripePaymentCallback(APIView):
             redirect_url = f"http://localhost:3000/?session_id={sessionID}"
             response = HttpResponseRedirect(redirect_url)
             return response
-
-    def send_transaction_email(self, user_name, user_email, amount):
-        # API endpoint to send the email
-        url = f"https://100085.pythonanywhere.com/api/email/"
-        name = user_name
-        EMAIL_FROM_WEBSITE = """
-                    <!DOCTYPE html>
-                        <html lang="en">
-                        <head>
-                            <meta charset="UTF-8">
-                            <meta http-equiv="X-UA-Compatible" content="IE=edge">
-                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                            <title>Samanta Content Evaluator</title>
-                        </head>
-                        <body>
-                            <div style="font-family: Helvetica, Arial, sans-serif; min-width: 100px; overflow: auto; line-height: 1.6; margin: 50px auto; width: 70%; padding: 20px 0; border-bottom: 1px solid #eee;">
-                                <a href="#" style="font-size: 1.2em; color: #00466a; text-decoration: none; font-weight: 600; display: block; text-align: center;">Dowell UX Living Lab Wallet</a>
-                                <p style="font-size: 1.1em; text-align: center;">Dear {name},</p>
-                                <p style="font-size: 1.1em; text-align: center;">Your deposit was successful.</p>
-                                <p style="font-size: 1.1em; text-align: center;">You have added an amount of ${amount} to your wallet.</p>
-                                <p style="font-size: 1.1em; text-align: center;">Thank you for using our platform.</p>
-                            </div>
-                        </body>
-                        </html>
-                        """
-
-        email_content = EMAIL_FROM_WEBSITE.format(name=name, amount=amount)
-        payload = {
-            "toname": name,
-            "toemail": user_email,
-            "subject": "Walllet Deposit",
-            "email_content": email_content,
-        }
-        response = requests.post(url, json=payload)
-        print(response.text)
-        return response.text
 
 
 """
@@ -1113,13 +1001,13 @@ class ResendOTPView(APIView):
         username = kwargs.get("username")
         try:
             # Generate a TOTP key for the user
-            otp_key = self.generate_totp_key()
+            otp_key = generate_totp_key()
             # Save the TOTP key to the user's profile
             field ={"username":f"{username}"}
             update_field = {"otp":f"{otp_key}"}
             set_new_password = UpdateUserInfo(field,update_field)
             # Send the TOTP key to the user via email or other communication method
-            self.send_otp_email(username,email, otp_key)
+            send_otp_email(username,email,otp_key)
 
             return Response(
                 {"message": "OTP sent to your email"}, status=status.HTTP_200_OK
@@ -1128,52 +1016,8 @@ class ResendOTPView(APIView):
             return Response(
                 {"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
             )
-    def send_otp_email(self, username,email, otp_key):
-        # API endpoint to send the email
-        url = f"https://100085.pythonanywhere.com/api/email/"
-        EMAIL_FROM_WEBSITE = """
-                    <!DOCTYPE html>
-                        <html lang="en">
-                        <head>
-                            <meta charset="UTF-8">
-                            <meta http-equiv="X-UA-Compatible" content="IE=edge">
-                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                            <title>Samanta Content Evaluator</title>
-                        </head>
-                        <body>
-                            <div style="font-family: Helvetica, Arial, sans-serif; min-width: 100px; overflow: auto; line-height: 2; margin: 50px auto; width: 70%; padding: 20px 0; border-bottom: 1px solid #eee;">
-                                <a href="#" style="font-size: 1.2em; color: #00466a; text-decoration: none; font-weight: 600; display: block; text-align: center;">Dowell UX Living Lab Wallet</a>
-                                <p style="font-size: 1.1em; text-align: center;">Dear {name},</p>
-                                <p style="font-size: 1.1em; text-align: center;">Your OTP for verification is: {totp}</p>
-                                <p style="font-size: 1.1em; text-align: center;">If you did not request an OTP with us, you can ignore this email.</p>
-                            </div>
-                        </body>
-                        </html>
-                    """
 
-        email_content = EMAIL_FROM_WEBSITE.format(name=username, totp=otp_key)
-        payload = {
-            "toname": username,
-            "toemail": email,
-            "subject": "OTP Verification",
-            "email_content": email_content,
-        }
-        response = requests.post(url, json=payload)
-        print(response.text)
-        return response.text
-
-    def generate_totp_key(self):
-        # Generate a random secret key as bytes
-        secret_key_bytes = secrets.token_bytes(20)  # 20 bytes (160 bits)
-        # Convert the bytes to a base32-encoded string
-        secret_key = base64.b32encode(secret_key_bytes).decode("utf-8")
-        # Create a TOTP instance
-        totp = TOTP(
-            secret_key, interval=30
-        )  # Replace 'your-secret-key' with your secret key
-        # Generate the TOTP token
-        totp_key = totp.now()
-        return totp_key
+    
 
 
 # # class MoneyRequestView(APIView):
