@@ -119,29 +119,8 @@ class WalletLogin(APIView):
 
         wallet_password = request.data.get("wallet_password")
 
+
         try:
-            wallets = GetUserWallet(username)
-
-            if wallets["data"] == []:
-                print("----creating a new user wallet ------")
-                create_wallet = CreateUserWallet(username, email)
-
-                # Hash the password
-                hashed_password = make_password(wallet_password)
-                create_user_info = CreateUserInfo(username, email,hashed_password)
-
-                payload = {
-                    'id':f"{username}",
-                    'username': f"{username}",
-                    'email': f"{email}",
-                    "token_type": "access",
-                    'exp': datetime.utcnow() + timedelta(days=1)
-                    }
-
-                access_token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
-                return Response({'access_token': access_token})
-
-
 
             field = {"username": f"{username}"}
             user_info = GetUserInfo(field)["data"]
@@ -935,10 +914,15 @@ class SetUpWalletPassword(APIView):
                 )
 
             field = {"otp":f"{otp}"}
+            print("yes1")
             user_info = GetUserInfo(field)["data"]
+            print("yes2")
+            print(user_info)
             user_otp = str(user_info.get("otp")).strip()  # Normalize user_otp
             provided_otp = str(otp).strip()  # Normalize provided OTP
-
+            print("user_otp",user_otp)
+            print("provided_otp",provided_otp)
+            print(user_otp == provided_otp)
             if user_otp != provided_otp:
                 return Response(
                     {
