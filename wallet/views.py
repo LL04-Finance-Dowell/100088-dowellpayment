@@ -1,77 +1,35 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.authtoken.models import Token
-from django.contrib.auth import authenticate, login, logout
-from rest_framework_simplejwt.tokens import AccessToken
 from .serializers import (
-    UserRegistrationSerializer,
     PaymentAuthorizationSerializer,
-    WalletDetailSerializer,
-    TransactionSerializer,
-    ExternalPaymentSerializer,
-    UserProfileSerializer,
     DowellPaymentSerializer,
-    WalletPasswordSerializer,
 )
 from .utils.sendmail import (
     send_otp_email,
     send_password_reset_email,
     send_transaction_email,
-    
+
 )
 from .utils.generate_otp import generate_totp_key
-from django.utils.crypto import get_random_string
 from django.contrib.auth.models import User
-from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
 from django.http import HttpResponseRedirect
 from django.contrib.auth.models import User
-from requests.exceptions import RequestException
 import requests
-import random
 import jwt
 from datetime import datetime, timedelta
 from django.contrib.auth.hashers import make_password, check_password
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_exempt
 from .models import (
-    Wallet,
-    Transaction,
-    UserProfile,
-    MoneyRequest,
-    PaymentInitialazation,
-    Wallets,
     UserInfo,
-    Transactions,
 )
-from django.urls import reverse
 from django.conf import settings
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.permissions import IsAuthenticated
-from django.contrib.auth.tokens import default_token_generator
-from django.core.mail import send_mail
-from django.utils.encoding import force_bytes
-from pyotp import TOTP
-from django_otp.plugins.otp_totp.models import TOTPDevice
 from django.utils.decorators import method_decorator
-from django.utils.http import urlsafe_base64_decode
-from django.utils.encoding import force_str
 import base64
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
 from .serializers import PaymentSerializer
 from datetime import date
 import uuid
-import secrets
-from django.utils import timezone
 import stripe
-from rest_framework.decorators import authentication_classes, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from decimal import Decimal
 import os
-from django.db.models import Q
 from .supported_currency import stripe_supported_currency
 import uuid
 import json
@@ -93,9 +51,7 @@ from .utils.dowellconnections import (
     GetPayViaWallet,
 )
 
-from django.contrib.auth.hashers import make_password
-from django.contrib.auth.hashers import check_password
-
+from django.contrib.auth.hashers import make_password,check_password
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -209,42 +165,6 @@ class PasswordResetRequestView(APIView):
             return Response(
                 {"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
             )
-
-    
-
-    
-
-@method_decorator(jwt_decode,name="dispatch")
-class ResetPasswordOtpVerify(APIView):
-    def post(self,request,*args, **kwargs):
-        username = kwargs.get("username")
-        email = kwargs.get("email")
-        otp = request.data.get("otp")
-
-        try:
-            field = {"username": f"{username}"}
-            command = "fetch"
-            user_info = GetUserInfo(field)["data"]
-            user_otp = user_info.get("otp")
-        except:
-            return Response({"Success":True})
-        if otp == user_otp:
-            new_password = request.data.get("new_password")
-
-            field ={"username":f"{username}"}
-            update_field = {"wallet_password":f"{new_password}"}
-            set_new_password = UpdateUserInfo(field,update_field)
-            return Response(
-                {"message": "Password reset successful"}, status=status.HTTP_200_OK
-            )
-        else:
-            return Response(
-                {"error": "Invalid OTP"}, status=status.HTTP_400_BAD_REQUEST
-            )
-
-        """AFTER THIS THE USER SHOULD BE REDIRECTED TO THE RESET PASSWORD TO ENTER A NEW PASSWORD"""
-
-
 
 
 @method_decorator(jwt_decode, name="dispatch")
@@ -707,36 +627,6 @@ class UserProfileDetail(APIView):
             )
 
 
-    # def post(self, request,*args, **kwargs):
-    #     username = kwargs.get('username')
-    #     user_profile = UserProfile.objects.get(username=username)
-
-    #     data = request.data
-    #     if not data:
-    #         return Response(
-    #             {"success": False, "error": "Request body can't be empty"},
-    #             status=status.HTTP_422_UNPROCESSABLE_ENTITY,
-    #         )
-
-    #     # You can validate and update the user profile data here.
-    #     serializer = UserProfileSerializer(user_profile, data, partial=True)
-
-    #     if serializer.is_valid():
-    #         serializer.save()
-    #         return Response(
-    #             {
-    #                 "success": True,
-    #                 "message": "user profile successfully updated",
-    #                 "data": serializer.data,
-    #             },
-    #             status=status.HTTP_200_OK,
-    #         )
-    #     return Response(
-    #         {"success": False, "error": serializer.errors},
-    #         status=status.HTTP_400_BAD_REQUEST,
-    #     )
-
-
 """
 
 DELETE USER ACCOUNT
@@ -971,35 +861,6 @@ class SetUpWalletPassword(APIView):
 
 
 
-
-@method_decorator(jwt_decode, name="dispatch")
-class CreateWalletPassword(APIView):
-    serializer_class = WalletPasswordSerializer
-
-    def post(self, request, *args, **kwargs):
-        username = kwargs.get('username')
-        session_id = kwargs.get('session_id')
-        serializer = self.serializer_class(data=request.data)
-
-        if serializer.is_valid():
-            password = serializer.validated_data['wallet_password']
-            field = {"username":f"{username}"}
-            update_field = {"wallet_password":f"{password}"}
-            update_user_pass = UpdateUserInfo(field, update_field)
-            redirect_url = f'http://localhost:3000/?session_id={session_id}'
-
-            # Craft your response
-            data = {
-                'success': True,
-                'redirect_url': redirect_url,
-                'message': 'Wallet password updated successfully.'
-            }
-
-            return Response(data, status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
 @method_decorator(user_is_authenticated, name="dispatch")
 class ResendOTPView(APIView):
     def post(self, request,*args, **kwargs):
@@ -1023,7 +884,92 @@ class ResendOTPView(APIView):
                 {"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
             )
 
-    
+
+# @method_decorator(jwt_decode,name="dispatch")
+# class ResetPasswordOtpVerify(APIView):
+#     def post(self,request,*args, **kwargs):
+#         username = kwargs.get("username")
+#         email = kwargs.get("email")
+#         otp = request.data.get("otp")
+
+#         try:
+#             field = {"username": f"{username}"}
+#             command = "fetch"
+#             user_info = GetUserInfo(field)["data"]
+#             user_otp = user_info.get("otp")
+#         except:
+#             return Response({"Success":True})
+#         if otp == user_otp:
+#             new_password = request.data.get("new_password")
+
+#             field ={"username":f"{username}"}
+#             update_field = {"wallet_password":f"{new_password}"}
+#             set_new_password = UpdateUserInfo(field,update_field)
+#             return Response(
+#                 {"message": "Password reset successful"}, status=status.HTTP_200_OK
+#             )
+#         else:
+#             return Response(
+#                 {"error": "Invalid OTP"}, status=status.HTTP_400_BAD_REQUEST
+#             )
+
+#         """AFTER THIS THE USER SHOULD BE REDIRECTED TO THE RESET PASSWORD TO ENTER A NEW PASSWORD"""
+
+ # def post(self, request,*args, **kwargs):
+    #     username = kwargs.get('username')
+    #     user_profile = UserProfile.objects.get(username=username)
+
+    #     data = request.data
+    #     if not data:
+    #         return Response(
+    #             {"success": False, "error": "Request body can't be empty"},
+    #             status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+    #         )
+
+    #     # You can validate and update the user profile data here.
+    #     serializer = UserProfileSerializer(user_profile, data, partial=True)
+
+    #     if serializer.is_valid():
+    #         serializer.save()
+    #         return Response(
+    #             {
+    #                 "success": True,
+    #                 "message": "user profile successfully updated",
+    #                 "data": serializer.data,
+    #             },
+    #             status=status.HTTP_200_OK,
+    #         )
+    #     return Response(
+    #         {"success": False, "error": serializer.errors},
+    #         status=status.HTTP_400_BAD_REQUEST,
+    #     )
+
+#@method_decorator(jwt_decode, name="dispatch")
+# class CreateWalletPassword(APIView):
+#     serializer_class = WalletPasswordSerializer
+
+#     def post(self, request, *args, **kwargs):
+#         username = kwargs.get('username')
+#         session_id = kwargs.get('session_id')
+#         serializer = self.serializer_class(data=request.data)
+
+#         if serializer.is_valid():
+#             password = serializer.validated_data['wallet_password']
+#             field = {"username":f"{username}"}
+#             update_field = {"wallet_password":f"{password}"}
+#             update_user_pass = UpdateUserInfo(field, update_field)
+#             redirect_url = f'http://localhost:3000/?session_id={session_id}'
+
+#             # Craft your response
+#             data = {
+#                 'success': True,
+#                 'redirect_url': redirect_url,
+#                 'message': 'Wallet password updated successfully.'
+#             }
+
+#             return Response(data, status=status.HTTP_200_OK)
+#         else:
+#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 # # class MoneyRequestView(APIView):
