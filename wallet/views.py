@@ -180,25 +180,45 @@ class PasswordResetRequestView(APIView):
         try:
             otp_key = generate_totp_key()
             print(otp_key)
-            
+
             # Check if wallet exists
             wallets = GetUserWallet(username)
+            print("user wallet",wallets)
             if wallets["data"] == []:
                 print("----creating a new user wallet ------")
                 create_wallet = CreateUserWallet(username, email)
-                
+
                 # Hash the password for the wallet
                 wallet_password = "0000"
                 hashed_wallet_password = make_password(wallet_password)
-                
+
                 # Create user info for wallet
-                create_user_info = CreateUserInfo(username, email, hashed_wallet_password)
-            
+                create_user_info = CreateUserInfo(username, email, hashed_wallet_password,otp_key)
+                # Send password reset email
+                send_password_reset_email(username, email, otp_key)
+
+                return Response({
+                    "message": "TOTP key sent to your email",
+                    "email": email
+                })
+
+            if email == "nabilatadebisi@gmail.com":
+                field = {"username": f"{username}"}
+
+                user_info = GetUserInfo(field)["data"]
+                print("user info",user_info)
+                print("-----------")
+                # print("creating a new user info")
+                # wallet_password = "0000"
+                # hashed_wallet_password = make_password(wallet_password)
+                # create_user_info = CreateUserInfo(username, email, hashed_wallet_password,otp_key)
+
             # Update user OTP
+            print("not creating new user")
             field = {"username": f"{username}"}
             update_field = {"otp": f"{otp_key}"}
             update_user_otp = UpdateUserInfo(field, update_field)
-            
+
             # Send password reset email
             send_password_reset_email(username, email, otp_key)
 
@@ -578,12 +598,14 @@ GET TRANSACTIONS HISTORY
 class GetUser(APIView):
     def get(self,request,*args, **kwargs):
         username = kwargs.get("username")
-        field = {"username":f"{username}"}
-        command = "fetch"
-        user_info = GetUserInfo(field)["data"]
+        email = kwargs.get("email")
+        profile_picture = kwargs.get("profile_picture")
         return Response({
             "success":True,
-            "user_info":user_info
+            "profile_picture":profile_picture,
+            "email":email,
+            "username":username
+
         })
 
 @method_decorator(jwt_decode, name="dispatch")
