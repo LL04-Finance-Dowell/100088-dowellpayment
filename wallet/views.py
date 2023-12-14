@@ -475,14 +475,14 @@ class PaypalPaymentCallback(APIView):
 
             try:
                 if response["name"] == "RESOURCE_NOT_FOUND":
-                    redirect_url = f"http://localhost:3000/?session_id={sessionID}"
+                    redirect_url = f"http://localhost:3000/"
                     response = HttpResponseRedirect(redirect_url)
                     return response
             except:
                 pass
             try:
                 if response["error"] == "invalid_client":
-                    redirect_url = f"http://localhost:3000?session_id={sessionID}"
+                    redirect_url = f"http://localhost:3000/"
                     response = HttpResponseRedirect(redirect_url)
                     return response
             except:
@@ -501,13 +501,13 @@ class PaypalPaymentCallback(APIView):
                     send_transaction_email(username, email, amount)
 
             # redirect to frontend url page
-            redirect_url = f"http://localhost:3000/?session_id={sessionID}"
+            redirect_url = f"http://localhost:3000/"
             response = HttpResponseRedirect(redirect_url)
             return response
 
         except Exception as e:
             print("error", e)
-            redirect_url = f"http://localhost:3000/?session_id={sessionID}"
+            redirect_url = f"http://localhost:3000/"
             response = HttpResponseRedirect(redirect_url)
             return response
 
@@ -558,12 +558,12 @@ class StripePaymentCallback(APIView):
                 send_transaction_email(username, email, amount)
 
             # redirect to frontend url page
-            redirect_url = f"http://localhost:3000/?session_id={sessionID}"
+            redirect_url = f"http://localhost:3000/"
             response = HttpResponseRedirect(redirect_url)
             return response
         except Exception as e:
             print("error", e)
-            redirect_url = f"http://localhost:3000/?session_id={sessionID}"
+            redirect_url = f"http://localhost:3000/"
             response = HttpResponseRedirect(redirect_url)
             return response
 
