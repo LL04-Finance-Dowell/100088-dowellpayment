@@ -123,12 +123,12 @@ def jwt_decode(view_func):
                     # Add any other necessary attributes based on the structure of your payload
 
                 except jwt.ExpiredSignatureError as e:
-                    data = {'success':False,"message":f"{e}"}
+                    data = {'success':False,"message":f"{e}","url":f"https://100014.pythonanywhere.com?redirect_url=http://localhost:3000/login/"}
                     response = JsonResponse(data,status=401)
                     return response
 
                 except jwt.InvalidTokenError as e:
-                    data = {'success':False,"message":f"{e}"}
+                    data = {'success':False,"message":f"{e}","url":f"https://100014.pythonanywhere.com?redirect_url=http://localhost:3000/login/"}
                     response = JsonResponse(data,status=401)
                     return response
                    

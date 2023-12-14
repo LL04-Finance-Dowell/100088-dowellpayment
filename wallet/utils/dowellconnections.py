@@ -1,9 +1,11 @@
 import requests
 import json
 import uuid
-
+import random
 
 def GetUserWallet(username):
+
+    
     headers = {
         "content-type": "application/json",
     }
@@ -38,8 +40,10 @@ def CreateUserWallet(username, email, balance=0, currency="usd"):
 
     url = "http://uxlivinglab.pythonanywhere.com/"
 
-    unique_id = uuid.uuid4()
-    account_no = str(unique_id)
+
+
+    random_digits = ''.join([str(random.randint(0, 9)) for _ in range(5)])
+    account_no = f"{username}{random_digits}"
 
     data = {
         "cluster": "dowellpayment",
