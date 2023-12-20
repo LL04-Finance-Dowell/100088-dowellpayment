@@ -3,9 +3,10 @@ from rest_framework.response import Response
 from rest_framework import status
 from .serializers import PPPSerializer
 from datetime import datetime
-from .helper import get_all_currency_name, get_ppp_data
+from .helper import get_all_currency_name, get_ppp_data,get_latest_rate
 import requests
 import re
+import currencyapicom
 
 # from django_wkhtmltopdf.views import PDFTemplateView
 from weasyprint import HTML
@@ -339,3 +340,21 @@ class GetPublicPurchasingPowerParity(APIView):
                 },
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
+        
+
+class ExchangeCurrency(APIView):
+    def post(self, request):
+        base_price = request.data.get("base_price")
+        base_currency = request.data.get("base_currency")
+        target_currency = request.data.get("target_currency")
+        
+        try:
+            rate = get_latest_rate(base_currency, target_currency)
+            converted_price = round(base_price * rate, 2)  # Round to two decimal places
+
+            return Response({
+                "target_price": converted_price,
+                "target_currency": target_currency
+            })
+        except Exception as e:
+            return Response({'error': f'An error occurred: {e}'}, status=status.HTTP_400_BAD_REQUEST)

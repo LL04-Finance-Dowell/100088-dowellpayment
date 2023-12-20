@@ -13,4 +13,5 @@ urlpatterns = [
     path("ppp", GetPurchasingPowerParity.as_view()),
     path("ppp/client-mail", SendResponseToClient.as_view()),
     path("ppp/public/<str:api_key>", GetPublicPurchasingPowerParity.as_view()),
+    path("ppp/exchange-currency",views.ExchangeCurrency.as_view()),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
