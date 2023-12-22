@@ -76,7 +76,7 @@ def get_ppp_data(
 
     target_country_world_bank_ppp = target_country_obj.world_bank_ppp
     target_country_currency_code = target_country_obj.currency_code
-
+   
     try:
         # GET EXCHANGE RATE OF BASE COUNTRY IN BASE CURRENCY
         # get base curency object from the database by using the base currency as the filter
@@ -108,7 +108,7 @@ def get_ppp_data(
         )[0].currency_code.upper()
 
         res2 = get_latest_rate(target_country_currency_code, target_currency_code)
-        exchange_rate = get_latest_rate(base_currency_code, target_currency_code)
+        exchange_rate = get_latest_rate(base_currency_code, target_country_currency_code)
         print(base_currency_code, target_currency_code)
         print("exchange_rate", exchange_rate)
         try:
