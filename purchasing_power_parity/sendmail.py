@@ -24,6 +24,7 @@ def send_mail(
     exchange_rate,
     target_price,
     calculated_price_base_on_ppp,
+    target_country_currency_code
 ):
     # API endpoint to send the email
 
@@ -92,7 +93,7 @@ def send_mail(
             <li>Base Price In {base_country} : {base_price_in_country}</li>
             <li>Calculated Price In {target_country} : {calculated_price_in_target_country}</li>
             <li>Calculated Price Based On PPP : {calculated_price_base_on_ppp}</li>
-            <li>Exchange rate. 1 {base_currency_code} = {exchange_rate:.5f} {target_currency_code} </li>
+            <li>Exchange rate. 1 {base_currency_code} = {exchange_rate:.5f} {target_country_currency_code} </li>
           </ul>
           <div style="margin: 20px;">
             <p>DoWell UX Living Lab Team</p>
@@ -141,6 +142,7 @@ def send_mail(
         exchange_rate=exchange_rate,
         target_price=target_price,
         calculated_price_base_on_ppp=calculated_price_base_on_ppp,
+        target_country_currency_code=target_country_currency_code,
     )
 
     date = datetime.now().strftime("%Y-%m-%d")
