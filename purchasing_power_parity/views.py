@@ -3,13 +3,9 @@ from rest_framework.response import Response
 from rest_framework import status
 from .serializers import PPPSerializer
 from datetime import datetime
-from .helper import get_all_currency_name, get_ppp_data,get_latest_rate
+from .helper import  get_all_currency_name, get_ppp_data
 import requests
 import re
-import currencyapicom
-
-# from django_wkhtmltopdf.views import PDFTemplateView
-from weasyprint import HTML
 
 
 # Create your views here.
@@ -21,6 +17,7 @@ def processApikey(api_key):
 
 
 # FOR DOWELL INTERNAL TEAM
+
 
 
 class GetPurchasingPowerParity(APIView):
@@ -63,21 +60,16 @@ class GetPurchasingPowerParity(APIView):
 
             if email == None:
                 return Response(
-                    {
-                        "success": False,
-                        "message": "something went wrong",
-                        "details": "Email Field cannot be empty",
-                    },
-                    status=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                )
+                {
+                    "success": False,
+                    "message": "something went wrong",
+                    "details": "Email Field cannot be empty",
+                },
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
             #  call the function to get Purchasing Power Parity
             res = get_ppp_data(
-                base_currency,
-                base_price,
-                base_country,
-                target_country,
-                target_currency,
-                email,
+                base_currency, base_price, base_country, target_country, target_currency,email
             )
             return res
         except Exception as e:
@@ -89,7 +81,6 @@ class GetPurchasingPowerParity(APIView):
                 },
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
-
 
 class SendResponseToClient(APIView):
     def post(self, request):
@@ -118,6 +109,7 @@ class SendResponseToClient(APIView):
             base_currency_code =data["base_currency_code"]
             target_currency = data["target_currency"]
             target_currency_code =data["target_currency_code"]
+            target_country_currency_code=data["target_country_currency_code"]
             exchange_rate = data["exchange_rate"]
             # base_price_in_base_country = data["base_price_in_base_country"]
             # calculated_price_in_target_country = data["calculated_price_in_target_country"]
@@ -192,7 +184,7 @@ class SendResponseToClient(APIView):
                         <li>Base Price In {base_country} : {base_price_in_base_country}</li>
                         <li>Calculated Price In {target_country} : {calculated_price_in_target_country}</li>
                         <li>Calculated Price Based On PPP : {calculated_price_base_on_ppp}</li>
-                        <li>Exchange rate. 1 {base_currency_code} = {exchange_rate} {target_currency_code} </li>
+                        <li>Exchange rate. 1 {base_currency_code} = {exchange_rate} {target_country_currency_code} </li>
                     </ul>
                     <div style="margin: 20px;">
                         <p>
@@ -240,6 +232,7 @@ class SendResponseToClient(APIView):
                 base_currency_code = base_currency_code,
                 target_currency_code = target_currency_code,
                 target_currency=target_currency,
+                target_country_currency_code=target_country_currency_code,
                 exchange_rate=exchange_rate,
                 base_country=base_country,
                 base_price_in_base_country=base_price_in_base_country,
@@ -273,7 +266,6 @@ class SendResponseToClient(APIView):
                 },
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
-
 
 
 
@@ -340,21 +332,3 @@ class GetPublicPurchasingPowerParity(APIView):
                 },
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
-        
-
-class ExchangeCurrency(APIView):
-    def post(self, request):
-        base_price = request.data.get("base_price")
-        base_currency = request.data.get("base_currency")
-        target_currency = request.data.get("target_currency")
-        
-        try:
-            rate = get_latest_rate(base_currency, target_currency)
-            converted_price = round(base_price * rate, 2)  # Round to two decimal places
-
-            return Response({
-                "target_price": converted_price,
-                "target_currency": target_currency
-            })
-        except Exception as e:
-            return Response({'error': f'An error occurred: {e}'}, status=status.HTTP_400_BAD_REQUEST)

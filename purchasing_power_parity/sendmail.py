@@ -2,7 +2,7 @@ import os
 import requests
 from django.template.loader import render_to_string
 from io import BytesIO
-from datetime import date, datetime
+from datetime import date,datetime
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -24,7 +24,7 @@ def send_mail(
     exchange_rate,
     target_price,
     calculated_price_base_on_ppp,
-    target_country_currency_code
+    target_country_currency_code,
 ):
     # API endpoint to send the email
 
@@ -127,13 +127,12 @@ def send_mail(
   </body>
 </html>
 """
-    print("target_currency_code from mail", target_currency_code)
     email_content = EMAIL_FROM_WEBSITE.format(
         email=email,
         base_currency=base_currency,
-        base_currency_code=base_currency_code,
+        base_currency_code = base_currency_code,
         target_currency=target_currency,
-        target_currency_code=target_currency_code,
+        target_currency_code = target_currency_code,
         base_country=basecountry,
         base_price_in_country=base_price_in_country,
         target_country=targetcountry,
@@ -145,10 +144,11 @@ def send_mail(
         target_country_currency_code=target_country_currency_code,
     )
 
-    date = datetime.now().strftime("%Y-%m-%d")
+
+    date = datetime.now().strftime('%Y-%m-%d')
     payload = {
         "toname": "Dowell",
-        "toemail": f"{mail_id}",
+        "toemail": f"mail_id",
         "subject": f"{email}, result from DoWell World Price Indicator on {date}",
         "email_content": email_content,
     }

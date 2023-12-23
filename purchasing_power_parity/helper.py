@@ -30,8 +30,8 @@ def get_latest_rate(from_currency, to_currency):
         return result
 
 
-"""GET ALL CURRENCY NAME AND COUNTRY NAME"""
 
+"""GET ALL CURRENCY NAME AND COUNTRY NAME"""
 
 def get_all_currency_name():
     obj = PPPCalculation.objects.all()
@@ -56,11 +56,14 @@ def get_all_currency_name():
     )
 
 
+
+
+
 """CALCULATE THE PURCHASING POWER PARITY"""
 
 
 def get_ppp_data(
-    base_currency, base_price, base_country, target_country, target_currency, email
+    base_currency, base_price, base_country, target_country, target_currency,email
 ):
     # BASE COUNTRY
     # get base country object from the database base
@@ -76,7 +79,8 @@ def get_ppp_data(
 
     target_country_world_bank_ppp = target_country_obj.world_bank_ppp
     target_country_currency_code = target_country_obj.currency_code
-   
+
+
     try:
         # GET EXCHANGE RATE OF BASE COUNTRY IN BASE CURRENCY
         # get base curency object from the database by using the base currency as the filter
@@ -107,10 +111,11 @@ def get_ppp_data(
             Q(currency_name__iexact=target_currency)
         )[0].currency_code.upper()
 
+
         res2 = get_latest_rate(target_country_currency_code, target_currency_code)
-        exchange_rate = get_latest_rate(base_currency_code, target_country_currency_code)
-        print(base_currency_code, target_currency_code)
-        print("exchange_rate", exchange_rate)
+        exchange_rate = get_latest_rate(base_currency_code,target_country_currency_code)
+        print(base_currency_code,target_currency_code)
+        print("exchange_rate",exchange_rate)
         try:
             target_currency_exchange_rate = res2 * (purchasing_power)
         except:
@@ -146,6 +151,7 @@ def get_ppp_data(
     calculated_price_base_on_ppp = (
         f"{target_currency_exchange_rate:.5f} {target_currency_code}"
     )
+
     send_mail(
         email,
         base_currency,
@@ -160,27 +166,26 @@ def get_ppp_data(
         exchange_rate,
         target_price,
         calculated_price_base_on_ppp,
+        target_country_currency_code,
     )
-    print("target_currency_code from helper", target_currency_code)
     return Response(
         {
             "success": True,
             "message": "Expected values",
-            "email": email,
+            "email":email,
             "base_country": base_country,
             "target_country": target_country,
-            "base_currency": base_currency,
-            "target_currency": target_currency,
-            "base_currency_code": base_currency_code,
-            "target_currency_code": target_currency_code,
+            "base_currency":base_currency,
+            "target_currency":target_currency,
+            "target_country_currency_code":target_country_currency_code,
+            "base_currency_code":base_currency_code,
+            "target_currency_code":target_currency_code,
             f"base_price_in_{base_country}": f"{base_price} {base_currency_code}",
             f"calculated_price_in_{target_country}": f"{target_currency_exchange_rate:.5f} {target_currency_code}",
             "price_in_base_country": f"{base_currency_exchange_rate:.5f} {base_country_currency_code}",
-            "exchange_rate": f"{exchange_rate:.5f}",
+            "exchange_rate":f"{exchange_rate:.5f}",
             "target_price": f"{purchasing_power:.5f} {target_country_currency_code}",
             "calculated_price_base_on_ppp": f"{target_currency_exchange_rate:.5f} {target_currency_code}",
         },
         status=status.HTTP_200_OK,
     )
-
-
