@@ -18,7 +18,6 @@ function App() {
     target_currency: "",
     email: "",
   });
-
   const [result, setResult] = useState(null);
   const [mailLoading, setMailLoading] = useState(false);
 
@@ -39,10 +38,7 @@ function App() {
       [name]: value,
     });
   };
-
-  const handleCalculation = async (e) => {
-    e.preventDefault();
-
+  const handleCalculation = async () => {
     info.target_currency && setLoading(true);
 
     const requestOption = {
@@ -161,6 +157,7 @@ function App() {
           handleCalculation={handleCalculation}
           openModal={openModal}
           loading={loading}
+          setLoading={setLoading}
         />
 
         {/* right col */}
