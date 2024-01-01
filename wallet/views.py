@@ -507,69 +507,45 @@ class GetUser(APIView):
 
         })
 
+with open('wallet/templates/transactionHistory.html', 'r') as file:
+    email_content = file.read()
+
 @method_decorator(jwt_decode, name="dispatch")
 class TransactionHistoryView(APIView):
     def get(self, request, *args, **kwargs):
         username = kwargs.get("username")
         email = kwargs.get('email')
-        print(username)
-        print(email)
         # Retrieve the user's information
         try:
             field = {"username": f"{username}"}
             command = "fetch"
             transactions = GetUserTransaction(field, command)["data"]
-            print(transactions)
-
-            # Format the transaction history into a statement (you can customize the format)
+            print("---gotten---")
+            # Format the transaction history into a statement
             statement = "Transaction History:\n\n"
             for transaction in transactions:
                 statement += f"Transaction Type: {transaction['transaction_type']}\n"
                 statement += f"Amount: ${transaction['amount']}\n"
                 statement += f"Status: {transaction['status']}\n"
                 statement += f"Timestamp: {transaction['date']}\n\n"
-
-            print("Reached statement preparation")
-
+            print(statement)
             # Send the statement to the user's email using your email API
             user_name = username
-            print("Reached email preparation")
             user_email = email
-            print("User email:", user_email)
             email_api_url = f"https://100085.pythonanywhere.com/api/email/"
-            print("Reached email API")
-            print("Statement:", statement)
-            email_content = """
-                <!DOCTYPE html>
-                <html lang="en">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Your Transaction History</title>
-                </head>
-                <body>
-                    <div style="font-family: Helvetica, Arial, sans-serif; min-width: 100px; overflow: auto; line-height: 1.6; margin: 50px auto; width: 70%; padding: 20px 0; border-bottom: 1px solid #eee;">
-                        <p style="font-size: 1.1em; text-align: center;">Dear {name},</p>
-                        <p style="font-size: 1.1em; text-align: center;">Here is your transaction history:</p>
-                        <pre>{statement}</pre>
-                    </div>
-                </body>
-                </html>
-            """.format(
-                name=user_name, statement=statement
-            )
+
+            # Insert the statement into the email template
+            email_content_formatted = email_content.format(name=user_name, statement=statement)
 
             payload = {
                 "toname": user_name,
                 "toemail": user_email,
                 "subject": "Transaction History",
-                "email_content": email_content,
+                "email_content": email_content_formatted,
             }
 
             response = requests.post(email_api_url, json=payload)
-            print("sent email")
-            print("mail response",response)
+
             if response.status_code == 200:
                 return Response(
                     {"message": "Transaction history sent to your email"},
@@ -580,11 +556,12 @@ class TransactionHistoryView(APIView):
                     {"message": "Failed to send transaction history"},
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 )
-        except:
+        except Exception as e:
             return Response(
-                {"message": "User not found"},
-                status=status.HTTP_404_NOT_FOUND,
+                {"message": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
 
 
 

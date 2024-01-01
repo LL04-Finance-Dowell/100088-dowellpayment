@@ -1,4 +1,5 @@
 import os
+import requests
 from rest_framework import status
 from rest_framework.response import Response
 from django.db.models import Q
@@ -189,3 +190,39 @@ def get_ppp_data(
         },
         status=status.HTTP_200_OK,
     )
+
+
+def user_details_api(email):
+    print("---called user details api---")
+    api_url = "https://100105.pythonanywhere.com/api/v3/experience_database_services/?type=experienced_service_user_details"
+    print(email)
+    payload = {
+        "email":email,
+        "product_number":"UXLIVINGLAB002",
+        "occurrences":1
+    }
+    print("---payload gotten---")
+    response = requests.post(api_url,json=payload)
+    return response
+
+def save_data(email,res):
+    api_url = "https://100105.pythonanywhere.com/api/v3/experience_database_services/?type=experienced_user_details" 
+    print("---save data called---")
+    print("this is res")
+    print(res.data)
+    payload = {
+
+        "product_name":"WORLD PRICE INDICATOR",
+        "email":email,
+        "experienced_data":res.data
+    }
+    
+    print("gotten save data payload")
+    response = requests.post(api_url,json=payload)
+    print(response)
+    return response
+
+def update_user_usage(email):
+    api_url = f"https://100105.pythonanywhere.com/api/v3/experience_database_services/?type=update_user_usage&product_number=UXLIVINGLAB002&email={email}&occurrences=3"
+    response = requests.get(api_url)
+    return response

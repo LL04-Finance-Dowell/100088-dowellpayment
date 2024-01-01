@@ -3,10 +3,10 @@ from rest_framework.response import Response
 from rest_framework import status
 from .serializers import PPPSerializer
 from datetime import datetime
-from .helper import  get_all_currency_name, get_ppp_data
+from .helper import  get_all_currency_name, get_ppp_data,user_details_api,save_data,update_user_usage
 import requests
 import re
-
+from threading import Thread
 
 # Create your views here.
 def processApikey(api_key):
@@ -17,20 +17,17 @@ def processApikey(api_key):
 
 
 # FOR DOWELL INTERNAL TEAM
-
-
-
 class GetPurchasingPowerParity(APIView):
     def get(self, request):
         try:
-            #  call the function to get all the currency name
+            # Call the function to get all the currency names
             res = get_all_currency_name()
             return res
         except Exception as e:
             return Response(
                 {
                     "success": False,
-                    "message": "something went wrong",
+                    "message": "Something went wrong",
                     "error": f"{e}",
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -39,7 +36,7 @@ class GetPurchasingPowerParity(APIView):
     def post(self, request):
         try:
             data = request.data
-            # serialize the input data
+            # Serialize the input data
             serializer = PPPSerializer(data=data)
             if serializer.is_valid():
                 validate_data = serializer.validated_data
@@ -48,36 +45,78 @@ class GetPurchasingPowerParity(APIView):
                 base_country = validate_data["base_country"]
                 target_country = validate_data["target_country"]
                 target_currency = validate_data["target_currency"]
-
             else:
                 errors = serializer.errors
                 return Response(errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
             try:
                 email = data["email"]
-            except:
+            except KeyError:
                 email = None
 
-            if email == None:
+            if email is None:
                 return Response(
-                {
-                    "success": False,
-                    "message": "something went wrong",
-                    "details": "Email Field cannot be empty",
-                },
-                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            )
-            #  call the function to get Purchasing Power Parity
-            res = get_ppp_data(
-                base_currency, base_price, base_country, target_country, target_currency,email
-            )
-            return res
+                    {
+                        "success": False,
+                        "message": "Something went wrong",
+                        "details": "Email Field cannot be empty",
+                    },
+                    status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                )
+
+            # Call the function to hit an API with user details
+            api_response = user_details_api(email)
+            print("---gotten api response---")
+            print(api_response.json())
+            
+            api_response_data = api_response.json()
+            if "success" in api_response_data:
+                if api_response_data["success"] is True:
+                    # Move to logic for PPP calculation
+                    res = get_ppp_data(
+                        base_currency, base_price, base_country, target_country, target_currency, email
+                    )
+                    print("---returning response---")
+                      # Run functions in threads
+                    print("this is res from view")
+                    print(res)
+                    experienced_date = Thread(target=save_data, args=(email, res))
+                    experienced_date.daemon = True
+                    experienced_date.start()
+
+                    experienced_reduce = Thread(target=update_user_usage, args=(email,))
+                    experienced_reduce.daemon = True
+                    experienced_reduce.start()
+
+                    # Return PPP calculation response to the frontend
+                    print("---everything worked---")
+                    return res
+                else:
+                    return Response(
+                        {
+                            "success": False,
+                            "message": "API response unsuccessful",
+                            "details": "User details verification failed",
+                        },
+                        status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    )
+            else:
+                return Response(
+                    {
+                        "success": False,
+                        "message": "API response doesn't contain success status",
+                        "details": "User details verification failed",
+                    },
+                    status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                )
+
         except Exception as e:
             return Response(
                 {
                     "success": False,
-                    "message": "something went wrong",
+                    "message": "Something went wrong",
                     "details": "Invalid Country Name",
+                    "error": str(e),
                 },
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
