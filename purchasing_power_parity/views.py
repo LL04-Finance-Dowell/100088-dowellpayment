@@ -45,6 +45,8 @@ class GetPurchasingPowerParity(APIView):
                 base_country = validate_data["base_country"]
                 target_country = validate_data["target_country"]
                 target_currency = validate_data["target_currency"]
+                occurrences = data["occurrences"]
+                print("---got data---")
             else:
                 errors = serializer.errors
                 return Response(errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
@@ -65,7 +67,9 @@ class GetPurchasingPowerParity(APIView):
                 )
 
             # Call the function to hit an API with user details
-            api_response = user_details_api(email)
+            occurrences += 1
+            print(occurrences)
+            api_response = user_details_api(email,occurrences)
             print("---gotten api response---")
             print(api_response.json())
             
@@ -84,7 +88,7 @@ class GetPurchasingPowerParity(APIView):
                     experienced_date.daemon = True
                     experienced_date.start()
 
-                    experienced_reduce = Thread(target=update_user_usage, args=(email,))
+                    experienced_reduce = Thread(target=update_user_usage, args=(email,occurrences))
                     experienced_reduce.daemon = True
                     experienced_reduce.start()
 

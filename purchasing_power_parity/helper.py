@@ -192,14 +192,14 @@ def get_ppp_data(
     )
 
 
-def user_details_api(email):
+def user_details_api(email,occurrences):
     print("---called user details api---")
     api_url = "https://100105.pythonanywhere.com/api/v3/experience_database_services/?type=experienced_service_user_details"
     print(email)
     payload = {
         "email":email,
         "product_number":"UXLIVINGLAB002",
-        "occurrences":1
+        "occurrences":occurrences
     }
     print("---payload gotten---")
     response = requests.post(api_url,json=payload)
@@ -222,7 +222,7 @@ def save_data(email,res):
     print(response)
     return response
 
-def update_user_usage(email):
-    api_url = f"https://100105.pythonanywhere.com/api/v3/experience_database_services/?type=update_user_usage&product_number=UXLIVINGLAB002&email={email}&occurrences=3"
+def update_user_usage(email,occurrences):
+    api_url = f"https://100105.pythonanywhere.com/api/v3/experience_database_services/?type=update_user_usage&product_number=UXLIVINGLAB002&email={email}&occurrences={occurrences}"
     response = requests.get(api_url)
     return response
