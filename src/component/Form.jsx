@@ -26,7 +26,7 @@ const Form = ({
       try {
         setLoading(true);
         const response = await fetch(
-          `https://100105.pythonanywhere.com/api/v3/experience_database_services/?type=get_user_email&product_number=UXLIVINGLAB001&email=${info.email}`
+          `https://100105.pythonanywhere.com/api/v3/experience_database_services/?type=get_user_email&product_number=UXLIVINGLAB002&email=${info.email}`
         );
         if (!response.ok) {
           throw new Error("Network response was not ok");
@@ -42,7 +42,7 @@ const Form = ({
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              product_number: "UXLIVINGLAB001",
+              product_number: "UXLIVINGLAB002",
               email: info.email,
             }),
           };
