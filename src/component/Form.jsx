@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { Button, Icon, Spinner } from "@chakra-ui/react";
-import { MdArrowDropDown } from "react-icons/md";
+import { Button, Spinner } from "@chakra-ui/react";
 import logo from "../assets/dowell-logo.svg";
 import Select from "react-select";
 
@@ -11,6 +10,8 @@ const Form = ({
   handleCalculation,
   loading,
   setLoading,
+  occurrences,
+  setOccurrences,
 }) => {
   // console.log('State: ', state)
   const [canCalculate, setCanCalculate] = useState(false);
@@ -33,6 +34,7 @@ const Form = ({
         }
 
         const responseData = await response.json();
+        setOccurrences(responseData.occurrences);
         if (responseData.occurrences !== 0) {
           setCanCalculate(true);
         } else {
@@ -281,9 +283,16 @@ const Form = ({
               name="email"
               value={info?.email}
               onChange={onChange}
-              style={{ marginBottom: -10 }}
+              style={{ cursor: "auto" }}
             />
           </div>
+          {occurrences !== null && (
+            <p style={{ fontSize: 17 }}>
+              Your Experince is :{" "}
+              <span style={{ fontWeight: "500" }}>{occurrences}</span>
+            </p>
+          )}
+
           <div
             style={{
               display: "flex",

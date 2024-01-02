@@ -16,11 +16,11 @@ function App() {
     base_country: "",
     target_country: "",
     target_currency: "",
-    email: "",
+    email: "dowell@dowellresearch.uk",
   });
   const [result, setResult] = useState(null);
   const [mailLoading, setMailLoading] = useState(false);
-
+  const [occurrences, setOccurrences] = useState(null);
   useEffect(() => {
     const fetchData = async (url) => {
       const res = await fetch(url);
@@ -46,7 +46,7 @@ function App() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(info),
+      body: JSON.stringify({ ...info, occurrences }),
     };
     try {
       const response = await fetch(
@@ -69,7 +69,7 @@ function App() {
           base_country: "",
           target_country: "",
           target_currency: "",
-          email: "",
+          email: "dowell@dowellresearch.uk",
         });
       }
     } catch (error) {
@@ -133,7 +133,7 @@ function App() {
       base_country: "",
       target_country: "",
       target_currency: "",
-      email: "",
+      email: "dowell@dowellresearch.uk",
     });
   };
 
@@ -158,6 +158,8 @@ function App() {
           openModal={openModal}
           loading={loading}
           setLoading={setLoading}
+          occurrences={occurrences}
+          setOccurrences={setOccurrences}
         />
 
         {/* right col */}

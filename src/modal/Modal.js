@@ -53,10 +53,10 @@ function Modal({
           </div>
 
           <div className="info__Price">
-            <p>
+            <p className="desc">
               {basePriceInBaseCountry}: {basePriceInBaseCountryValue}
             </p>
-            <p>
+            <p className="desc">
               {calculatedPriceInTargetCountry}:{" "}
               {calculatedPriceInTargetCountryValue}
             </p>
