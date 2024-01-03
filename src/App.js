@@ -9,6 +9,7 @@ import { toast } from "react-toastify";
 function App() {
   const [isModalOpen, setModalOpen] = useState(false);
   const [state, setState] = useState(null);
+  console.log(state);
   const [loading, setLoading] = useState(false);
   const [info, setInfo] = useState({
     base_currency: "",
@@ -63,6 +64,7 @@ function App() {
       if (responseData.success === true) {
         openModal();
         setLoading(false);
+        // setState({...state,currency:[],country:[]})
         setInfo({
           ...info,
           base_price: "",

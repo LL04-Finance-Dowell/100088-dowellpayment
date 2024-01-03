@@ -80,30 +80,32 @@ function Modal({
                         <td style={{ fontWeight: 700 }}>{calculatedPriceInTargetCountry}</td>
                         <td style={{ fontWeight: 700 }}>{calculatedPriceInTargetCountryValue}</td>
                     </tr> */}
-              <tr className="separation"></tr>
+              {/* <tr className="separation"></tr> */}
               <tr className="even">
-                <td>Base Currency</td>
-                <td>{info?.base_currency}</td>
+                <td style={{ textAlign: "right" }}>Base Currency</td>
+                <td style={{ textAlign: "left" }}>{info?.base_currency}</td>
               </tr>
               <tr className="even">
-                <td>Base Country</td>
-                <td>{values?.base_country}</td>
+                <td style={{ textAlign: "right" }}>Base Country</td>
+                <td style={{ textAlign: "left" }}>{values?.base_country}</td>
               </tr>
               <tr className="even">
-                <td>Price in Base Country</td>
-                <td>{values?.price_in_base_country}</td>
+                <td style={{ textAlign: "right" }}>Price in Base Country</td>
+                <td style={{ textAlign: "left" }}>
+                  {values?.price_in_base_country}
+                </td>
               </tr>
               <tr className="even">
-                <td>Target Country</td>
-                <td>{values?.target_country}</td>
+                <td style={{ textAlign: "right" }}>Target Country</td>
+                <td style={{ textAlign: "left" }}>{values?.target_country}</td>
               </tr>
               <tr className="even">
-                <td>Price in target country</td>
-                <td>{values?.target_price}</td>
+                <td style={{ textAlign: "right" }}>Price in target country</td>
+                <td style={{ textAlign: "left" }}>{values?.target_price}</td>
               </tr>
               <tr className="even">
-                <td>Exchange rate</td>
-                <td>
+                <td style={{ textAlign: "right" }}>Exchange rate</td>
+                <td style={{ textAlign: "left" }}>
                   1 {values?.base_currency_code} = {values?.exchange_rate}{" "}
                   {values?.target_country_currency_code}
                 </td>
@@ -130,6 +132,17 @@ function Modal({
               disabled={mailLoading ? true : false}
             >
               {mailLoading ? "Sending mail..." : "Yes"}
+            </Button>
+            <Button
+              color="white"
+              bg="#61B84C"
+              p={"1 5"}
+              fontSize={"0.875rem"}
+              _hover={{ background: "#62b84cda" }}
+              onClick={onClose}
+              disabled={mailLoading ? true : false}
+            >
+              {mailLoading ? "Sending mail..." : "No"}
             </Button>
             {/* <Button
                     color="#972EA2"

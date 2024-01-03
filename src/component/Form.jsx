@@ -64,6 +64,7 @@ const Form = ({
       setLoading(false);
     }
   };
+
   return (
     <>
       <div className="left-col">
@@ -318,27 +319,49 @@ const Form = ({
             >
               {"Close"}
             </Button>
-            <Button
-              type="submit"
-              width="65%"
-              color="white"
-              bg="#61B84C"
-              mt={{ sm: 1, md: 2, lg: 4 }}
-              className="button"
-              fontSize={{ sm: ".8em", md: "1.2em", lg: "1.2em" }}
-              style={{ borderRadius: "20px" }}
-              // h={{ sm: "35px", md: "45px" }}
-              h={45}
-              _hover={{ background: "#62b84cda" }}
-            >
-              {loading ? (
-                <Spinner />
-              ) : canCalculate ? (
-                "Calculate"
-              ) : (
-                "Experience"
-              )}
-            </Button>
+            {occurrences !== 6 && (
+              <Button
+                type="submit"
+                width={occurrences === 4 || occurrences === 5 ? "30%" : "65%"}
+                color="white"
+                bg="#61B84C"
+                mt={{ sm: 1, md: 2, lg: 4 }}
+                className="button"
+                fontSize={{ sm: ".8em", md: "1.2em", lg: "1.2em" }}
+                style={{ borderRadius: "20px" }}
+                // h={{ sm: "35px", md: "45px" }}
+                h={45}
+                _hover={{ background: "#62b84cda" }}
+              >
+                {loading ? (
+                  <Spinner />
+                ) : canCalculate ? (
+                  "Calculate"
+                ) : (
+                  "Experience"
+                )}
+              </Button>
+            )}
+
+            {occurrences === 4 || occurrences === 5 || occurrences === 6 ? (
+              <Button
+                type="submit"
+                width={occurrences === 6 ? "65%" : "30%"}
+                color="white"
+                bg="#61B84C"
+                mt={{ sm: 1, md: 2, lg: 4 }}
+                className="button"
+                fontSize={{ sm: ".8em", md: "1.2em", lg: "1.2em" }}
+                style={{ borderRadius: "20px" }}
+                // h={{ sm: "35px", md: "45px" }}
+                h={45}
+                _hover={{ background: "#62b84cda" }}
+              >
+                {loading ? <Spinner /> : "Contribute"}
+              </Button>
+            ) : (
+              ""
+            )}
           </div>
         </form>
       </div>
