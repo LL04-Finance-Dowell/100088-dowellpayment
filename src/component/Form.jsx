@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Spinner } from "@chakra-ui/react";
 import logo from "../assets/dowell-logo.svg";
 import Select from "react-select";
+import { getUserRecentHistory } from "../utils";
 
 const Form = ({
   onChange,
@@ -15,6 +16,19 @@ const Form = ({
 }) => {
   // console.log('State: ', state)
   const [canCalculate, setCanCalculate] = useState(false);
+  const [ savedDetails, setSavedDetails ] = useState(null);
+
+  useEffect(() => {
+    const { savedBaseCurrencies, savedBaseCountries, savedTargetCountries, savedTargetCurrencies } = getUserRecentHistory();
+
+    setSavedDetails({
+      savedBaseCurrencies: [...savedBaseCurrencies].reverse(),
+      savedBaseCountries: [...savedBaseCountries].reverse(),
+      savedTargetCountries: [...savedTargetCountries].reverse(),
+      savedTargetCurrencies: [...savedTargetCurrencies].reverse(),
+    })
+  }, [info])
+
   const handleClosePage = () => {
     window.close();
   };
@@ -27,7 +41,7 @@ const Form = ({
       try {
         setLoading(true);
         const response = await fetch(
-          `https://100105.pythonanywhere.com/api/v3/experience_database_services/?type=get_user_email&product_number=UXLIVINGLAB002&email=${info.email}`
+          `https://100105.pythonanywhere.com/api/v3/experience_database_services/?type=get_user_email&product_number=UXLIVINGLAB002&email=${info.email.length < 1 ? 'dowell@dowellresearch.uk' : info.email}`
         );
         if (!response.ok) {
           throw new Error("Network response was not ok");
@@ -107,7 +121,17 @@ const Form = ({
                   ? [
                       // {label: 'Select Currency', value: ''},
                     ]
-                  : [
+                  :
+                savedDetails && savedDetails.savedBaseCurrencies 
+                  ?
+                    [...savedDetails.savedBaseCurrencies, ...state?.currency?.filter(item => !savedDetails.savedBaseCurrencies.find(savedItem => savedItem === item))].map((currency => {
+                      return {
+                        label: currency,
+                        value: currency,
+                      }
+                    }))
+                  :
+                   [
                       // {label: 'Select Currency', value: ''},
                       ...state?.currency?.map((currency) => {
                         return {
@@ -160,7 +184,17 @@ const Form = ({
                   ? [
                       // {label: 'Select country', value: ''},
                     ]
-                  : [
+                  :
+                savedDetails && savedDetails.savedBaseCountries 
+                  ?
+                    [...savedDetails.savedBaseCountries, ...state?.country?.filter(item => !savedDetails.savedBaseCountries.find(savedItem => savedItem === item))].map((country => {
+                      return {
+                        label: country,
+                        value: country,
+                      }
+                    }))
+                  :
+                    [
                       // {label: 'Select country', value: ''},
                       ...state?.country?.map((country) => {
                         return {
@@ -205,7 +239,17 @@ const Form = ({
                   ? [
                       // {label: 'Select country', value: ''},
                     ]
-                  : [
+                  :
+                  savedDetails && savedDetails.savedTargetCountries 
+                  ?
+                    [...savedDetails.savedTargetCountries, ...state?.country?.filter(item => !savedDetails.savedTargetCountries.find(savedItem => savedItem === item))].map((country => {
+                      return {
+                        label: country,
+                        value: country,
+                      }
+                    }))
+                  : 
+                    [
                       // {label: 'Select country', value: ''},
                       ...state?.country?.map((country) => {
                         return {
@@ -253,7 +297,16 @@ const Form = ({
                   ? [
                       // {label: 'Select Currency', value: ''},
                     ]
-                  : [
+                  :
+                savedDetails && savedDetails.savedTargetCurrencies ?
+                    [...savedDetails.savedTargetCurrencies, ...state?.currency?.filter(item => !savedDetails.savedTargetCurrencies.find(savedItem => savedItem === item))].map((currency => {
+                      return {
+                        label: currency,
+                        value: currency,
+                      }
+                    }))
+                  :
+                    [
                       // {label: 'Select Currency', value: ''},
                       ...state?.currency?.map((currency) => {
                         return {
@@ -278,9 +331,9 @@ const Form = ({
           <div className="form-group">
             <label>Your Email Address</label>
             <input
-              required
-              type="text"
-              placeholder="admin@example.com"
+              // required
+              type="email"
+              placeholder="dowell@dowellresearch.uk"
               name="email"
               value={info?.email}
               onChange={onChange}

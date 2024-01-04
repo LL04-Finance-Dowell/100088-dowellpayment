@@ -20,7 +20,7 @@ const Details = () => {
             </div>
 
             <div className='section'>
-              <p className="question">Disclaimer for Purchase Price Calculator:</p>
+              <p className="question">Disclaimer:</p>
               <p className='answer'>
                 The Dowell World Price Indicator is used to provide estimates, with data collected solely for this purpose. The purpose-built and trained software offers approximate values, though results may vary with market dynamics. The creators disclaim any liabilities. Data collection complies with GDPR rules. Information obtained is for informational purposes, not professional & legal advice. By acknowledging these terms, Spending based on calculations is at user discretion
               </p>

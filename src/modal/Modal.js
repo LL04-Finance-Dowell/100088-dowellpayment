@@ -156,7 +156,7 @@ function Modal({
 
           <p className="disclaimer__Wrapp">
             <span className="disclaimer__text">
-              Disclaimer for Purchase Power Calculator:
+              Disclaimer:
             </span>
             <span className="disclaimer__Info">
               The Dowell World Price Indicator is used to provide estimates,
