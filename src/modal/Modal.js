@@ -135,10 +135,10 @@ function Modal({
             </Button>
             <Button
               color="white"
-              bg="#61B84C"
+              bg="#5e1318"
               p={"1 5"}
               fontSize={"0.875rem"}
-              _hover={{ background: "#62b84cda" }}
+              _hover={{ background: "#f09fa3" }}
               onClick={onClose}
               disabled={mailLoading ? true : false}
             >
@@ -155,9 +155,7 @@ function Modal({
           </div>
 
           <p className="disclaimer__Wrapp">
-            <span className="disclaimer__text">
-              Disclaimer:
-            </span>
+            <span className="disclaimer__text">Disclaimer:</span>
             <span className="disclaimer__Info">
               The Dowell World Price Indicator is used to provide estimates,
               with data collected solely for this purpose. The purpose-built and

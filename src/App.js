@@ -43,7 +43,7 @@ function App() {
   const handleCalculation = async () => {
     info.target_currency && setLoading(true);
 
-    if (info.email.length < 1) info.email = 'dowell@dowellresearch.uk';
+    if (info.email.length < 1) info.email = "dowell@dowellresearch.uk";
 
     const requestOption = {
       method: "POST",
@@ -53,8 +53,13 @@ function App() {
       body: JSON.stringify({ ...info, occurrences }),
     };
 
-    const { savedBaseCurrencies, savedBaseCountries, savedTargetCountries, savedTargetCurrencies } = getUserRecentHistory();
-    const copyOfInfo = {...info};
+    const {
+      savedBaseCurrencies,
+      savedBaseCountries,
+      savedTargetCountries,
+      savedTargetCurrencies,
+    } = getUserRecentHistory();
+    const copyOfInfo = { ...info };
 
     try {
       const response = await fetch(
@@ -71,7 +76,6 @@ function App() {
       if (responseData.success === true) {
         openModal();
         setLoading(false);
-        // setState({...state,currency:[],country:[]})
         setInfo({
           ...info,
           base_price: "",
@@ -82,23 +86,35 @@ function App() {
         });
 
         if (savedBaseCurrencies.includes(copyOfInfo.base_currency)) {
-          const foundPreviousItemIndex = savedBaseCurrencies.indexOf(copyOfInfo.base_currency);
-          if (foundPreviousItemIndex > -1) savedBaseCurrencies.splice(foundPreviousItemIndex, 1)
+          const foundPreviousItemIndex = savedBaseCurrencies.indexOf(
+            copyOfInfo.base_currency
+          );
+          if (foundPreviousItemIndex > -1)
+            savedBaseCurrencies.splice(foundPreviousItemIndex, 1);
         }
 
         if (savedBaseCountries.includes(copyOfInfo.base_country)) {
-          const foundPreviousItemIndex = savedBaseCountries.indexOf(copyOfInfo.base_country);
-          if (foundPreviousItemIndex > -1) savedBaseCountries.splice(foundPreviousItemIndex, 1)
+          const foundPreviousItemIndex = savedBaseCountries.indexOf(
+            copyOfInfo.base_country
+          );
+          if (foundPreviousItemIndex > -1)
+            savedBaseCountries.splice(foundPreviousItemIndex, 1);
         }
 
         if (savedTargetCountries.includes(copyOfInfo.target_country)) {
-          const foundPreviousItemIndex = savedTargetCountries.indexOf(copyOfInfo.target_country);
-          if (foundPreviousItemIndex > -1) savedTargetCountries.splice(foundPreviousItemIndex, 1)
+          const foundPreviousItemIndex = savedTargetCountries.indexOf(
+            copyOfInfo.target_country
+          );
+          if (foundPreviousItemIndex > -1)
+            savedTargetCountries.splice(foundPreviousItemIndex, 1);
         }
 
         if (savedTargetCurrencies.includes(copyOfInfo.target_currency)) {
-          const foundPreviousItemIndex = savedTargetCurrencies.indexOf(copyOfInfo.target_currency);
-          if (foundPreviousItemIndex > -1) savedTargetCurrencies.splice(foundPreviousItemIndex, 1)
+          const foundPreviousItemIndex = savedTargetCurrencies.indexOf(
+            copyOfInfo.target_currency
+          );
+          if (foundPreviousItemIndex > -1)
+            savedTargetCurrencies.splice(foundPreviousItemIndex, 1);
         }
 
         savedBaseCurrencies.push(copyOfInfo.base_currency);
@@ -106,7 +122,12 @@ function App() {
         savedTargetCountries.push(copyOfInfo.target_country);
         savedTargetCurrencies.push(copyOfInfo.target_currency);
 
-        updateUserRecentHistory(savedBaseCurrencies, savedBaseCountries, savedTargetCountries, savedTargetCurrencies);
+        updateUserRecentHistory(
+          savedBaseCurrencies,
+          savedBaseCountries,
+          savedTargetCountries,
+          savedTargetCurrencies
+        );
       }
     } catch (error) {
       console.error("Fetch Error:", error);
@@ -148,7 +169,7 @@ function App() {
       info.target_currency !== "" &&
       info.target_country !== "" &&
       info.base_country !== "" &&
-      info.base_currency !== "" 
+      info.base_currency !== ""
       // &&
       // info.email !== ""
     ) {
