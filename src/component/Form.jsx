@@ -8,75 +8,77 @@ const Form = ({
   onChange,
   state,
   info,
-  handleCalculation,
   loading,
   setLoading,
-  occurrences,
   setOccurrences,
+  openModal,
 }) => {
   // console.log('State: ', state)
-  const [canCalculate, setCanCalculate] = useState(false);
-  const [ savedDetails, setSavedDetails ] = useState(null);
+  // const [canCalculate, setCanCalculate] = useState(false);
+  const [savedDetails, setSavedDetails] = useState(null);
 
   useEffect(() => {
-    const { savedBaseCurrencies, savedBaseCountries, savedTargetCountries, savedTargetCurrencies } = getUserRecentHistory();
+    const {
+      savedBaseCurrencies,
+      savedBaseCountries,
+      savedTargetCountries,
+      savedTargetCurrencies,
+    } = getUserRecentHistory();
 
     setSavedDetails({
       savedBaseCurrencies: [...savedBaseCurrencies].reverse(),
       savedBaseCountries: [...savedBaseCountries].reverse(),
       savedTargetCountries: [...savedTargetCountries].reverse(),
       savedTargetCurrencies: [...savedTargetCurrencies].reverse(),
-    })
-  }, [info])
+    });
+  }, [info]);
 
   const handleClosePage = () => {
     window.close();
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (canCalculate) {
-      handleCalculation();
-      setCanCalculate(false);
-    } else {
-      try {
-        setLoading(true);
+    try {
+      setLoading(true);
+      const response = await fetch(
+        `https://100105.pythonanywhere.com/api/v3/experience_database_services/?type=get_user_email&product_number=UXLIVINGLAB002&email=${
+          info.email.length < 1 ? "dowell@dowellresearch.uk" : info.email
+        }`
+      );
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+
+      const responseData = await response.json();
+      setOccurrences(responseData.occurrences);
+      if (responseData.occurrences !== 0) {
+        openModal();
+      } else {
+        const requestOption = {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            product_number: "UXLIVINGLAB002",
+            email:
+              info.email.length < 1 ? "dowell@dowellresearch.uk" : info.email,
+          }),
+        };
         const response = await fetch(
-          `https://100105.pythonanywhere.com/api/v3/experience_database_services/?type=get_user_email&product_number=UXLIVINGLAB002&email=${info.email.length < 1 ? 'dowell@dowellresearch.uk' : info.email}`
+          `https://100105.pythonanywhere.com/api/v3/experience_database_services/?type=register_user`,
+          requestOption
         );
-        if (!response.ok) {
+        if (response.ok) {
+          openModal();
+        } else {
           throw new Error("Network response was not ok");
         }
-
-        const responseData = await response.json();
-        setOccurrences(responseData.occurrences);
-        if (responseData.occurrences !== 0) {
-          setCanCalculate(true);
-        } else {
-          const requestOption = {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              product_number: "UXLIVINGLAB002",
-              email: info.email,
-            }),
-          };
-          const response = await fetch(
-            `https://100105.pythonanywhere.com/api/v3/experience_database_services/?type=register_user`,
-            requestOption
-          );
-          if (response.ok) {
-            setCanCalculate(true);
-          } else {
-            throw new Error("Network response was not ok");
-          }
-        }
-      } catch (error) {
-        console.error("Fetch Error:", error);
       }
-      setLoading(false);
+    } catch (error) {
+      console.error("Fetch Error:", error);
     }
+    setLoading(false);
   };
 
   return (
@@ -121,17 +123,22 @@ const Form = ({
                   ? [
                       // {label: 'Select Currency', value: ''},
                     ]
-                  :
-                savedDetails && savedDetails.savedBaseCurrencies 
-                  ?
-                    [...savedDetails.savedBaseCurrencies, ...state?.currency?.filter(item => !savedDetails.savedBaseCurrencies.find(savedItem => savedItem === item))].map((currency => {
+                  : savedDetails && savedDetails.savedBaseCurrencies
+                  ? [
+                      ...savedDetails.savedBaseCurrencies,
+                      ...state?.currency?.filter(
+                        (item) =>
+                          !savedDetails.savedBaseCurrencies.find(
+                            (savedItem) => savedItem === item
+                          )
+                      ),
+                    ].map((currency) => {
                       return {
                         label: currency,
                         value: currency,
-                      }
-                    }))
-                  :
-                   [
+                      };
+                    })
+                  : [
                       // {label: 'Select Currency', value: ''},
                       ...state?.currency?.map((currency) => {
                         return {
@@ -184,17 +191,22 @@ const Form = ({
                   ? [
                       // {label: 'Select country', value: ''},
                     ]
-                  :
-                savedDetails && savedDetails.savedBaseCountries 
-                  ?
-                    [...savedDetails.savedBaseCountries, ...state?.country?.filter(item => !savedDetails.savedBaseCountries.find(savedItem => savedItem === item))].map((country => {
+                  : savedDetails && savedDetails.savedBaseCountries
+                  ? [
+                      ...savedDetails.savedBaseCountries,
+                      ...state?.country?.filter(
+                        (item) =>
+                          !savedDetails.savedBaseCountries.find(
+                            (savedItem) => savedItem === item
+                          )
+                      ),
+                    ].map((country) => {
                       return {
                         label: country,
                         value: country,
-                      }
-                    }))
-                  :
-                    [
+                      };
+                    })
+                  : [
                       // {label: 'Select country', value: ''},
                       ...state?.country?.map((country) => {
                         return {
@@ -239,17 +251,22 @@ const Form = ({
                   ? [
                       // {label: 'Select country', value: ''},
                     ]
-                  :
-                  savedDetails && savedDetails.savedTargetCountries 
-                  ?
-                    [...savedDetails.savedTargetCountries, ...state?.country?.filter(item => !savedDetails.savedTargetCountries.find(savedItem => savedItem === item))].map((country => {
+                  : savedDetails && savedDetails.savedTargetCountries
+                  ? [
+                      ...savedDetails.savedTargetCountries,
+                      ...state?.country?.filter(
+                        (item) =>
+                          !savedDetails.savedTargetCountries.find(
+                            (savedItem) => savedItem === item
+                          )
+                      ),
+                    ].map((country) => {
                       return {
                         label: country,
                         value: country,
-                      }
-                    }))
-                  : 
-                    [
+                      };
+                    })
+                  : [
                       // {label: 'Select country', value: ''},
                       ...state?.country?.map((country) => {
                         return {
@@ -297,16 +314,22 @@ const Form = ({
                   ? [
                       // {label: 'Select Currency', value: ''},
                     ]
-                  :
-                savedDetails && savedDetails.savedTargetCurrencies ?
-                    [...savedDetails.savedTargetCurrencies, ...state?.currency?.filter(item => !savedDetails.savedTargetCurrencies.find(savedItem => savedItem === item))].map((currency => {
+                  : savedDetails && savedDetails.savedTargetCurrencies
+                  ? [
+                      ...savedDetails.savedTargetCurrencies,
+                      ...state?.currency?.filter(
+                        (item) =>
+                          !savedDetails.savedTargetCurrencies.find(
+                            (savedItem) => savedItem === item
+                          )
+                      ),
+                    ].map((currency) => {
                       return {
                         label: currency,
                         value: currency,
-                      }
-                    }))
-                  :
-                    [
+                      };
+                    })
+                  : [
                       // {label: 'Select Currency', value: ''},
                       ...state?.currency?.map((currency) => {
                         return {
@@ -340,13 +363,6 @@ const Form = ({
               style={{ cursor: "auto" }}
             />
           </div>
-          {occurrences !== null && (
-            <p style={{ fontSize: 17 }}>
-              Your Experince is :{" "}
-              <span style={{ fontWeight: "500" }}>{occurrences}</span>
-            </p>
-          )}
-
           <div
             style={{
               display: "flex",
@@ -372,49 +388,22 @@ const Form = ({
             >
               {"Close"}
             </Button>
-            {occurrences !== 6 && (
-              <Button
-                type="submit"
-                width={occurrences === 4 || occurrences === 5 ? "30%" : "65%"}
-                color="white"
-                bg="#61B84C"
-                mt={{ sm: 1, md: 2, lg: 4 }}
-                className="button"
-                fontSize={{ sm: ".8em", md: "1.2em", lg: "1.2em" }}
-                style={{ borderRadius: "20px" }}
-                // h={{ sm: "35px", md: "45px" }}
-                h={45}
-                _hover={{ background: "#62b84cda" }}
-              >
-                {loading ? (
-                  <Spinner />
-                ) : canCalculate ? (
-                  "Calculate"
-                ) : (
-                  "Experience"
-                )}
-              </Button>
-            )}
 
-            {occurrences === 4 || occurrences === 5 || occurrences === 6 ? (
-              <Button
-                type="submit"
-                width={occurrences === 6 ? "65%" : "30%"}
-                color="white"
-                bg="#61B84C"
-                mt={{ sm: 1, md: 2, lg: 4 }}
-                className="button"
-                fontSize={{ sm: ".8em", md: "1.2em", lg: "1.2em" }}
-                style={{ borderRadius: "20px" }}
-                // h={{ sm: "35px", md: "45px" }}
-                h={45}
-                _hover={{ background: "#62b84cda" }}
-              >
-                {loading ? <Spinner /> : "Contribute"}
-              </Button>
-            ) : (
-              ""
-            )}
+            <Button
+              type="submit"
+              width="65%"
+              color="white"
+              bg="#61B84C"
+              mt={{ sm: 1, md: 2, lg: 4 }}
+              className="button"
+              fontSize={{ sm: ".8em", md: "1.2em", lg: "1.2em" }}
+              style={{ borderRadius: "20px" }}
+              // h={{ sm: "35px", md: "45px" }}
+              h={45}
+              _hover={{ background: "#62b84cda" }}
+            >
+              {loading ? <Spinner /> : "Calculate"}
+            </Button>
           </div>
         </form>
       </div>

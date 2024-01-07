@@ -10,7 +10,6 @@ import { getUserRecentHistory, updateUserRecentHistory } from "./utils";
 function App() {
   const [isModalOpen, setModalOpen] = useState(false);
   const [state, setState] = useState(null);
-  console.log(state);
   const [loading, setLoading] = useState(false);
   const [info, setInfo] = useState({
     base_currency: "",
@@ -23,6 +22,7 @@ function App() {
   const [result, setResult] = useState(null);
   const [mailLoading, setMailLoading] = useState(false);
   const [occurrences, setOccurrences] = useState(null);
+
   useEffect(() => {
     const fetchData = async (url) => {
       const res = await fetch(url);
@@ -40,6 +40,7 @@ function App() {
       [name]: value,
     });
   };
+
   const handleCalculation = async () => {
     info.target_currency && setLoading(true);
 
@@ -74,7 +75,6 @@ function App() {
       setResult(responseData);
 
       if (responseData.success === true) {
-        openModal();
         setLoading(false);
         setInfo({
           ...info,
@@ -173,9 +173,7 @@ function App() {
       // &&
       // info.email !== ""
     ) {
-      setTimeout(() => {
-        setModalOpen(true);
-      }, 1600);
+      setModalOpen(true);
     } else {
       toast.info("Kindly complete the form");
       setLoading(false);
@@ -191,7 +189,7 @@ function App() {
       base_country: "",
       target_country: "",
       target_currency: "",
-      email: "dowell@dowellresearch.uk",
+      email: "",
     });
   };
 
@@ -205,6 +203,8 @@ function App() {
         loading={loading}
         handleMailing={handleMailing}
         mailLoading={mailLoading}
+        occurrences={occurrences}
+        handleCalculation={handleCalculation}
       />
       <div className="container">
         {/* left col */}
@@ -212,11 +212,9 @@ function App() {
           onChange={onChange}
           state={state}
           info={info}
-          handleCalculation={handleCalculation}
           openModal={openModal}
           loading={loading}
           setLoading={setLoading}
-          occurrences={occurrences}
           setOccurrences={setOccurrences}
         />
 
