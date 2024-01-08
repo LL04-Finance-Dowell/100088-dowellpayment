@@ -82,7 +82,7 @@ function App() {
           base_country: "",
           target_country: "",
           target_currency: "",
-          email: "dowell@dowellresearch.uk",
+          email: "",
         });
 
         if (savedBaseCurrencies.includes(copyOfInfo.base_currency)) {
