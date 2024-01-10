@@ -16,6 +16,7 @@ const Form = ({
   // console.log('State: ', state)
   // const [canCalculate, setCanCalculate] = useState(false);
   const [savedDetails, setSavedDetails] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const {
@@ -46,12 +47,15 @@ const Form = ({
         }`
       );
       if (!response.ok) {
+        const responseData = await response.json();
+        setError(responseData.message);
         throw new Error("Network response was not ok");
       }
 
       const responseData = await response.json();
       setOccurrences(responseData.occurrences);
       if (responseData.occurrences !== 0) {
+        setError(null);
         openModal();
       } else {
         const requestOption = {
@@ -70,8 +74,11 @@ const Form = ({
           requestOption
         );
         if (response.ok) {
+          setError(null);
           openModal();
         } else {
+          const responseData = await response.json();
+          setError(responseData.message);
           throw new Error("Network response was not ok");
         }
       }
@@ -363,6 +370,8 @@ const Form = ({
               style={{ cursor: "auto" }}
             />
           </div>
+          {error && <p style={{ color: "red" }}>{error}</p>}
+
           <div
             style={{
               display: "flex",

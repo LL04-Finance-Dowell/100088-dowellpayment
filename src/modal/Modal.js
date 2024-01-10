@@ -72,50 +72,62 @@ function Modal({
             <span style={{ fontSize: 18, fontWeight: 600 }}>{occurrences}</span>
           </p>
           {!showData && (
-            <div
-              style={{
-                width: "100%",
-                display: "flex",
-                justifyContent: "space-around",
-                marginTop: 20,
-              }}
-            >
-              {occurrences !== 6 && (
-                <Button
-                  onClick={handleContinue}
-                  width={occurrences === 4 || occurrences === 5 ? "40%" : "65%"}
-                  color="white"
-                  bg="#61B84C"
-                  mt={{ sm: 1, md: 2, lg: 4 }}
-                  className="button"
-                  fontSize={{ sm: ".8em", md: "1.2em", lg: "1.2em" }}
-                  style={{ borderRadius: "20px" }}
-                  // h={{ sm: "35px", md: "45px" }}
-                  h={45}
-                  _hover={{ background: "#62b84cda" }}
-                >
-                  {loading ? <Spinner /> : "Continue"}
-                </Button>
+            <>
+              <div
+                style={{
+                  width: "100%",
+                  display: "flex",
+                  justifyContent: "space-around",
+                  marginTop: 20,
+                }}
+              >
+                {occurrences < 6 && (
+                  <Button
+                    onClick={handleContinue}
+                    width={
+                      occurrences === 4 || occurrences === 5 ? "40%" : "65%"
+                    }
+                    color="white"
+                    bg="#61B84C"
+                    mt={{ sm: 1, md: 2, lg: 4 }}
+                    className="button"
+                    fontSize={{ sm: ".8em", md: "1.2em", lg: "1.2em" }}
+                    style={{ borderRadius: "20px" }}
+                    // h={{ sm: "35px", md: "45px" }}
+                    h={45}
+                    _hover={{ background: "#62b84cda" }}
+                  >
+                    {loading ? <Spinner /> : "Continue"}
+                  </Button>
+                )}
+                {(occurrences === 4 ||
+                  occurrences === 5 ||
+                  occurrences === 6) && (
+                  <Button
+                    width={
+                      occurrences === 4 || occurrences === 5 ? "40%" : "65%"
+                    }
+                    color="white"
+                    bg="#61B84C"
+                    mt={{ sm: 1, md: 2, lg: 4 }}
+                    className="button"
+                    fontSize={{ sm: ".8em", md: "1.2em", lg: "1.2em" }}
+                    style={{ borderRadius: "20px" }}
+                    // h={{ sm: "35px", md: "45px" }}
+                    h={45}
+                    _hover={{ background: "#62b84cda" }}
+                  >
+                    {loading ? <Spinner /> : "Contribute"}
+                  </Button>
+                )}
+              </div>
+              {occurrences > 6 && (
+                <p style={{ color: "red" }}>
+                  Exceeded experienced limits. Please contact our customer
+                  support team. Thank you
+                </p>
               )}
-              {(occurrences === 4 ||
-                occurrences === 5 ||
-                occurrences === 6) && (
-                <Button
-                  width={occurrences === 4 || occurrences === 5 ? "40%" : "65%"}
-                  color="white"
-                  bg="#61B84C"
-                  mt={{ sm: 1, md: 2, lg: 4 }}
-                  className="button"
-                  fontSize={{ sm: ".8em", md: "1.2em", lg: "1.2em" }}
-                  style={{ borderRadius: "20px" }}
-                  // h={{ sm: "35px", md: "45px" }}
-                  h={45}
-                  _hover={{ background: "#62b84cda" }}
-                >
-                  {loading ? <Spinner /> : "Contribute"}
-                </Button>
-              )}
-            </div>
+            </>
           )}
 
           {showData && (
@@ -208,9 +220,26 @@ function Modal({
                   {mailLoading ? "Sending mail..." : "No"}
                 </Button>
               </div>
+              <div className="mailPrompt" style={{ marginTop: 20 }}>
+                <p>Do you have a coupon?</p>
+                <Button
+                  color="white"
+                  bg="#61B84C"
+                  p={"1 5"}
+                  fontSize={"0.875rem"}
+                  _hover={{ background: "#62b84cda" }}
+                  onClick={async () => {
+                    await handleMailing();
+                    setShowData(false);
+                  }}
+                  disabled={mailLoading ? true : false}
+                >
+                  {mailLoading ? "Sending mail..." : "Yes"}
+                </Button>
+              </div>
             </>
           )}
-
+          {/* 
           <p className="disclaimer__Wrapp">
             <span className="disclaimer__text">Disclaimer:</span>
             <span className="disclaimer__Info">
@@ -223,7 +252,7 @@ function Modal({
               acknowledging these terms, Spending based on calculations is at
               user discretion
             </span>
-          </p>
+          </p> */}
         </div>
       </div>
     )
