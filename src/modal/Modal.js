@@ -81,6 +81,24 @@ function Modal({
                   marginTop: 20,
                 }}
               >
+                <Button
+                  onClick={() => {
+                    setShowData(false);
+                    onClose();
+                  }}
+                  width={"30%"}
+                  color="white"
+                  bg="#b8b8b8"
+                  mt={{ sm: 1, md: 2, lg: 4 }}
+                  className="button"
+                  fontSize={{ sm: ".8em", md: "1.2em", lg: "1.2em" }}
+                  style={{ borderRadius: "20px" }}
+                  // h={{ sm: "35px", md: "45px" }}
+                  h={45}
+                  _hover={{ background: "#808080" }}
+                >
+                  {loading ? <Spinner /> : "Cancel"}
+                </Button>
                 {occurrences < 6 && (
                   <Button
                     onClick={handleContinue}
@@ -129,6 +147,26 @@ function Modal({
               )}
             </>
           )}
+          {!showData &&
+            (occurrences === 4 || occurrences === 5 || occurrences === 6) && (
+              <div className="mailPrompt" style={{ marginTop: 20 }}>
+                <p>Do you have a coupon?</p>
+                <Button
+                  color="white"
+                  bg="#61B84C"
+                  p={"1 5"}
+                  fontSize={"0.875rem"}
+                  _hover={{ background: "#62b84cda" }}
+                  onClick={async () => {
+                    await handleMailing();
+                    setShowData(false);
+                  }}
+                  disabled={mailLoading ? true : false}
+                >
+                  {mailLoading ? "Sending mail..." : "Yes"}
+                </Button>
+              </div>
+            )}
 
           {showData && (
             <>
@@ -220,39 +258,24 @@ function Modal({
                   {mailLoading ? "Sending mail..." : "No"}
                 </Button>
               </div>
-              <div className="mailPrompt" style={{ marginTop: 20 }}>
-                <p>Do you have a coupon?</p>
-                <Button
-                  color="white"
-                  bg="#61B84C"
-                  p={"1 5"}
-                  fontSize={"0.875rem"}
-                  _hover={{ background: "#62b84cda" }}
-                  onClick={async () => {
-                    await handleMailing();
-                    setShowData(false);
-                  }}
-                  disabled={mailLoading ? true : false}
-                >
-                  {mailLoading ? "Sending mail..." : "Yes"}
-                </Button>
-              </div>
             </>
           )}
-          {/* 
-          <p className="disclaimer__Wrapp">
-            <span className="disclaimer__text">Disclaimer:</span>
-            <span className="disclaimer__Info">
-              The Dowell World Price Indicator is used to provide estimates,
-              with data collected solely for this purpose. The purpose-built and
-              trained software offers approximate values, though results may
-              vary with market dynamics. The creators disclaim any liabilities.
-              Data collection complies with GDPR rules. Information obtained is
-              for informational purposes, not professional & legal advice. By
-              acknowledging these terms, Spending based on calculations is at
-              user discretion
-            </span>
-          </p> */}
+
+          {showData && (
+            <p className="disclaimer__Wrapp">
+              <span className="disclaimer__text">Disclaimer:</span>
+              <span className="disclaimer__Info">
+                The Dowell World Price Indicator is used to provide estimates,
+                with data collected solely for this purpose. The purpose-built
+                and trained software offers approximate values, though results
+                may vary with market dynamics. The creators disclaim any
+                liabilities. Data collection complies with GDPR rules.
+                Information obtained is for informational purposes, not
+                professional & legal advice. By acknowledging these terms,
+                Spending based on calculations is at user discretion
+              </span>
+            </p>
+          )}
         </div>
       </div>
     )
