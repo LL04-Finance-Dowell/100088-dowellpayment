@@ -7,6 +7,7 @@ from .helper import  get_all_currency_name, get_ppp_data,user_details_api,save_d
 import requests
 import re
 from threading import Thread
+from threading import Lock
 
 # Create your views here.
 def processApikey(api_key):
@@ -15,6 +16,7 @@ def processApikey(api_key):
     response = requests.post(url, json=payload)
     return response.json()
 
+occurrences_lock = Lock()  # Define a lock for occurrences
 
 # FOR DOWELL INTERNAL TEAM
 class GetPurchasingPowerParity(APIView):
@@ -67,11 +69,8 @@ class GetPurchasingPowerParity(APIView):
                 )
 
             # Call the function to hit an API with user details
-            occurrences += 1
-            print(occurrences)
             api_response = user_details_api(email,occurrences)
             print("---gotten api response---")
-            print(api_response.json())
             
             api_response_data = api_response.json()
             if "success" in api_response_data:
@@ -84,26 +83,25 @@ class GetPurchasingPowerParity(APIView):
                       # Run functions in threads
                     print("this is res from view")
                     print(res)
+                    with occurrences_lock:
+                        occurrences += 1
                     experienced_date = Thread(target=save_data, args=(email, res))
                     experienced_date.daemon = True
                     experienced_date.start()
-
-                    experienced_reduce = Thread(target=update_user_usage, args=(email,occurrences))
+                    print("adding")
+                    print(occurrences)
+                    print("added")
+                    experienced_reduce = Thread(target=update_user_usage, args=(email, occurrences))
                     experienced_reduce.daemon = True
                     experienced_reduce.start()
-
                     # Return PPP calculation response to the frontend
                     print("---everything worked---")
                     return res
                 else:
                     return Response(
-                        {
-                            "success": False,
-                            "message": "API response unsuccessful",
-                            "details": "User details verification failed",
-                        },
-                        status=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                    )
+                api_response_data,
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY
+            )
             else:
                 return Response(
                     {
@@ -375,3 +373,12 @@ class GetPublicPurchasingPowerParity(APIView):
                 },
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
+
+
+class GetExchangeRates(APIView):
+    def post(request):
+        base_country = request.data.get("base_country")
+        base_currency = request.data.get("base_currency")
+        target_currency = request.data.get("target_currency")
+        target_country = request.data.get("target_country")
+        

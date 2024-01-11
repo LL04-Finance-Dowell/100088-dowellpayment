@@ -203,6 +203,7 @@ def user_details_api(email,occurrences):
     }
     print("---payload gotten---")
     response = requests.post(api_url,json=payload)
+    print(response.json())
     return response
 
 def save_data(email,res):
@@ -225,4 +226,5 @@ def save_data(email,res):
 def update_user_usage(email,occurrences):
     api_url = f"https://100105.pythonanywhere.com/api/v3/experience_database_services/?type=update_user_usage&product_number=UXLIVINGLAB002&email={email}&occurrences={occurrences}"
     response = requests.get(api_url)
+    print(response.json())
     return response
