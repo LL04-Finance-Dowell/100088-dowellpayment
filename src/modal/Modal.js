@@ -14,6 +14,8 @@ function Modal({
   handleCalculation,
 }) {
   const [showData, setShowData] = useState(false);
+  const [showCouponInput, setShowCouponInput] = useState(false);
+  const [coupon, setCoupon] = useState("");
 
   const handleContinue = async () => {
     await handleCalculation();
@@ -55,6 +57,7 @@ function Modal({
           <button
             className="close-button"
             onClick={() => {
+              setShowCouponInput(false);
               setShowData(false);
               onClose();
             }}
@@ -83,6 +86,7 @@ function Modal({
               >
                 <Button
                   onClick={() => {
+                    setShowCouponInput(false);
                     setShowData(false);
                     onClose();
                   }}
@@ -148,6 +152,7 @@ function Modal({
             </>
           )}
           {!showData &&
+            !showCouponInput &&
             (occurrences === 4 || occurrences === 5 || occurrences === 6) && (
               <div className="mailPrompt" style={{ marginTop: 20 }}>
                 <p>Do you have a coupon?</p>
@@ -157,16 +162,36 @@ function Modal({
                   p={"1 5"}
                   fontSize={"0.875rem"}
                   _hover={{ background: "#62b84cda" }}
-                  onClick={async () => {
-                    await handleMailing();
-                    setShowData(false);
+                  onClick={() => {
+                    setShowCouponInput(true);
                   }}
-                  disabled={mailLoading ? true : false}
                 >
-                  {mailLoading ? "Sending mail..." : "Yes"}
+                  Yes
                 </Button>
               </div>
             )}
+          {showCouponInput && (
+            <div className="mailPrompt" style={{ marginTop: 20 }}>
+              <input
+                // required
+                type="text"
+                placeholder="coupon"
+                name="coupon"
+                value={coupon}
+                onChange={(e) => setCoupon(e.target.value)}
+                style={{ cursor: "auto", width: "50%" }}
+              />
+              <Button
+                color="white"
+                bg="#61B84C"
+                p={"1 5"}
+                fontSize={"0.875rem"}
+                _hover={{ background: "#62b84cda" }}
+              >
+                Reedem
+              </Button>
+            </div>
+          )}
 
           {showData && (
             <>
@@ -250,6 +275,7 @@ function Modal({
                   fontSize={"0.875rem"}
                   _hover={{ background: "#f09fa3" }}
                   onClick={() => {
+                    setShowCouponInput(false);
                     setShowData(false);
                     onClose();
                   }}
