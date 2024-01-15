@@ -376,9 +376,42 @@ class GetPublicPurchasingPowerParity(APIView):
 
 
 class GetExchangeRates(APIView):
-    def post(request):
-        base_country = request.data.get("base_country")
-        base_currency = request.data.get("base_currency")
-        target_currency = request.data.get("target_currency")
-        target_country = request.data.get("target_country")
-        
+    def post(self,request):
+        try:
+            data = request.data
+            # Serialize the input data
+            serializer = PPPSerializer(data=data)
+            if serializer.is_valid():
+                validate_data = serializer.validated_data
+                base_currency = validate_data["base_currency"]
+                base_price = validate_data["base_price"]
+                base_country = validate_data["base_country"]
+                target_country = validate_data["target_country"]
+                target_currency = validate_data["target_currency"]
+                email = request.data.get("email")
+                print(email)
+
+                res = get_ppp_data(
+                        base_currency, base_price, base_country, target_country, target_currency, email
+                    )
+                return res
+            else:
+                # Handle invalid serializer data
+                return Response(
+                    {
+                        "success": False,
+                        "message": "Invalid data",
+                        "errors": serializer.errors,
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        except Exception as e:
+            return Response(
+                {
+                    "success": False,
+                    "message": "Something went wrong",
+                    "details": "Invalid Country Name",
+                    "error": str(e),
+                },
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
