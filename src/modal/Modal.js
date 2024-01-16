@@ -107,7 +107,7 @@ function Modal({
                   <Button
                     onClick={handleContinue}
                     width={
-                      occurrences === 4 || occurrences === 5 ? "40%" : "65%"
+                      occurrences === 4 || occurrences === 5 ? "30%" : "65%"
                     }
                     color="white"
                     bg="#61B84C"
@@ -127,7 +127,7 @@ function Modal({
                   occurrences === 6) && (
                   <Button
                     width={
-                      occurrences === 4 || occurrences === 5 ? "40%" : "65%"
+                      occurrences === 4 || occurrences === 5 ? "30%" : "65%"
                     }
                     color="white"
                     bg="#61B84C"
@@ -170,7 +170,7 @@ function Modal({
                 </Button>
               </div>
             )}
-          {showCouponInput && (
+          {showCouponInput && !showData && (
             <div className="mailPrompt" style={{ marginTop: 20 }}>
               <input
                 // required
