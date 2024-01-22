@@ -12,6 +12,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from .utils.convert_currency import convert_currency
 import requests
 
 
@@ -269,7 +270,30 @@ class PaypalPayment(APIView):
                 voucher_code=voucher_code,
                 generate_qrcode=True,
             )
-            return res
+            print(res.data)
+            success = res.data.get("success", False)
+            print(success)
+            if not success:
+                print("false")
+                # Call the convert_currency function here
+                converted_amount = convert_currency(price, currency_code)
+                print("this is converted amount")
+                print(converted_amount)
+                res = paypal_payment(
+                    price=converted_amount,
+                    product_name=product_name,
+                    currency_code="usd",
+                    callback_url=callback_url,
+                    client_id=client_id,
+                    client_secret=client_secret,
+                    model_instance=model_instance,
+                    paypal_url=dowell_paypal_url,
+                    voucher_code=voucher_code,
+                    generate_qrcode=True,
+                )
+                return res
+            else:
+                return res
 
         except Exception as e:
             return Response(
