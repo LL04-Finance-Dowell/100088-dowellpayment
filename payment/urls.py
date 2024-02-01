@@ -19,8 +19,10 @@ from .views import (
     VerifyStripePaymentPublicUse,
     PaypalPaymentPublicUse,
     VerifyPaypalPaymentPublicUse,
+    BraintreeClientTokenView,
     Success,
     Error,
+    ProcessGooglePaymentView,
     TinkCreatePayment,
     # YapilySupportedCountry,
     # InitializeNetPaymentYapily,
@@ -33,6 +35,8 @@ from .views import (
 
 urlpatterns = [
     path("stripe/initialize", StripePayment.as_view()),
+    path("googlepay/initialize",ProcessGooglePaymentView.as_view()),
+    path('get_client_token/', BraintreeClientTokenView.as_view(), name='get_client_token'),
     path("verify/payment/stripe", VerifyStripePayment.as_view()),
     path("paypal/initialize", PaypalPayment.as_view()),
     path("verify/payment/paypal", VerifyPaypalPayment.as_view()),

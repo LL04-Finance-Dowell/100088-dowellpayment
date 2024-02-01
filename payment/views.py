@@ -14,6 +14,7 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from .utils.convert_currency import convert_currency
 import requests
+import braintree
 
 
 from .utils.dowellconnection import (
@@ -972,6 +973,61 @@ class TinkCreatePayment(APIView):
         auth = f"https://link.tink.com/1.0/pay/?client_id={os.getenv('CLIENT_ID')}&redirect_uri=https://www.google.com/&market=SE&locale=en_US&payment_request_id={id}"
         print(auth)
         return Response(auth)
+
+
+class ProcessGooglePaymentView(APIView):
+    def post(self, request, *args, **kwargs):
+        payment_method_nonce = request.data.get("payment_method_nonce")
+        amount = request.data.get("price")
+        product = request.data.get("product")
+        currency_code = request.data.get("currency_code")
+        timezone = request.data.get("timezone")
+        description = request.data.get("description")
+
+        result = self.process_payment(amount,payment_method_nonce)
+        if result.is_success:
+            return Response(
+                {
+                    "success":True,
+                    "message":"Payment successful"
+                }
+            )
+        else:
+            return Response(
+                {
+                    "success":False,
+                    "message":"Payment failed"
+                }
+            )
+    def process_payment(self, amount, payment_method_nonce):
+        # Configure Braintree
+        braintree.Configuration.configure(braintree.Environment.Sandbox,
+                                          merchant_id='kdjtyhnjd3htx2hw',
+                                          public_key='mv54hqv65snshzjv',
+                                          private_key='369e38d36edc938b0346a35ecd4150aa')
+
+        # Process payment using Braintree
+        result = braintree.Transaction.sale({
+            'amount': str(amount),
+            'payment_method_nonce': payment_method_nonce,
+            'options': {
+                'submit_for_settlement': True
+            }
+        })
+        print(result)
+        return result
+
+class BraintreeClientTokenView(APIView):
+    def get(self, request, *args, **kwargs):
+        # Replace 'your_braintree_merchant_id', 'your_braintree_public_key', and 'your_braintree_private_key' with your actual Braintree credentials
+        braintree.Configuration.configure(braintree.Environment.Sandbox,
+                                          merchant_id='kdjtyhnjd3htx2hw',
+                                          public_key='mv54hqv65snshzjv',
+                                          private_key='369e38d36edc938b0346a35ecd4150aa')
+
+        client_token = braintree.ClientToken.generate()
+
+        return Response({'clientToken': client_token})
 
 
 # return list of supported country by yapily for the user so that the user can pick one
