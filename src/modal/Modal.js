@@ -1,6 +1,7 @@
 import { Button, Spinner } from "@chakra-ui/react";
 import logo from "../assets/dowell-logo.svg";
 import { useState } from "react";
+import { async } from "q";
 
 function Modal({
   isOpen,
@@ -21,6 +22,14 @@ function Modal({
     await handleCalculation();
     setShowData(true);
   };
+
+  const handleContribute = async () => {
+    const redirectToURL = 'https://dowellpay.online/contribute-payment/?product_number=UXLIVINGLAB002'; // replace with your desired URL
+  
+    // Redirect the user to the specified URL
+    window.location.href = redirectToURL;
+  };
+  
 
   function toTitleCaseWithSpaces(inputString) {
     return inputString
@@ -126,6 +135,7 @@ function Modal({
                   occurrences === 5 ||
                   occurrences === 6) && (
                   <Button
+                  onClick={handleContribute}
                     width={
                       occurrences === 4 || occurrences === 5 ? "30%" : "65%"
                     }
