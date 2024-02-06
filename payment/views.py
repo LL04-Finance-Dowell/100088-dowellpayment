@@ -16,6 +16,8 @@ from .utils.convert_currency import convert_currency
 import requests
 import braintree
 
+from .utils.sendmail import send_mail_one
+
 
 from .utils.dowellconnection import (
     CreateDowellTransaction,
@@ -1029,6 +1031,47 @@ class BraintreeClientTokenView(APIView):
 
         return Response({'clientToken': client_token})
 
+
+class ManualEmail(APIView):
+    def post(self,request):
+        # Extract data from request.data
+        amount = request.data.get('amount')
+        currency = request.data.get('currency')
+        name = request.data.get('name')
+        email = request.data.get('email')
+        desc = request.data.get('desc')
+        date = request.data.get('date')
+        city = request.data.get('city')
+        address = request.data.get('address')
+        postal_code = request.data.get('postal_code')
+        ref_id = request.data.get('ref_id')
+        invoice_number = request.data.get('invoice_number')
+        order_number = request.data.get('order_number')
+        payment_method = request.data.get('payment_method')
+        territory = request.data.get('territory')
+
+        # Call send_mail_function
+        success = send_mail_one(
+            amount,
+            currency,
+            name,
+            email,
+            desc,
+            date,
+            city,
+            address,
+            postal_code,
+            ref_id,
+            invoice_number,
+            order_number,
+            payment_method,
+            territory,
+        )
+        print(success)
+        if success:
+            return Response({"success": True, "message": "Email sent successfully"})
+        else:
+            return Response({"success": False, "message": "Failed to send email"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 # return list of supported country by yapily for the user so that the user can pick one
 # query yapily to get the list of banks and cache it response from yapily
