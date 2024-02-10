@@ -17,6 +17,7 @@ function Modal({
   const [showData, setShowData] = useState(false);
   const [showCouponInput, setShowCouponInput] = useState(false);
   const [coupon, setCoupon] = useState("");
+  const [redeemMessage, setRedeemMessage] = useState("");
 
   const handleContinue = async () => {
     await handleCalculation();
@@ -29,6 +30,38 @@ function Modal({
     // Redirect the user to the specified URL
     window.location.href = redirectToURL;
   };
+
+  //the handle redeem
+  const handleRedeem = async () => {
+    try {
+      const response = await fetch('https://100105.pythonanywhere.com/api/v3/experience_database_services/?type=redeem_coupon', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: info.email,
+          coupon: coupon,
+          product_number: 'UXLIVINGLAB002'
+        }),
+      });
+  
+      const responseData = await response.json();
+  
+      if (response.ok && responseData.success) { 
+        setRedeemMessage("Redemption successful!"); // Set success message
+        window.location.reload();
+      } else {
+        setRedeemMessage(responseData.message || 'Redemption failed'); // Set failure message
+      }
+    } catch (error) {
+      console.error('Error while redeeming:', error);
+      setRedeemMessage('Error while redeeming. Please try again.');
+    }
+  };
+
+  
+  
   
 
   function toTitleCaseWithSpaces(inputString) {
@@ -197,9 +230,11 @@ function Modal({
                 p={"1 5"}
                 fontSize={"0.875rem"}
                 _hover={{ background: "#62b84cda" }}
+                onClick={handleRedeem}
               >
                 Reedem
               </Button>
+              {redeemMessage && <p style={{ marginTop: 10, color: redeemMessage.includes("failed") ? "red" : "green" }}>{redeemMessage}</p>}
             </div>
           )}
 
