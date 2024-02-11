@@ -363,7 +363,7 @@ const Form = ({
             <input
               // required
               type="email"
-              placeholder="dowell@dowellresearch.uk"
+              placeholder=""
               name="email"
               value={info?.email}
               onChange={onChange}
