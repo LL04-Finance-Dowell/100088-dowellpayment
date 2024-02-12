@@ -234,7 +234,12 @@ function Modal({
               >
                 Reedem
               </Button>
-              {redeemMessage && <p style={{ marginTop: 10, color: redeemMessage.includes("failed") ? "red" : "green" }}>{redeemMessage}</p>}
+              {redeemMessage && (
+  <p style={{ marginTop: 10, color: redeemMessage.includes("Coupon is not available") ? "red" : "green" }}>
+    {redeemMessage}
+  </p>
+)}
+
             </div>
           )}
 
