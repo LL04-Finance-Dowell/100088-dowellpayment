@@ -31,7 +31,6 @@ function Modal({
     window.location.href = redirectToURL;
   };
 
-  //the handle redeem
   const handleRedeem = async () => {
     try {
       const response = await fetch('https://100105.pythonanywhere.com/api/v3/experience_database_services/?type=redeem_coupon', {
@@ -50,7 +49,9 @@ function Modal({
   
       if (response.ok && responseData.success) { 
         setRedeemMessage("Redemption successful!"); // Set success message
-        window.location.reload();
+        setShowCouponInput(false); // Hide coupon input
+        setShowData(false); // Hide data
+        onClose(); // Close modal or perform any other necessary action
       } else {
         setRedeemMessage(responseData.message || 'Redemption failed'); // Set failure message
       }
@@ -59,6 +60,7 @@ function Modal({
       setRedeemMessage('Error while redeeming. Please try again.');
     }
   };
+  
 
   
   
