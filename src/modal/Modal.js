@@ -48,10 +48,8 @@ function Modal({
       const responseData = await response.json();
   
       if (response.ok && responseData.success) { 
-        setRedeemMessage("Redemption successful!"); // Set success message
-        setShowCouponInput(false); // Hide coupon input
-        setShowData(false); // Hide data
-        onClose(); // Close modal or perform any other necessary action
+        await handleCalculation();
+        setShowData(true);
       } else {
         setRedeemMessage(responseData.message || 'Redemption failed'); // Set failure message
       }
