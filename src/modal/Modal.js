@@ -113,8 +113,8 @@ function Modal({
             </p>
           </div>
           <p>
-            Your Experience is :{" "}
-            <span style={{ fontSize: 18, fontWeight: 600 }}>{occurrences}</span>
+            You have used World Price Indicator {" "}
+            <span style={{ fontSize: 18, fontWeight: 600 }}>{occurrences} times</span>
           </p>
           {!showData && (
             <>
