@@ -25,6 +25,8 @@ from .views import (
     Error,
     ProcessGooglePaymentView,
     TinkCreatePayment,
+    StripeQPayment,
+    StripeCallback,
     # YapilySupportedCountry,
     # InitializeNetPaymentYapily,
     # CreateNetPaymentYapily,
@@ -70,6 +72,10 @@ urlpatterns = [
     path("error", Error.as_view()),
     path("pdf/<str:pdf_filename>", views.serve_pdf, name="serve_pdf"),
     path("tink/create/payment", TinkCreatePayment.as_view()),
+
+    #for Q payments
+    path("stripe-payment", StripeQPayment.as_view()),
+    path("stripe-callback", StripeCallback.as_view()),
     # path("yapily/supported-countries", YapilySupportedCountry.as_view()),
     # path("yapily/initialize/payment", InitializeNetPaymentYapily.as_view()),
     # path("yapily/create/payment", CreateNetPaymentYapily.as_view()),

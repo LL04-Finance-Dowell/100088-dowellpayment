@@ -15,6 +15,8 @@ from drf_yasg import openapi
 from .utils.convert_currency import convert_currency
 import requests
 import braintree
+import stripe
+from datetime import date
 
 from .utils.sendmail import send_mail_one
 
@@ -1072,6 +1074,181 @@ class ManualEmail(APIView):
             return Response({"success": True, "message": "Email sent successfully"})
         else:
             return Response({"success": False, "message": "Failed to send email"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+
+"""
+
+STRIPE PAYMENT FOR Q
+
+"""
+
+class StripeQPayment(APIView):
+    def post(self, request, *args, **kwargs):
+        try:
+            data = request.data
+            serializer = PaymentSerializer(data=data)
+            if serializer.is_valid():
+                validate_data = serializer.to_representation(serializer.validated_data)
+                amount = validate_data["price"]
+                product = validate_data["product"]
+                currency_code = validate_data["currency_code"]
+            else:
+                errors = serializer.errors
+                return Response(
+                    {"success": False, "errors": errors},
+                    status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                )
+
+            today = date.today()
+            unique_id = uuid.uuid4()
+            payment_id = str(unique_id)
+
+            stripe_key = os.getenv("STRIPE_KEY", None)
+            stripe.api_key = stripe_key
+
+            session = stripe.checkout.Session.create(
+                line_items=[
+                    {
+                        "price_data": {
+                            "currency": currency_code,
+                            "product_data": {
+                                "name": "Q payment",
+                            },
+                            "unit_amount": f"{(amount) * 100}",
+                        },
+                        "quantity": 1,
+                    }
+                ],
+                mode="payment",
+                success_url = f"https://100088.pythonanywhere.com/api/stripe-callback?payment_id={payment_id}",
+                cancel_url = f"https://100088.pythonanywhere.com/api/stripe-callback?payment_id={payment_id}",
+                billing_address_collection="required",
+                payment_intent_data={
+                    "metadata": {
+                        "description": "Q payment",
+                        "payment_id": payment_id,
+                        "date": today,
+                    }
+                },
+            )
+            transaction = CreateDowellTransaction(
+
+                payment_id,
+                session_id = session.id,
+                desc = product,
+                today =today,
+                template_id=None,
+                voucher_code=None
+
+            )
+            print(session)
+            print(transaction)
+            # transaction = CreateUserTransaction(
+            #     username,
+            #     email,
+            #     amount,
+            #     payment_id,
+            #     session.id,
+            #     today,
+            #     transaction_type="Deposit",
+            #     status="Failed",
+            # )
+            return Response(
+                {"success": True,
+                  "approval_url": f"{session.url}",
+                  "payment_id":payment_id},
+                status=status.HTTP_200_OK,
+            )
+
+        except Exception as e:
+            return Response(
+                {"success": False, "message": "something went wrong", "error": f"{e}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+
+class StripeCallback(APIView):
+    def get(self, request, *args, **kwargs):
+        print("---called---callback")
+        try:
+            # Extract payment_id from the query parameters
+            payment_id = request.query_params.get('payment_id')
+
+            # Retrieve the Stripe transaction using the payment_id
+            stripe_key = os.getenv("STRIPE_KEY", None)
+            stripe.api_key = stripe_key
+            model_instance_update = UpdateDowellTransaction
+            model_instance_get = GetDowellTransaction
+            transaction = model_instance_get(payment_id)
+            session_id = transaction["data"]["session_id"]
+            payment_session = stripe.checkout.Session.retrieve(session_id)
+            print(payment_session)
+            payment_status = payment_session["payment_status"]
+            state = payment_session["status"]
+            print(payment_session)
+            # Check the payment status
+            if payment_status == "paid" and state == "complete":
+                try:
+                    amount = payment_session["amount_total"] / 100
+                except:
+                    amount = ""
+                try:
+                    currency = payment_session["currency"].upper()
+                except:
+                    currency = ""
+                try:
+                    name = payment_session["customer_details"]["name"]
+                except:
+                    name = ""
+                try:
+                    email = payment_session["customer_details"]["email"]
+                except:
+                    email = ""
+                try:
+                    city = payment_session["customer_details"]["address"]["city"]
+                except:
+                    city = ""
+                try:
+                    country = payment_session["customer_details"]["address"]["country"]
+                except:
+                    country = ""
+                try:
+                    state = payment_session["customer_details"]["address"]["state"]
+                    print("state", state)
+                except:
+                    state = ""
+                try:
+                    address = payment_session["customer_details"]["address"]["line1"]
+                except:
+                    address = ""
+                try:
+                    postal_code = payment_session["customer_details"]["address"]["postal_code"]
+                except:
+                    postal_code = ""
+                try:
+                    country_code = payment_session["customer_details"]["address"]["country"]
+                except:
+                    country_code = ""
+                try:
+                    ref_id = payment_session["payment_intent"]
+                except:
+                    ref_id = ""
+            # Here you can update your database or perform any other actions based on the payment result
+
+            return Response({
+                'success': True,
+                'message': 'Payment callback received successfully',
+                'transaction_status': payment_status
+            })
+
+        except Exception as e:
+            return Response({
+                'success': False,
+                'message': 'Error processing payment callback',
+                'error': str(e)
+            }, status=400)
 
 # return list of supported country by yapily for the user so that the user can pick one
 # query yapily to get the list of banks and cache it response from yapily
