@@ -1106,33 +1106,34 @@ class StripeQPayment(APIView):
             payment_id = str(unique_id)
 
             stripe_key = os.getenv("STRIPE_KEY", None)
-            stripe.api_key = stripe_key
+            stripe.api_key = "sk_test_51NNYXvEifafv1oQMU0qOz9DrfLNNB5WG2jnHAzxmizAdUHU7T1Yk4EfUshB5A5fCNZBRCrB1Vk2P5N272Frgmd3E00UqN7mPbn"
 
             session = stripe.checkout.Session.create(
-                line_items=[
-                    {
-                        "price_data": {
-                            "currency": currency_code,
-                            "product_data": {
-                                "name": "Q payment",
-                            },
-                            "unit_amount": f"{(amount) * 100}",
-                        },
-                        "quantity": 1,
-                    }
-                ],
-                mode="payment",
-                success_url = f"https://100088.pythonanywhere.com/api/stripe-callback?payment_id={payment_id}",
-                cancel_url = f"https://100088.pythonanywhere.com/api/stripe-callback?payment_id={payment_id}",
-                billing_address_collection="required",
-                payment_intent_data={
-                    "metadata": {
-                        "description": "Q payment",
-                        "payment_id": payment_id,
-                        "date": today,
-                    }
+    payment_method_types=["card", "cashapp","google"],  # Use "wallet_google_pay" for Google Pay
+    line_items=[
+        {
+            "price_data": {
+                "currency": currency_code,
+                "product_data": {
+                    "name": "Q payment",
                 },
-            )
+                "unit_amount": f"{(amount) * 100}",
+            },
+            "quantity": 1,
+        }
+    ],
+    mode="payment",
+    success_url=f"https://100088.pythonanywhere.com/api/stripe-callback?payment_id={payment_id}",
+    cancel_url=f"https://100088.pythonanywhere.com/api/stripe-callback?payment_id={payment_id}",
+    billing_address_collection="required",
+    payment_intent_data={
+        "metadata": {
+            "description": "Q payment",
+            "payment_id": payment_id,
+            "date": today,
+        }
+    },
+)
             transaction = CreateDowellTransaction(
 
                 payment_id,
@@ -1249,6 +1250,68 @@ class StripeCallback(APIView):
                 'message': 'Error processing payment callback',
                 'error': str(e)
             }, status=400)
+
+
+
+
+class PaytmCheckout(APIView):
+    def post(self, request, *args, **kwargs):
+        try:
+            # Extract required parameters from request data
+            amount = request.data.get('amount')
+            customer_id = request.data.get('customer_id')
+            mobile_number = request.data.get('mobile_number')
+            email = request.data.get('email')
+
+            # Replace these values with your Paytm credentials
+            PAYTM_MERCHANT_ID = "your_merchant_id"
+            PAYTM_SECRET_KEY = "your_secret_key"
+            PAYTM_WEBSITE = "WEBSTAGING"  # Change it to "DEFAULT" for production environment
+
+            # Define Paytm API endpoint
+            paytm_api_url = "https://securegw-stage.paytm.in/link/create"
+
+            # Construct request payload
+            payload = {
+                "body": {
+                    "requestType": "Payment",
+                    "mid": PAYTM_MERCHANT_ID,
+                    "websiteName": PAYTM_WEBSITE,
+                    "orderId": "order123",  # Replace with your unique order ID
+                    "callbackUrl": "http://your_website.com/payment/response/",  # Replace with your callback URL
+                    "txnAmount": {
+                        "value": amount,
+                        "currency": "INR",
+                    },
+                    "userInfo": {
+                        "custId": customer_id,
+                        "mobile": mobile_number,
+                        "email": email,
+                    }
+                },
+                "head": {
+                    "tokenType": "AES",
+                    "signature": "your_signature",
+                }
+            }
+
+            # Make POST request to Paytm API
+            response = requests.post(paytm_api_url, json=payload)
+            response_data = response.json()
+
+            # Extract checkout link from response
+            checkout_link = response_data.get('body', {}).get('resultInfo', {}).get('checkoutUrl')
+
+            return Response({"checkout_link": checkout_link})
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
+
+
+
+
+
+
 
 # return list of supported country by yapily for the user so that the user can pick one
 # query yapily to get the list of banks and cache it response from yapily
