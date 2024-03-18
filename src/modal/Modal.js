@@ -26,7 +26,7 @@ function Modal({
 
   const handleContribute = async () => {
     const redirectToURL = 'https://dowellpay.online/contribute-payment/?product_number=UXLIVINGLAB002'; // replace with your desired URL
-  
+
     // Redirect the user to the specified URL
     window.location.href = redirectToURL;
   };
@@ -44,10 +44,10 @@ function Modal({
           product_number: 'UXLIVINGLAB002'
         }),
       });
-  
+
       const responseData = await response.json();
-  
-      if (response.ok && responseData.success) { 
+
+      if (response.ok && responseData.success) {
         await handleCalculation();
         setShowData(true);
       } else {
@@ -58,11 +58,11 @@ function Modal({
       setRedeemMessage('Error while redeeming. Please try again.');
     }
   };
-  
 
-  
-  
-  
+
+
+
+
 
   function toTitleCaseWithSpaces(inputString) {
     return inputString
@@ -185,13 +185,27 @@ function Modal({
                     {loading ? <Spinner /> : "Contribute"}
                   </Button>
                 )}
-              </div>
-              {occurrences > 6 && (
-                <p style={{ color: "red" }}>
-                  Exceeded experienced limits. Please contact our customer
-                  support team. Thank you
-                </p>
+                {occurrences > 6 && (
+                <Button
+                  onClick={handleContribute}
+                    width={
+                      occurrences === 4 || occurrences === 5 ? "30%" : "65%"
+                    }
+                    color="white"
+                    bg="#61B84C"
+                    mt={{ sm: 1, md: 2, lg: 4 }}
+                    className="button"
+                    fontSize={{ sm: ".8em", md: "1.2em", lg: "1.2em" }}
+                    style={{ borderRadius: "20px" }}
+                    // h={{ sm: "35px", md: "45px" }}
+                    h={45}
+                    _hover={{ background: "#62b84cda" }}
+                  >
+                    {loading ? <Spinner /> : "Contribute"}
+                  </Button>
               )}
+              </div>
+              
             </>
           )}
           {!showData &&
