@@ -359,11 +359,11 @@ const Form = ({
             </Select>
           </div>
           <div className="form-group">
-            <label>Your Email Address</label>
+            <label>Your Email Address Section <span style={{ color: "red" }}>*</span></label>
             <input
-              // required
+              required
               type="email"
-              placeholder=""
+              placeholder="Enter Your Email id"
               name="email"
               value={info?.email}
               onChange={onChange}
